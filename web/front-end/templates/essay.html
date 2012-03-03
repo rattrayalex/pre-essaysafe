@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block styles %}
+{% endblock styles %}
+
+{% block content %}
+<div id="outer">
+  <div id="inner">
+    <iframe src="https://docs.google.com/document/d/1wDMumAKVYlmKGI0Zsu8U9d6MLRiI7aF90jdFTP7bL3A/edit">
+  </div>
+</div>
+<div id="footer">
+  <div class="span2"><h1>EssaySafe</h1></div>
+  <div class="span6">{{ essay_name }}</div>
+  <div class="span4">
+    <button id="done" class="btn large primary">I'm Done</button>
+  </div>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+{% endblock scripts %}
