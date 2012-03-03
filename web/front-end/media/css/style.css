@@ -3494,7 +3494,12 @@ a.thumbnail:hover {
 .invisible {
   visibility: hidden;
 }
+.graybg {
+  border-top: 1px solid #999999;
+  background-color: #eeeeee;
+}
 html, body {
+  border-top: 2px solid #eeeeee;
   height: 100%;
 }
 #outer {
@@ -3516,20 +3521,34 @@ html, body {
   color: white;
 }
 #container {
-  padding: 30px;
+  padding: 15px;
 }
 #title {
+  /*h1 {
+		margin-bottom: 0;
+		font-size: 60px;
+		line-height: 1;
+		letter-spacing: -1px;
+		span {
+			font-size: 24px;
+			color: @dgray;
+		}
+	}*/
+
   margin-bottom: 30px;
-  width: 100%;
-  -webkit-box-sizing: border-box;
 }
 #title h1 {
-  margin-bottom: 0;
-  font-size: 60px;
-  line-height: 1;
-  letter-spacing: -1px;
+  width: 100%;
 }
 #title h1 span {
   font-size: 24px;
   color: #999999;
+  text-align: right;
+}
+#content {
+  border-top: 1px solid #999999;
+  background-color: #eeeeee;
+  margin-top: 50px;
+  padding-top: 15px;
+  padding-bottom: 15px;
 }
