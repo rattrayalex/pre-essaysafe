@@ -3502,7 +3502,7 @@ html, body {
   border-top: 2px solid #eeeeee;
   height: 100%;
 }
-#outer {
+#take-outer {
   background-color: white;
   width: 100%;
   min-height: 100%;
@@ -3510,14 +3510,14 @@ html, body {
   padding: 15px;
   -webkit-box-sizing: border-box;
 }
-#footer {
+#take-footer {
   position: fixed;
   bottom: 0px;
   width: 100%;
   background-color: #999999;
   padding: 15px;
 }
-#footer h1 {
+#take-footer h1 {
   color: white;
 }
 #container {

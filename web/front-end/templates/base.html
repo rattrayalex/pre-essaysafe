@@ -28,9 +28,16 @@
   </head>
 
   <body>
-    {% block content %}
-    {% endblock content %}
-    <!-- /container -->
+    <div id="container" class="container">
+      {% block top %}
+      {% endblock top %}
+
+      {% block content %}
+      {% endblock content %}
+      
+      {% block footer %}
+      {% endblock footer %}
+    </div> <!-- /container -->
 
     <!-- Le javascript
     ================================================== -->

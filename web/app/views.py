@@ -15,3 +15,23 @@ def index(request):
   context = {
       }
   return render_to_response('index.html', context)
+
+def make(request):
+  context = {
+      }
+  return render_to_response('make.html', context)
+
+def take(request):
+  context = {
+      }
+  return render_to_response('take.html', context)
+
+def dashboard(request):
+  context = {
+      }
+  return render_to_response('dashboard.html', context)
+
+def about(request):
+  context = {
+      }
+  return render_to_response('about.html', context)
