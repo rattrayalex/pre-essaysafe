@@ -1,2 +1,7 @@
 *.com
 *.pyc
+*.swp
+*.o
+*.exe
+*.[Oo]bj
+*.opensdf
