@@ -1,0 +1,9 @@
+{
+  "name": "EssaySafe",
+  "version": "1.0.0",
+  "description": "Online essays. No cheating.",
+  "background_page": "essaysafe.html",
+  "permissions": [
+    "tabs"
+  ]
+}
