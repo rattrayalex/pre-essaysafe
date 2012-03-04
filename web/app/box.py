@@ -106,11 +106,11 @@ def createSubFolder(FID, name):
 def listFoldersIn(FID):
 # returns a dictionary of Folder Names in the folder with
 # id = FID, as key with id as value
-  response = getBox('get_account_tree',{'folder_id': [prefix+FID], 'params': ['onelevel', 'nozip','simple']})
+  response = getBox('get_account_tree',{'folder_id': [FID], 'params': ['onelevel', 'nozip','simple']})
   rep = chkHTTPstatus(response, 'listing_ok')
   folderDict = {}
   folders = rep.getElementsByTagName("tree")[0].firstChild.getElementsByTagName("folders")
-  for folder in folders: 
+  for folder in folders:
     nextseg = (folder.toxml().partition('</folders>')[0]).partition('<folders><fold')[2]
     while (nextseg != ""):
       segs = nextseg.partition('<fold')
