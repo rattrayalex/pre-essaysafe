@@ -22,10 +22,11 @@ class Professor(models.Model):
 class Exam(models.Model):
   """ Exam model.
   """
-  professor = models.ForeignKey(Professor)
+  professor = models.ForeignKey(Professor, null=True)
   exam_name = models.CharField(max_length=80, unique=True)
   start_time = models.DateTimeField(blank=True)
   end_time = models.DateTimeField(blank=True)
+  resource_id = models.CharField(max_length=80)
   
   def __unicode__(self):
     return self.name
