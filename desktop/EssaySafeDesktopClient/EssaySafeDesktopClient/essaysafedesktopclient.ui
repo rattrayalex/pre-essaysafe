@@ -1,29 +1,95 @@
-<UI version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>EssaySafeDesktopClientClass</class>
- <widget class="QMainWindow" name="EssaySafeDesktopClientClass" >
-  <property name="objectName" >
-   <string notr="true">EssaySafeDesktopClientClass</string>
-  </property>
-  <property name="geometry" >
+ <widget class="QMainWindow" name="EssaySafeDesktopClientClass">
+  <property name="geometry">
    <rect>
-	<x>0</x>
-	<y>0</y>
-	<width>600</width>
-	<height>400</height>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>400</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>EssaySafeDesktopClient</string>
   </property>
-  <widget class="QMenuBar" name="menuBar" />
-  <widget class="QToolBar" name="mainToolBar" />
-  <widget class="QWidget" name="centralWidget" />
-  <widget class="QStatusBar" name="statusBar" />
+  <property name="documentMode">
+   <bool>false</bool>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <widget class="MyButton" name="pushButton">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>130</y>
+      <width>231</width>
+      <height>141</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Block My Keys!</string>
+    </property>
+    <property name="default">
+     <bool>false</bool>
+    </property>
+    <property name="flat">
+     <bool>false</bool>
+    </property>
+   </widget>
+  </widget>
  </widget>
- <layoutDefault spacing="6" margin="11" />
- <pixmapfunction></pixmapfunction>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>MyButton</class>
+   <extends>QPushButton</extends>
+   <header>mybutton.h</header>
+   <slots>
+    <signal>getText(QString)</signal>
+    <slot>changeText(QString)</slot>
+    <slot>clickedEmitText()</slot>
+   </slots>
+  </customwidget>
+ </customwidgets>
  <resources>
-   <include location="essaysafedesktopclient.qrc"/>
+  <include location="essaysafedesktopclient.qrc"/>
  </resources>
- <connections/>
-</UI>
+ <connections>
+  <connection>
+   <sender>EssaySafeDesktopClientClass</sender>
+   <signal>changeText(QString)</signal>
+   <receiver>pushButton</receiver>
+   <slot>changeText(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>267</x>
+     <y>333</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>262</x>
+     <y>238</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>EssaySafeDesktopClientClass</receiver>
+   <slot>buttonClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>136</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>241</x>
+     <y>27</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <signal>changeText(QString)</signal>
+  <slot>buttonClicked()</slot>
+ </slots>
+</ui>

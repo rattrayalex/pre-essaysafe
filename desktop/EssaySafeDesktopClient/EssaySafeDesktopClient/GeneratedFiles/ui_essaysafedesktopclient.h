@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'essaysafedesktopclient.ui'
 **
-** Created: Sat Mar 3 19:33:18 2012
+** Created: Sat Mar 3 22:13:54 2012
 **      by: Qt User Interface Compiler version 4.8.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -16,40 +16,35 @@
 #include <QtGui/QButtonGroup>
 #include <QtGui/QHeaderView>
 #include <QtGui/QMainWindow>
-#include <QtGui/QMenuBar>
-#include <QtGui/QStatusBar>
-#include <QtGui/QToolBar>
 #include <QtGui/QWidget>
+#include "mybutton.h"
 
 QT_BEGIN_NAMESPACE
 
 class Ui_EssaySafeDesktopClientClass
 {
 public:
-    QMenuBar *menuBar;
-    QToolBar *mainToolBar;
     QWidget *centralWidget;
-    QStatusBar *statusBar;
+    MyButton *pushButton;
 
     void setupUi(QMainWindow *EssaySafeDesktopClientClass)
     {
         if (EssaySafeDesktopClientClass->objectName().isEmpty())
             EssaySafeDesktopClientClass->setObjectName(QString::fromUtf8("EssaySafeDesktopClientClass"));
         EssaySafeDesktopClientClass->resize(600, 400);
-        menuBar = new QMenuBar(EssaySafeDesktopClientClass);
-        menuBar->setObjectName(QString::fromUtf8("menuBar"));
-        EssaySafeDesktopClientClass->setMenuBar(menuBar);
-        mainToolBar = new QToolBar(EssaySafeDesktopClientClass);
-        mainToolBar->setObjectName(QString::fromUtf8("mainToolBar"));
-        EssaySafeDesktopClientClass->addToolBar(mainToolBar);
+        EssaySafeDesktopClientClass->setDocumentMode(false);
         centralWidget = new QWidget(EssaySafeDesktopClientClass);
         centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
+        pushButton = new MyButton(centralWidget);
+        pushButton->setObjectName(QString::fromUtf8("pushButton"));
+        pushButton->setGeometry(QRect(180, 130, 231, 141));
+        pushButton->setDefault(false);
+        pushButton->setFlat(false);
         EssaySafeDesktopClientClass->setCentralWidget(centralWidget);
-        statusBar = new QStatusBar(EssaySafeDesktopClientClass);
-        statusBar->setObjectName(QString::fromUtf8("statusBar"));
-        EssaySafeDesktopClientClass->setStatusBar(statusBar);
 
         retranslateUi(EssaySafeDesktopClientClass);
+        QObject::connect(EssaySafeDesktopClientClass, SIGNAL(changeText(QString)), pushButton, SLOT(changeText(QString)));
+        QObject::connect(pushButton, SIGNAL(clicked()), EssaySafeDesktopClientClass, SLOT(buttonClicked()));
 
         QMetaObject::connectSlotsByName(EssaySafeDesktopClientClass);
     } // setupUi
@@ -57,6 +52,7 @@ public:
     void retranslateUi(QMainWindow *EssaySafeDesktopClientClass)
     {
         EssaySafeDesktopClientClass->setWindowTitle(QApplication::translate("EssaySafeDesktopClientClass", "EssaySafeDesktopClient", 0, QApplication::UnicodeUTF8));
+        pushButton->setText(QApplication::translate("EssaySafeDesktopClientClass", "Block My Keys!", 0, QApplication::UnicodeUTF8));
     } // retranslateUi
 
 };
