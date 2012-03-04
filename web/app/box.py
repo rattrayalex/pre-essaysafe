@@ -141,6 +141,8 @@ def downloadFilesIn(FID):
 # downloads all files in folder with id FID
 # returns the files or something
   return 0
+def get_content_type(filename):
+  return mimetypes.guess_type(filename)[0] or 'application/octet-stream'
 
 def uploadNewDoc(filepath, FID):
 # uploads a document into folder with id FID
