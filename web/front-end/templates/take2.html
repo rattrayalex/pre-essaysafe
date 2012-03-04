@@ -33,7 +33,7 @@ s
 {% block scripts %}
 <script type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
 <script type="text/javascript">
-var map = null;
+//var map = null;
 function getMap()
 {
   // Set the map options
@@ -47,6 +47,7 @@ function getMap()
 
   // Get the user's current location
   geoLocationProvider.getCurrentPosition();
+  console.log(geoLocationProvider);
 
   // map = new Microsoft.Maps.Maps.GeoLocationProvider(map);
   // geoLocationProvider.getCurrentPosition({ successCallback: successCallback });

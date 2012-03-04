@@ -5,7 +5,7 @@
 
 {% block content %}
 <h1 class="frontcenter">Sign on up!</h1>
-<section class="center" style="width:300px">
+<section class="center" id='signup'>
   <form action="/signup/" method="post">{% csrf_token %}
     {% include "form_renderer.html" with form=form %}
     <div class="clearfix">

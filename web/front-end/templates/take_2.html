@@ -1,0 +1,62 @@
+{% extends "general.html" %}
+s
+{% block styles %}
+{% endblock styles %}
+
+{% block content %}
+<div id="content" class="row">
+  <div>
+	<iframe src="{{ url }}" width='900px' height='900px'></iframe>
+  </div>
+  <div class="span3">&nbsp;</div>
+  <div class="span6">
+    <div class="row">
+      <div class="span3">
+        <h1>I'm a Professor</h1>
+        <a href="" class="btn btn-large btn-primary">Make an Exam</a>
+      </div>
+      <div class="span3">
+        <h1>I'm a Student</h1>
+        <a href="" class="btn btn-large btn-primary">Download EssaySafe</a>
+      </div>
+    </div>
+  </div>
+  <div class="span3">&nbsp;</div>
+<div id="content">
+  
+  <iframe=src='https://docs.google.com/document/d/{{new_doc}}/edit' class='iframe' scrolling='no' allowTransparency='true'>
+    <p>Your browser does not support iframes</p>
+  </iframe>{% csrf_token %}
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
+<script type="text/javascript">
+//var map = null;
+function getMap()
+{
+  // Set the map options
+  var mapOptions = {credentials:"Bing Maps Key"};
+
+  // Initialize the map
+  var map = new Microsoft.Maps.Map(document.getElementById("mapDiv"), mapOptions);
+
+  // Initialize the location provider
+  var geoLocationProvider = new Microsoft.Maps.GeoLocationProvider(map);
+
+  // Get the user's current location
+  geoLocationProvider.getCurrentPosition();
+  console.log(geoLocationProvider);
+
+  // map = new Microsoft.Maps.Maps.GeoLocationProvider(map);
+  // geoLocationProvider.getCurrentPosition({ successCallback: successCallback });
+}
+function successCallback(object)
+{
+  alert('Success callback invoked, current map center' + object.center);
+}
+
+$(window).load(getMap());
+</script>
+{% endblock scripts %}
