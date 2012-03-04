@@ -17,7 +17,10 @@ prefix = "prof_"
 ## Functions
 def uploadFile(f, FID=0):
   url = 'http://upload.box.net/api/1.0/upload/%s/%s' % ('8kf9roqysu8jmqskys9vg0hovkmyqtv3', FID)
-  postData = f;
+  fp = file(f, 'rb')
+  data = fp.read()
+  fp.close()
+  postData = data
   request = urllib2.Request(url)
   request.add_data(postData)
   response = urllib2.urlopen(request)
