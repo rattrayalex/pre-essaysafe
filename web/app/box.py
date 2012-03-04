@@ -1,5 +1,8 @@
 from xml.dom import minidom
 import httplib
+import urllib2
+import mimetools
+import mimetypes
 
 # Initialize and Make Connection
 box_api_key = 'e74usd65esyarrz614h75i93ik10kku4'
@@ -70,7 +73,7 @@ def listProfFolders():
       folderDict[name] = fid
   return folderDict
 
-print listProfFolders()
+# print listProfFolders()
 #print getAttribute('<folder id="4387" name="Incoming" shared="0"><tags><tag id="34" /></tags><files></files></folder>', 'name')
 
 def createSubFolder(FID, name):
@@ -115,11 +118,36 @@ def downloadFilesIn(FID):
 # returns the files or something
   return 0
 
-def uploadNewDoc(FID, name):
-# uploads a document with name "name", in folder with id FID
+def uploadNewDoc(filepath, FID):
+# uploads a document into folder with id FID
 # returns id of that document
   #check new
-  return 0
+  url = 'https://upload.box.net/api/1.0/upload/%s/%d' % (box_auth, FID)
+  # http://code.google.com/p/boxnet-client/source/browse/trunk/API/boxdotnet.py?r=5
+  # construct POST data
+  boundary = mimetools.choose_boundary()
+  body = ""
+  # filename
+  body += "--%s\r\n" % (boundary)
+  body += "Content-Disposition: form-data; name="share"\r\n\r\n"
+  body += "%s\r\n" % ('1')
+  body += "--%s\r\n" % (boundary)
+  body += "Content-Disposition: form-data; name=\"file\";"
+  body += " filename=\"%s\"\r\n" % filepath
+  body += "Content-Type: %s\r\n\r\n" % get_content_type(filepath)
+  # print body
+  fp = file(filepath, 'rb')
+  data = fp.read()
+  fp.close()  
+  post_data = body.encode("utf_8")
+  post_data += data
+  post_data += ("\r\n--%s--" % (boundary)).encode("utf_8")
+  request = urllib2.Request(url)
+  request.add_data(post_data)
+  request.add_header("Content-Type", "multiplipart/form-data; boundary=%s" % boundary)
+  response = urllib2.urlopen(request)
+
+print uploadNewDoc('C:/Users/geoff/Dropbox/ideas.txt',0)
 
 def uploadNewDocP(FID, name):
 # uploads a document with name "name" in folder with id FID 
@@ -145,9 +173,7 @@ def uploadNewDocS(prof, name, student):
 # tags as created by Student with name Student
   #check new
   # wait
-  response = getBox('create_folder',{'parent_id': [0], 'name': [name], 'share': [0]})
-  rep = chkHTTPstatus(response, 'upload_ok')
-  # return int(getText(rep.getElementsByTagName("folder")[0].getElementsByTagName("folder_id")[0].toxml(), 'folder_id'))
+  return 0
 
 
 def uploadEditedDoc(ID):
