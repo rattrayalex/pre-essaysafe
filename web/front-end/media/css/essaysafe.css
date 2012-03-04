@@ -1,0 +1,21 @@
+#top_right {
+  font-size: 25px;
+  font-family: 'Electrolize'
+  /* margin-top: 20px; */
+}
+#logo {
+  cursor: pointer;
+}
+#slogan, #top_right {
+  cursor: default;
+}
+#width {
+  width:300px;
+}
+#footer {
+  text-align:center;
+  /*width: 50%;*/
+}
+#footer p {
+  
+}
