@@ -12,7 +12,7 @@ import gdata.docs.data
 import gdata.docs.client
 import gdata.docs.service
 
-import box
+from box import listFoldersIn
 
 from google_oauth.views import oauth_start, get_client, clear_google_oauth_session, oauth_get_access_token
 from google_oauth.views import GOOGLE_OAUTH_REQ_TOKEN, GOOGLE_OAUTH_TOKEN
@@ -61,7 +61,7 @@ def take(request):
 
 def dashboard(request):
   context = {
-    'exams': listFoldersIn(request.user.id)
+    'exams': listFoldersIn('1')
   }
   return render_to_response('dashboard.html', context)
 

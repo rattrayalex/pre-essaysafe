@@ -110,7 +110,7 @@ def listFoldersIn(FID):
   rep = chkHTTPstatus(response, 'listing_ok')
   folderDict = {}
   folders = rep.getElementsByTagName("tree")[0].firstChild.getElementsByTagName("folders")
-  for folder in folders: 
+  for folder in folders:
     nextseg = (folder.toxml().partition('</folders>')[0]).partition('<folders><fold')[2]
     while (nextseg != ""):
       segs = nextseg.partition('<fold')
