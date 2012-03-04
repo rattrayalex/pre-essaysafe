@@ -218,10 +218,8 @@ def dashboard(request):
   exams = listFoldersIn(box_id)
   exam_count = dict()
   ids = []
-  # for e in exams:
-    # exam_count[e] = len(listFilesIn(exams[e]))
-  # for e in exams:
-    
+  for e in exams:
+    exam_count[e] = [len(listFilesIn(exams[e])), exams[e]]
   context = {
     'exams': exams, 
 	'ids': ids,
