@@ -193,9 +193,7 @@ def take_two(request):
 
 
 def dashboard(request):
-  exams = listFoldersIn('224019898')
-  for exam in exams:
-    logging.info(exam)
+  exams = listFoldersIn('0')
   context = {
 	# get response.user.box_id
     'exams': exams
