@@ -36,7 +36,10 @@ class Essay(models.Model):
   student_name = models.CharField(max_length=80)
   begin_date = models.DateTimeField('date started')
   end_date = models.DateTimeField('date finished')
+  latitude = models.DecimalField()
+  longitude = models.DecimalField()
 
 class Doc(models.Model):
   doc_name = models.CharField(max_length=80)
   resource_id = models.CharField(max_length=80)
+
