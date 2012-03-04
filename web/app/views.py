@@ -26,7 +26,7 @@ from models import *
 from django.contrib import auth
 
 from settings import ES_TOKEN, ES_TOKEN_SECRET, APP_NAME
-from box import listFoldersIn, uploadFile, listFilesIn
+from box import listFoldersIn, uploadFile, listFilesIn, createSubFolder, getBox
 
 from google_oauth.views import oauth_start, get_client, clear_google_oauth_session, oauth_get_access_token
 from google_oauth.views import GOOGLE_OAUTH_REQ_TOKEN, GOOGLE_OAUTH_TOKEN
@@ -81,6 +81,7 @@ def make(request):
   context = {
     'form': form,
     'message': message,
+    'user': request.user,
   }
   return render_to_response('make.html', RequestContext(request, context))
 
@@ -132,8 +133,11 @@ def info_submit(request):
     logging.warning('done the times')
     exam.resource_id = new_doc.resource_id.text
     exam.folder_id = new_folder.resource_id.text
-    exam.box_fid = createSubFolder(prof.box_id, exam_name)
-    element = getBox('toggle_folder_email', {'folder_id':folder_id, 'enable':'1'})
+    try: 
+      exam.box_fid = createSubFolder(prof.box_id, exam_name)
+    except: 
+      exam.box_fid = createSubFolder(prof.box_id, exam_name+'')
+    element = getBox('toggle_folder_email', {'folder_id':exam.folder_id, 'enable':'1'})
     exam.box_email = getText(element, 'upload_email')
     exam.save()
     logging.warning('saved')
@@ -190,7 +194,8 @@ def take(request, exam_name, student_name, student_email):
   acl_entry = gdata.docs.data.Acl(scope=scope, role=role)
   new_acl = client.Post(acl_entry, new_student_doc.GetAclFeedLink().href)
   context = {
-    'doc': str(student_doc.resource_id.text).split(':')[1]
+    'doc': str(student_doc.resource_id.text).split(':')[1],
+    'exam': exam
   }
   return render_to_response('take.html', RequestContext(request, context))
   

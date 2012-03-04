@@ -3,6 +3,21 @@
 {% block styles %}
 {% endblock styles %}
 
+{% block topright %}
+<script>
+TargetDate = "{{exam.end_time}}";
+BackColor = "white";
+ForeColor = "black";
+CountActive = true;
+CountStepper = -1;
+LeadingZero = false;
+DisplayFormat = "%%H%%:%%M%%:%%S%% Remaining.";
+FinishMessage = "Your exam is now late. Your instructor will be notified";
+</script>
+<script language="JavaScript" src="http://scripts.hashemian.com/js/countdown.js"></script>
+<a href="../submit/{{doc}}/{{email}}/{{name}}/" class="btn btn-large">I'm Done</a>
+{% endblock topright %}
+
 {% block content %}
   <iframe src='https://docs.google.com/document/d/{{doc}}/edit' class='iframe' scrolling='no' allowTransparency='true'>
     
