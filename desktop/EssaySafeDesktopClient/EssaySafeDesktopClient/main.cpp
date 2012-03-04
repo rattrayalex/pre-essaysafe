@@ -1,6 +1,5 @@
 #include "essaysafedesktopclient.h"
 #include <QtGui/QApplication>
-#include <iostream>
 
 int main(int argc, char *argv[])
 {

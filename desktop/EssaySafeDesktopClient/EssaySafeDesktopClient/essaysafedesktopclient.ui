@@ -20,7 +20,7 @@
    <widget class="MyButton" name="pushButton">
     <property name="geometry">
      <rect>
-      <x>180</x>
+      <x>190</x>
       <y>130</y>
       <width>231</width>
       <height>141</height>
