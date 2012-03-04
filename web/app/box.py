@@ -106,7 +106,7 @@ def createSubFolder(FID, name):
 def listFoldersIn(FID):
 # returns a dictionary of Folder Names in the folder with
 # id = FID, as key with id as value
-  response = getBox('get_account_tree',{'folder_id': [prefix+FID], 'params': ['onelevel', 'nozip','simple']})
+  response = getBox('get_account_tree',{'folder_id': [FID], 'params': ['onelevel', 'nozip','simple']})
   rep = chkHTTPstatus(response, 'listing_ok')
   folderDict = {}
   folders = rep.getElementsByTagName("tree")[0].firstChild.getElementsByTagName("folders")
@@ -120,6 +120,8 @@ def listFoldersIn(FID):
       name = getAttribute(folderseg, 'name')
       folderDict[name] = fid
   return folderDict
+
+print listFoldersIn("0")
 
 def createSubFolder(FID, name):
 # creates a Folder inside FID with name "name"
