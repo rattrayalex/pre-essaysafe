@@ -53,9 +53,17 @@ def createProfFolder(name):
   rep = chkHTTPstatus(response, 'create_ok')
   return int(getText(rep.getElementsByTagName("folder")[0].getElementsByTagName("folder_id")[0].toxml(), 'folder_id'))
 
-def listProfFolders():
-# returns a dictionary of Professor Folder Names as key with id as value
-  response = getBox('get_account_tree',{'folder_id': [0], 'params': ['onelevel', 'nozip','simple']})
+def createSubFolder(FID, name):
+# creates a Folder inside FID with name "name"
+# returns folder id
+  response = getBox('create_folder',{'parent_id': [FID], 'name': [name], 'share': [0]})
+  rep = chkHTTPstatus(response, 'create_ok')
+  return int(getText(rep.getElementsByTagName("folder")[0].getElementsByTagName("folder_id")[0].toxml(), 'folder_id'))
+
+def listFoldersIn(FID):
+# returns a dictionary of Folder Names in the folder with
+# id = FID, as key with id as value
+  response = getBox('get_account_tree',{'folder_id': [FID], 'params': ['onelevel', 'nozip','simple']})
   rep = chkHTTPstatus(response, 'listing_ok')
   folderDict = {}
   folders = rep.getElementsByTagName("tree")[0].firstChild.getElementsByTagName("folders")
@@ -70,29 +78,29 @@ def listProfFolders():
       folderDict[name] = fid
   return folderDict
 
-print listProfFolders()
-#print getAttribute('<folder id="4387" name="Incoming" shared="0"><tags><tag id="34" /></tags><files></files></folder>', 'name')
-
-def createSubFolder(FID, name):
-# creates a Folder inside FID with name "name"
-# returns folder id
-  response = getBox('create_folder',{'parent_id': [FID], 'name': [name], 'share': [0]})
-  rep = chkHTTPstatus(response, 'create_ok')
-  return int(getText(rep.getElementsByTagName("folder")[0].getElementsByTagName("folder_id")[0].toxml(), 'folder_id'))
-
-def listFoldersIn(FID):
-# returns a dictionary of Folder Names in the folder with
-# id = FID, as key with id as value
-  return 0
+def listProfFolders():
+# returns a dictionary of Professor Folder Names as key with id as value
+  return listFoldersIn(0)
 
 def listFilesIn(FID,ftype):
 # lists files in folder with id FID. values for ftype:
+# format is a dict, with keys file_names and values ids
 #    'all' - list all files
-#    'prof' - professor uploaded files
-#    'student' - student uploaded files
 #    future implementation - list student files assoc with a specific
 #    prof file --- not implemented yet
-  return 0
+#      'prof' - professor uploaded files
+#      'student' - student uploaded files
+  response = getBox('get_account_tree',{'folder_id': [FID], 'params': ['onelevel', 'nozip','simple']})
+  rep = chkHTTPstatus(response, 'listing_ok')
+  if (ftype != 'all'):
+    raise Exception('listFilesIn Exception - functionality not yet implemented. please try with parameter "all"')
+  fileDict = {}
+  newrep = rep.getElementsByTagName('tree')[0].getElementsByTagName('folder')[0].getElementsByTagName('files')[0].getElementsByTagName('file')
+  for doc in newrep:
+    name = getAttribute(doc.toxml(), 'file_name')
+    fid = getAttribute(doc.toxml(), 'id')
+    fileDict[name] = fid
+  return fileDict
 
 def chkStuTime(fID, method):
 # date range per folder
@@ -103,12 +111,18 @@ def chkStuTime(fID, method):
 def getFileInfo(ID):
 # returns a dictionary containing information on the
 # name, id, created, updated, and size of a file
-  return 0
+  response = getBox('get_file_info',{'file_id': [ID]})
+  rep = chkHTTPstatus(response, 's_get_file_info')
+  info = rep.getElementsByTagName('info')[0]
+  fileDict = {}
+  print '%s\n' % (info.toxml())
+  for att in ['file_name', 'file_id', 'created', 'updated', 'size']:
+    fileDict[att] = getText(info.getElementsByTagName(att)[0].toxml(), att)
+  return fileDict
 
-def downloadFile(ID):
-# downloads a file specified by ID
-# returns the file or something
-  return 0
+def downloadFileURL(ID):
+# returns a link to download a file specified by ID
+  return 'https://www.box.net/api/1.0/download/%s/%s' % (box_auth, ID)
 
 def downloadFilesIn(FID):
 # downloads all files in folder with id FID
