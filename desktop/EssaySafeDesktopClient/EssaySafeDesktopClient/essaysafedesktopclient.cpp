@@ -1,4 +1,7 @@
 #include "essaysafedesktopclient.h"
+#include <iostream>
+
+using namespace std;
 
 HHOOK g_hKeyboardHook;
 
@@ -21,23 +24,17 @@ LRESULT CALLBACK LowLevelKeyboardProc( int nCode, WPARAM wParam, LPARAM lParam )
  
     bool bEatKeystroke = false;
     KBDLLHOOKSTRUCT* p = (KBDLLHOOKSTRUCT*)lParam;
-    switch (wParam) 
-    {
-        case WM_KEYDOWN:
-        case WM_KEYUP:
+    switch (wParam) {
+        case VK_LWIN:
+        case VK_RWIN:
 		case VK_MENU:
 		case VK_F11:
-        {
             bEatKeystroke = true;
             break;
-        }
-
     }
-
-	if(((p->vkCode == 9) && (p->flags == 32)) ||((p->vkCode == 27) 
-		&& (p->flags == 32)) || ((p->vkCode == 27) && (p->flags == 0)) 
-		|| ((p->vkCode == 91) && (p->flags == 1)) || ((p->vkCode == 92) 
-		&& (p->flags == 1)) || ((true) && (p->flags == 32)))
+	//1,0 = Windows button
+	if( ((p->vkCode == 91) && (p->flags == 1)) || ((p->vkCode == 92) 
+		&& (p->flags == 1)) || p->flags == LLKHF_ALTDOWN)
 		bEatKeystroke = true;
 
     if( bEatKeystroke )

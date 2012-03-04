@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'essaysafedesktopclient.ui'
 **
-** Created: Sat Mar 3 22:45:24 2012
+** Created: Sun Mar 4 00:40:37 2012
 **      by: Qt User Interface Compiler version 4.8.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -37,7 +37,7 @@ public:
         centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
         pushButton = new MyButton(centralWidget);
         pushButton->setObjectName(QString::fromUtf8("pushButton"));
-        pushButton->setGeometry(QRect(180, 130, 231, 141));
+        pushButton->setGeometry(QRect(190, 130, 231, 141));
         pushButton->setDefault(false);
         pushButton->setFlat(false);
         EssaySafeDesktopClientClass->setCentralWidget(centralWidget);
