@@ -152,7 +152,7 @@ def createSubFolder(FID, name):
 
 def listProfFolders():
 # returns a dictionary of Professor Folder Names as key with id as value
-  return listFoldersIn(0)
+  return listFoldersIn('0')
 
 def listFilesIn(FID,ftype='all'):
 # lists files in folder with id FID. values for ftype:

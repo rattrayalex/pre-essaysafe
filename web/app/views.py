@@ -12,12 +12,14 @@ import gdata.gauth
 import gdata.docs.data
 import gdata.docs.client
 import gdata.docs.service
+from app.forms import LogInForm, SignUpForm
 from StringIO import StringIO
 
 try: from functools import wraps
 except ImportError: from django.utils.functional import wraps # Python 2.4 fallback.
 
 from models import *
+from django.contrib import auth
 
 from box import listFoldersIn, uploadFile
 
@@ -170,14 +172,21 @@ def index(request):
   return render_to_response('index.html', context)
 
 def take(request):
+  # need to verify with passed in token
+  # url = request.url;
   context = {
+      'url': 'http://www.google.com/'
     }
   return render_to_response('take.html', context)
 
 
 def dashboard(request):
+  exams = listFoldersIn('224019898')
+  for exam in exams:
+    logging.info(exam)
   context = {
-    'exams': listFoldersIn('1')
+	# get response.user.box_id
+    'exams': exams
   }
   return render_to_response('dashboard.html', context)
 
@@ -222,3 +231,44 @@ def CreateResourceInCollection(client, prof_name, exam_name):
   doc = client.CreateResource(doc, collection=col)
   logging.warning('Created:', doc.title.text, doc.resource_id.text)
   return doc.resource_id.text
+  
+def login(request): 
+  if request.method == 'POST':
+    form = LogInForm(None, request.POST)
+    next = request.POST['next']
+    if form.is_valid():
+      form.clean()
+      user = form.user_cache
+      if user is not None:
+        auth.login(request, user)
+        return HttpResponseRedirect(request.POST['next'])
+      else:
+        return render_to_response('login.html', {'form': form, 
+          'user': form.user_cache,}, context_instance=RequestContext(request))
+  else:
+    form = LogInForm() 
+    next = request.GET.get('next', '/dashboard/')
+  context = {'form': form, 'user': request.user, 'next': next}
+  return render_to_response('login.html', context, context_instance=RequestContext(request))
+
+def logout(request):
+  auth.logout(request)
+  return HttpResponseRedirect('/')
+  
+def signup(request):
+  if request.method == 'POST':
+    form = SignUpForm(request.POST)
+    next = request.POST['next']
+    if form.is_valid():
+      client = form.save()
+      user = auth.authenticate(username=request.POST['email'], 
+        password=request.POST['password'])
+      if user is not None:
+        auth.login(request, user)
+      return HttpResponseRedirect(next)
+  else:
+    taken = False
+    form = SignUpForm()
+    next = request.GET.get('next', '/')
+  context = {'form':form, 'next': next,}
+  return render_to_response('signup.html', context, context_instance=RequestContext(request))
