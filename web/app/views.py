@@ -163,6 +163,8 @@ def info_submit(request):
     exam.resource_id = new_doc.resource_id.text
     exam.folder_id = new_folder.resource_id.text
     exam.box_fid = createSubFolder(prof.box_id, exam_name)
+    element = getBox('toggle_folder_email', {'folder_id':folder_id, 'enable':'1'})
+    exam.box_email = getText(element, 'upload_email')
     exam.save()
     logging.warning('saved')
     logging.warning('created'+ str(new_doc.resource_id.text))

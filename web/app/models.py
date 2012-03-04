@@ -35,6 +35,7 @@ class Exam(models.Model):
   resource_id = models.CharField(max_length=80)
   folder_id = models.CharField(max_length=80)
   box_fid = models.CharField()
+  box_email = models.CharField()
   
   def __unicode__(self):
     return self.name
