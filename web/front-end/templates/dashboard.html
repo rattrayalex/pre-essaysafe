@@ -7,20 +7,12 @@
 {% endblock scripts %}
 
 {% block content %}
-<div id="content" class="row">
-  <div class="span3">&nbsp;</div>
-  <div class="span6">
-    <div class="row">
-      <div class="span3">
-        <h1>I'm a Professor</h1>
-        <a href="" class="btn btn-large btn-primary">Make an Exam</a>
-      </div>
-      <div class="span3">
-        <h1>I'm a Student</h1>
-        <a href="" class="btn btn-large btn-primary">Download EssaySafe</a>
-      </div>
-    </div>
-  </div>
-  <div class="span3">&nbsp;</div>
-</div>
+
+{% for exam in exams %}
+  <div id="content" class="row">
+    <p>hello</p>
+    <div>hello</div>
+  <div>
+{% endfor %}
+
 {% endblock content %}

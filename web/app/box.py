@@ -14,15 +14,22 @@ conn = httplib.HTTPConnection("www.box.net")
 
 prefix = "prof_"
 
+
 ## Functions
-def uploadFile(f, FID=0):
+def uploadFile(data, FID=0):
+  body = ""
+
+  # filename
+  body += 'Content-Disposition: form-data; name="share"\r\n\r\n'
+  body += "%s\r\n" % ('1')
+  body += "Content-Disposition: form-data; name=\"file\";"
   url = 'http://upload.box.net/api/1.0/upload/%s/%s' % ('8kf9roqysu8jmqskys9vg0hovkmyqtv3', FID)
-  postData = f;
+  postData = body.encode("xsutf_8") + data 
   request = urllib2.Request(url)
   request.add_data(postData)
-  request.add_header("Content-Type", "multipart/form-data; boundary=%s" % boundary)
   response = urllib2.urlopen(request)
   return response.read()
+
   
 
 def get_content_type(filename):
@@ -137,7 +144,7 @@ def createSubFolder(FID, name):
 
 def listProfFolders():
 # returns a dictionary of Professor Folder Names as key with id as value
-  return listFoldersIn(0)
+  return listFoldersIn('0')
 
 def listFilesIn(FID,ftype='all'):
 # lists files in folder with id FID. values for ftype:
