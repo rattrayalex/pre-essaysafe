@@ -2,24 +2,57 @@
 
 {% block styles %}
 <link rel="stylesheet" href="/media/css/chosen.css">
+<style type="text/css" media="screen">
+  .slides_container {
+    height:300px;
+  }
+</style>
 {% endblock styles %}
-
-{% block content %}
-
-   <select data-placeholder="Choose an Essay Prompt" class="chzn-select" style="width:350px;" id="country-select" tabindex="2">
-      <option value=""></option> 
-      {% for doc in doclist %}
-      <option value="{{doc.resource_id}}">{{doc.doc_name}}</option> 
-      {% endfor %}
-  </select>
-{% endblock content %}
 
 {% block scripts %}
   <script src="/media/js/chosen.jquery.js" type="text/javascript"></script>
+  <script src="/media/js/slides.min.jquery.js" type="text/javascript"></script>
   <script>
-    $(".chzn-select").chosen();
-    $("#country-select").chosen().change(function () {
-        window.location.href = '/' + $(this).val()
+    $(function(){
+      $('#slides').slides({
+        generatePagination:false
+      });
+    
+      $(".chzn-select").chosen();
+      $("#country-select").chosen().change(function () {
+          window.location.href = '/' + $(this).val()
+      });
+    
     });
   </script>
 {% endblock scripts %}
+
+{% block content %}
+  <hr>
+  <div class="content">
+    <center><h1>Create an Exam</h1></center>
+    <hr>
+    <div id="slides">
+      <div class="slides_container">
+        <div>
+          <h2>1. Choose an Essay Prompt</h2>
+          <select data-placeholder="Choose an Essay Prompt" class="chzn-select" style="width:350px;" id="country-select" tabindex="2">
+            <option value=""></option> 
+            {% for doc in doclist %}
+            <option value="{{doc.resource_id}}">{{doc.doc_name}}</option> 
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <h2>2. Choose a Unique Name for this Exam</h2>
+          <input type="text" class="span3" placeholder="My Awesome Exam">
+        </div>
+        <div>
+          <h2>3. Share the code with your students</h2>
+          <input type="text" class="span3" placeholder="This-isnt-working-yet">
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+
