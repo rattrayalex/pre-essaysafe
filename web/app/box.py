@@ -3,9 +3,6 @@ import httplib
 import urllib2
 import mimetools
 import mimetypes
-import urllib2
-import mimetools
-import mimetypes
 
 
 # Initialize and Make Connection
@@ -17,7 +14,24 @@ conn = httplib.HTTPConnection("www.box.net")
 
 prefix = "prof_"
 
+
 ## Functions
+def uploadFile(data, FID=0):
+  body = ""
+
+  # filename
+  body += 'Content-Disposition: form-data; name="share"\r\n\r\n'
+  body += "%s\r\n" % ('1')
+  body += "Content-Disposition: form-data; name=\"file\";"
+  url = 'http://upload.box.net/api/1.0/upload/%s/%s' % ('8kf9roqysu8jmqskys9vg0hovkmyqtv3', FID)
+  postData = body.encode("xsutf_8") + data 
+  request = urllib2.Request(url)
+  request.add_data(postData)
+  response = urllib2.urlopen(request)
+  return response.read()
+
+  
+
 def get_content_type(filename):
   return mimetypes.guess_type(filename)[0] or 'application/octet-stream'
 
@@ -120,8 +134,6 @@ def listFoldersIn(FID):
       name = getAttribute(folderseg, 'name')
       folderDict[name] = fid
   return folderDict
-
-print listFoldersIn("0")
 
 def createSubFolder(FID, name):
 # creates a Folder inside FID with name "name"
