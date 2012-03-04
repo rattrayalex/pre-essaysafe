@@ -35,7 +35,7 @@ def make(request):
           request.session[GOOGLE_OAUTH_TOKEN].token_secret,
       )
     logging.warning(client)
-    feed = client.GetDocList()
+    feed = client.GetDocList(uri='/feeds/default/private/full/-/document')
     doclist = map (lambda entry: Doc(doc_name=entry.title.text.encode('UTF-8'), resource_id=entry.resource_id.text), feed.entry)
     return  render_to_response('make.html', {
       'doclist': doclist,
