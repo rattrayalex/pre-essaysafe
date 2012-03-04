@@ -119,9 +119,6 @@ def listFoldersIn(FID):
       folderDict[name] = fid
   return folderDict
 
-# print listProfFolders()
-#print getAttribute('<folder id="4387" name="Incoming" shared="0"><tags><tag id="34" /></tags><files></files></folder>', 'name')
-
 def createSubFolder(FID, name):
 # creates a Folder inside FID with name "name"
 # returns folder id
@@ -179,8 +176,6 @@ def downloadFilesIn(FID):
 # downloads all files in folder with id FID
 # returns the files or something
   return 0
-
-print upload('C:/Users/geoff/Dropbox/ideas.txt')
 
 def uploadNewDocP(FID, name):
 # uploads a document with name "name" in folder with id FID 
