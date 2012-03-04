@@ -59,6 +59,15 @@
     <ClCompile Include="MyButton.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MyText.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_MyText.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_MyText.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="essaysafedesktopclient.h">
@@ -71,6 +80,9 @@
       <Filter>Resource Files</Filter>
     </CustomBuild>
     <CustomBuild Include="MyButton.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="MyText.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>

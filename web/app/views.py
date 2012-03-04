@@ -64,13 +64,13 @@ def oauth_required(view_func):
     return wraps(view_func)(_checklogin)
 
 @oauth_required
-def submit_file(request, resource_id, student_email, student_name):
+def submit_file(request, essay_id):
   client = get_client(
     request.session[GOOGLE_OAUTH_TOKEN].token,
     request.session[GOOGLE_OAUTH_TOKEN].token_secret,
     )
   #feed = client.GetDocList(uri='/feeds/default/private/full/-/folder?title'+folder_name+'&title-exact=true&max-results=5')
-  #essay = Essay.objects.get(id=essay_id)
+  essay = Essay.objects.get(id=essay_id)
   
   doc = client.GetDoc(essay.resource_id)
   content = client.GetFileContent(uri=doc.content.src)
