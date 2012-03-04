@@ -17,6 +17,5 @@ urlpatterns = patterns('',
     (r'^dashboard/$', dashboard),
     (r'^take/$', take),
     (r'^about/$', about),
-    (r'^oauth2callback', auth_return),
                 
     )
