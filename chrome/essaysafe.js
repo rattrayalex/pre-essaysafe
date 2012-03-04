@@ -7,7 +7,8 @@
 chrome.tabs.query({}, function(tabs) {
   for (var i = 0; i < tabs.length; i++) {
     // found exam
-    if (tabs[i].url.indexOf('google') > 0) {
+    if (tabs[i].url.indexOf('essaysafe.org/take') > 0 || 
+	tabs[i].url.indexOf('localhost:8080/take') > 0) {
       // select the exam tab
       chrome.tabs.update(tabs[i].id,{selected:true});
       // disallow switching tabs
