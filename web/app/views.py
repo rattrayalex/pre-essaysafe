@@ -181,7 +181,7 @@ def take(request):
 
 
 def dashboard(request):
-  exams = listFoldersIn('224019898')
+  exams = listFoldersIn('0')
   for exam in exams:
     logging.info(exam)
   context = {
