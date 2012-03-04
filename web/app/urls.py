@@ -12,5 +12,11 @@ urlpatterns = patterns('',
     (r'media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
 
     #standard pages    
-    (r'^$', index),    
+    (r'^$', index),
+    (r'^make/$', make),
+    (r'^dashboard/$', dashboard),
+    (r'^take/$', take),
+    (r'^about/$', about),
+    (r'^oauth2callback', auth_return),
+                       
     )
