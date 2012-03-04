@@ -123,7 +123,6 @@ def take(request):
 
 def dashboard(request):
   context = {
-    }
     'exams': listFoldersIn('1')
   }
   return render_to_response('dashboard.html', context)
