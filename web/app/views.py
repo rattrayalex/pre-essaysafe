@@ -59,61 +59,55 @@ def make(request):
 def info_submit(request):
   if request.method == 'POST':
     post = request.POST
-    try:
-      client = get_client(
-          request.session[GOOGLE_OAUTH_TOKEN].token,
-          request.session[GOOGLE_OAUTH_TOKEN].token_secret,
-      )
-      logging.warning(post.get('start_date'))
-      logging.warning(post.get('start_time'))
-      logging.warning(post.get('end_date'))
-      logging.warning(post.get('end_time'))
-      logging.warning(post.get('exam_name'))
-      date_format = '%m/%d%/%Y'
-      time_format = '%I:%M%p'
-      datetime_format = date_format+'-'+time_format
-      start = post.get('start_date')+'-'+post.get('start_time')
-      start_datetime = start_datetime = datetime.datetime(
-              int(start[6:10]),
-              int(start[0:2]),
-              int(start[3:5]),
-              int(start[11:13]),
-              int(start[14:16])
-              )
-      logging.warning(start_datetime)
-      end = post.get('end_date')+'-'+post.get('end_time')
-      end_datetime = end_datetime = datetime.datetime(
-              int(end[6:10]),
-              int(end[0:2]),
-              int(end[3:5]),
-              int(end[11:13]),
-              int(end[14:16])
-              )
-      prof_name = 'Random Prof'
-      exam_name = post.get('exam_name')
-      exam = Exam()
-      if prof_name != 'Random Prof':
-        exam.professor = Professor.objects.get(name=prof_name)
-      exam.exam_name = exam_name
-      logging.warning('done the exam name: '+exam_name)
-      exam.start_time = start_datetime
-      exam.end_time = end_datetime
-      new_doc = create_doc(client, prof_name, exam_name)
-      logging.warning('done the times')
-      exam.resource_id = new_doc.resource_id.text
-      exam.save()
-      logging.warning('saved')
-      new_doc = create_doc(client, prof_name, exam_name)
-      logging.warning('created'+ str(new_doc.resource_id.text))
-      logging.warning('created'+ str(new_doc.resource_id.text).split(':')[1])
-      reply = {'success': True,
-             'form_valid': True,
-             'new_doc': str(new_doc.resource_id.text).split(':')[1]}
-    except: 
-      reply = {'success': True,
-             'form_valid': False,
-             'error_message': 'shit be fucked up'}
-    return render_to_response('make.html',reply)
+    client = get_client(
+        request.session[GOOGLE_OAUTH_TOKEN].token,
+        request.session[GOOGLE_OAUTH_TOKEN].token_secret,
+    )
+    logging.warning(post.get('start_date'))
+    logging.warning(post.get('start_time'))
+    logging.warning(post.get('end_date'))
+    logging.warning(post.get('end_time'))
+    logging.warning(post.get('exam_name'))
+    date_format = '%m/%d%/%Y'
+    time_format = '%I:%M%p'
+    datetime_format = date_format+'-'+time_format
+    start = post.get('start_date')+'-'+post.get('start_time')
+    start_datetime = start_datetime = datetime.datetime(
+            int(start[6:10]),
+            int(start[0:2]),
+            int(start[3:5]),
+            int(start[11:13]),
+            int(start[14:16])
+            )
+    logging.warning(start_datetime)
+    end = post.get('end_date')+'-'+post.get('end_time')
+    end_datetime = end_datetime = datetime.datetime(
+            int(end[6:10]),
+            int(end[0:2]),
+            int(end[3:5]),
+            int(end[11:13]),
+            int(end[14:16])
+            )
+    prof_name = 'Random Prof'
+    exam_name = post.get('exam_name')
+    exam = Exam()
+    if prof_name != 'Random Prof':
+      exam.professor = Professor.objects.get(name=prof_name)
+    exam.exam_name = exam_name
+    logging.warning('done the exam name: '+exam_name)
+    exam.start_time = start_datetime
+    exam.end_time = end_datetime
+    new_doc = create_doc(request, client, prof_name, exam_name)
+    logging.warning('done the times')
+    exam.resource_id = new_doc.resource_id.text
+    exam.save()
+    logging.warning('saved')
+    logging.warning('created'+ str(new_doc.resource_id.text))
+    logging.warning('created'+ str(new_doc.resource_id.text).split(':')[1])
+    reply = {'success': True,
+           'form_valid': True,
+           'new_doc': str(new_doc.resource_id.text).split(':')[1]}
+    return render_to_response('make.html',RequestContext(request,reply))
     
 def index(request):
   context = {
@@ -135,7 +129,7 @@ def about(request):
     }
   return render_to_response('about.html', context)
 
-def create_doc(client, prof_name, exam_name): 
+def create_doc(request, client, prof_name, exam_name): 
   """
   Create New Google Docs.
   """
@@ -144,8 +138,12 @@ def create_doc(client, prof_name, exam_name):
     folder = client.GetDocList(uri='/feeds/default/private/full/-/folder?title='+exam_name)[0]
   except:
     folder = client.Create(gdata.docs.data.FOLDER_LABEL, exam_name)
-  new_doc = client.Create(gdata.docs.data.DOCUMENT_LABEL, doc_name, folder.resource_id.text)
-
+  ##new_doc = client.Create(gdata.docs.data.DOCUMENT_LABEL, doc_name, folder.resource_id.text)
+  template = client.GetDoc('document:1OB40c2l26fL6BdRim1cKuQhG0Kyt8X6brsAvlVMQ1sE')
+  new_doc = client.Copy(template, doc_name)
+  ##txt = gdata.data.MediaSource(file_path="http://" + request.get_host()+'/media/welcome.txt', content_type="text")
+  ##newer_doc = client.Update(new_doc, media_source=txt)
+  ##new_doc = client.Upload('media/welcome.txt', doc_name, folder.resource_id.text, content_type="text")
   return new_doc
 
 def CreateResourceInCollection(client, prof_name, exam_name):

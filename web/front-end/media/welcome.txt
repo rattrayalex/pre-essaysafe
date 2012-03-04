@@ -4,3 +4,5 @@ This document is what your students will see when they take your exam.
 Edit it to include your exam question(s), prompt(s), and other relevant information. 
 
 When it's ready, hit "go" at the bottom of the page. You will then be able to distribute the exam to your students.
+
+https://docs.google.com/document/d/1OB40c2l26fL6BdRim1cKuQhG0Kyt8X6brsAvlVMQ1sE/edit

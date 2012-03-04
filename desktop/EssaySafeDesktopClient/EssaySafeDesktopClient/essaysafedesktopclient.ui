@@ -20,14 +20,14 @@
    <widget class="MyButton" name="pushButton">
     <property name="geometry">
      <rect>
-      <x>180</x>
+      <x>190</x>
       <y>130</y>
       <width>231</width>
       <height>141</height>
      </rect>
     </property>
     <property name="text">
-     <string>Block My Keys!</string>
+     <string>Start Test</string>
     </property>
     <property name="default">
      <bool>false</bool>

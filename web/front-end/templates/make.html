@@ -58,15 +58,14 @@
 {% endblock scripts %}
 
 {% block content %}
-  <hr>
   <div class="content">
-    <center><h1>Create an Exam <button class="btn btn-large" href="">I'm done <i class="icon-chevron-right"></i></button></h1></center>
-    
     {% if new_doc %}
       <iframe src="https://docs.google.com/document/d/{{new_doc}}/edit" class="iframe" scrolling="no" allowTransparency="true">
         <p>Your browser does not support iframes.</p>
-      </iframe>
+      </iframe>{% csrf_token %}
     {% else %}
+    <center><h1>Create an Exam</h1></center>
+    <hr>
     <div id="slides">
       <div class="slides_container" id="info-blah">
         <div class="row">

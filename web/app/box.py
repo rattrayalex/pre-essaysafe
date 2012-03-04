@@ -1,5 +1,12 @@
 from xml.dom import minidom
 import httplib
+import urllib2
+import mimetools
+import mimetypes
+import urllib2
+import mimetools
+import mimetypes
+
 
 # Initialize and Make Connection
 box_api_key = 'e74usd65esyarrz614h75i93ik10kku4'
@@ -8,7 +15,43 @@ box_auth = '8kf9roqysu8jmqskys9vg0hovkmyqtv3'
 
 conn = httplib.HTTPConnection("www.box.net")
 
+prefix = "prof_"
+
 ## Functions
+def get_content_type(filename):
+  return mimetypes.guess_type(filename)[0] or 'application/octet-stream'
+
+def upload(filename, FID=0):
+  url = 'http://upload.box.net/api/1.0/upload/%s/%s' % ('8kf9roqysu8jmqskys9vg0hovkmyqtv3', FID)
+
+  # construct POST data
+  boundary = mimetools.choose_boundary()
+  body = ""
+
+  # filename
+  body += "--%s\r\n" % (boundary)
+  body += 'Content-Disposition: form-data; name="share"\r\n\r\n'
+  body += "%s\r\n" % ('1')
+
+  body += "--%s\r\n" % (boundary)
+  body += "Content-Disposition: form-data; name=\"file\";"
+  body += " filename=\"%s\"\r\n" % filename
+  body += "Content-Type: %s\r\n\r\n" % get_content_type(filename)
+
+  #print body
+
+  fp = file(filename, "rb")
+  data = fp.read()
+  fp.close()
+
+  postData = body.encode("utf_8") + data + ("\r\n--%s--" % (boundary)).encode("utf_8")
+
+  request = urllib2.Request(url)
+  request.add_data(postData)
+  request.add_header("Content-Type", "multipart/form-data; boundary=%s" % boundary)
+  response = urllib2.urlopen(request)
+  return response.read()
+
 def getBox(action, inparams):
 # action is the action, inparams is a dictionary where
 # format would amount to &key=value for input params
@@ -46,27 +89,12 @@ def chkHTTPstatus(xmlResponse, desired):
     raise Exception('chkHTTPstatus Exception. Wanted "%s", received "%s"' % (desired, status))
   return response
 
-def createProfFolder(name):
+def createProfFolder(id):
 # creates a folder in the top level with name "name"
 # returns the id of that folder
-  response = getBox('create_folder',{'parent_id': [0], 'name': [name], 'share': [0]})
+  response = getBox('create_folder',{'parent_id': [0], 'name': [prefix+id], 'share': [0]})
   rep = chkHTTPstatus(response, 'create_ok')
   return int(getText(rep.getElementsByTagName("folder")[0].getElementsByTagName("folder_id")[0].toxml(), 'folder_id'))
-
-def listProfFolders():
-# returns a dictionary of Professor Folder Names as key with id as value
-  response = getBox('get_account_tree',{'folder_id': [0], 'params': ['onelevel', 'nozip','simple']})
-  rep = chkHTTPstatus(response, 'listing_ok')
-  folderDict = {}
-  for folder in rep.getElementsByTagName("tree")[0].firstChild.getElementsByTagName("folders"):
-    # need to check if a file? [*]
-    fid = getAttribute(folder, 'id')
-    name = getAttribute(folder, 'name')
-    folderDict[name] = fid
-  return folderDict
-
-listProfFolders()
-#print getAttribute('<folder id="4387" name="Incoming" shared="0"><tags><tag id="34" /></tags><files></files></folder>', 'name')
 
 def createSubFolder(FID, name):
 # creates a Folder inside FID with name "name"
@@ -78,16 +106,51 @@ def createSubFolder(FID, name):
 def listFoldersIn(FID):
 # returns a dictionary of Folder Names in the folder with
 # id = FID, as key with id as value
-  return 0
+  response = getBox('get_account_tree',{'folder_id': [prefix+FID], 'params': ['onelevel', 'nozip','simple']})
+  rep = chkHTTPstatus(response, 'listing_ok')
+  folderDict = {}
+  folders = rep.getElementsByTagName("tree")[0].firstChild.getElementsByTagName("folders")
+  for folder in folders: 
+    nextseg = (folder.toxml().partition('</folders>')[0]).partition('<folders><fold')[2]
+    while (nextseg != ""):
+      segs = nextseg.partition('<fold')
+      folderseg = segs[0]
+      nextseg = segs[2]
+      fid = getAttribute(folderseg, 'id')
+      name = getAttribute(folderseg, 'name')
+      folderDict[name] = fid
+  return folderDict
+
+def createSubFolder(FID, name):
+# creates a Folder inside FID with name "name"
+# returns folder id
+  response = getBox('create_folder',{'parent_id': [FID], 'name': [name], 'share': [0]})
+  rep = chkHTTPstatus(response, 'create_ok')
+  return int(getText(rep.getElementsByTagName("folder")[0].getElementsByTagName("folder_id")[0].toxml(), 'folder_id'))
+
+def listProfFolders():
+# returns a dictionary of Professor Folder Names as key with id as value
+  return listFoldersIn(0)
 
 def listFilesIn(FID,ftype):
 # lists files in folder with id FID. values for ftype:
+# format is a dict, with keys file_names and values ids
 #    'all' - list all files
-#    'prof' - professor uploaded files
-#    'student' - student uploaded files
 #    future implementation - list student files assoc with a specific
 #    prof file --- not implemented yet
-  return 0
+#      'prof' - professor uploaded files
+#      'student' - student uploaded files
+  response = getBox('get_account_tree',{'folder_id': [FID], 'params': ['onelevel', 'nozip','simple']})
+  rep = chkHTTPstatus(response, 'listing_ok')
+  if (ftype != 'all'):
+    raise Exception('listFilesIn Exception - functionality not yet implemented. please try with parameter "all"')
+  fileDict = {}
+  newrep = rep.getElementsByTagName('tree')[0].getElementsByTagName('folder')[0].getElementsByTagName('files')[0].getElementsByTagName('file')
+  for doc in newrep:
+    name = getAttribute(doc.toxml(), 'file_name')
+    fid = getAttribute(doc.toxml(), 'id')
+    fileDict[name] = fid
+  return fileDict
 
 def chkStuTime(fID, method):
 # date range per folder
@@ -98,22 +161,22 @@ def chkStuTime(fID, method):
 def getFileInfo(ID):
 # returns a dictionary containing information on the
 # name, id, created, updated, and size of a file
-  return 0
+  response = getBox('get_file_info',{'file_id': [ID]})
+  rep = chkHTTPstatus(response, 's_get_file_info')
+  info = rep.getElementsByTagName('info')[0]
+  fileDict = {}
+  print '%s\n' % (info.toxml())
+  for att in ['file_name', 'file_id', 'created', 'updated', 'size']:
+    fileDict[att] = getText(info.getElementsByTagName(att)[0].toxml(), att)
+  return fileDict
 
-def downloadFile(ID):
-# downloads a file specified by ID
-# returns the file or something
-  return 0
+def downloadFileURL(ID):
+# returns a link to download a file specified by ID
+  return 'https://www.box.net/api/1.0/download/%s/%s' % (box_auth, ID)
 
 def downloadFilesIn(FID):
 # downloads all files in folder with id FID
 # returns the files or something
-  return 0
-
-def uploadNewDoc(FID, name):
-# uploads a document with name "name", in folder with id FID
-# returns id of that document
-  #check new
   return 0
 
 def uploadNewDocP(FID, name):

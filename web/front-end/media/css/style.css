@@ -3523,27 +3523,16 @@ html, body {
 #container {
   padding: 15px;
 }
-#title {
-  /*h1 {
-		margin-bottom: 0;
-		font-size: 60px;
-		line-height: 1;
-		letter-spacing: -1px;
-		span {
-			font-size: 24px;
-			color: @dgray;
-		}
-	}*/
-
-  margin-bottom: 30px;
-}
 #title h1 {
   width: 100%;
+  font-family: 'Electrolize', sans-serif;
+  font-size: 42px;
 }
 #title h1 span {
   font-size: 24px;
   color: #999999;
   text-align: right;
+  font-family: Arial;
 }
 #content {
   margin-top: 50px;
@@ -3553,7 +3542,7 @@ html, body {
 .iframe {
   width: 100%;
   height: 500px;
-  margin-top: -20px;
+  margin-top: 0px;
   border: none;
   -webkit-box-sizing: border-box;
 }
