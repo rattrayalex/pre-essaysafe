@@ -14,7 +14,10 @@ class Professor(models.Model):
   Professor model.
   """
   email = models.CharField(max_length=80)
-  client_id = models.CharField(max_length=100)
+  box_id = models.CharField()
+  gdocs_id = models.CharField()
+  user = models.OneToOneField(User, unique=True)
+  name = models.CharField()
   
   def __unicode__(self):
     return self.name

@@ -14,7 +14,32 @@ conn = httplib.HTTPConnection("www.box.net")
 
 prefix = "prof_"
 
+
 ## Functions
+def uploadFile(data, FID=0):
+
+  boundary = mimetools.choose_boundary()
+
+  body = ""
+
+  # filename
+  body += "--%s\r\n" % (boundary)
+  body += 'Content-Disposition: form-data; name="share"\r\n\r\n'
+  body += "%s\r\n" % ('1')
+  body += "--%s\r\n" % (boundary)
+  body += "Content-Disposition: form-data; name=\"file\";"
+  url = 'http://upload.box.net/api/1.0/upload/%s/%s' % ('8kf9roqysu8jmqskys9vg0hovkmyqtv3', FID)
+  #postData = body.encode("utf_8") + data
+  postData = body.encode("utf_8") + data + ("\r\n--%s--" % (boundary)).encode("utf_8")
+
+  #print data
+  request = urllib2.Request(url)
+  request.add_data(postData)
+  response = urllib2.urlopen(request)
+  return response.read()
+
+  
+
 def get_content_type(filename):
   return mimetypes.guess_type(filename)[0] or 'application/octet-stream'
 
@@ -127,7 +152,7 @@ def createSubFolder(FID, name):
 
 def listProfFolders():
 # returns a dictionary of Professor Folder Names as key with id as value
-  return listFoldersIn(0)
+  return listFoldersIn('0')
 
 def listFilesIn(FID,ftype='all'):
 # lists files in folder with id FID. values for ftype:
