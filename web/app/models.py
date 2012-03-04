@@ -44,7 +44,6 @@ class Exam(models.Model):
 class Essay(models.Model):
   exam = models.ForeignKey(Exam)
   student_name = models.CharField(max_length=80)
-  begin_date = models.DateTimeField('date started')
   end_date = models.DateTimeField('date finished')
   latitude = models.DecimalField()
   longitude = models.DecimalField()
