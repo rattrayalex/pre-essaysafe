@@ -71,10 +71,14 @@ void GenerateKey ( int vk , BOOL bExtended)
   ::SendInput(1,&Input,sizeof(Input));
 }
 
+
+
+
+
 void EssaySafeDesktopClient::buttonClicked() {
 	if(beforeTest) {
 		beforeTest = false;
-		system("\"C:\\Users\\Greg Terrono\\AppData\\Local\\Google\\Chrome\\Application\\chrome.exe\" essaysafetest.appspot.com");
+		system("\"C:\\Users\\Geoff\\AppData\\Local\\Google\\Chrome\\Application\\chrome.exe\" localhost:8080/take/Humanities101/Geoff/yefim323@gmail.com");
 		GenerateKey(VK_F11, false);
 		emit changeText("Stop Test");
 		g_hKeyboardHook = SetWindowsHookEx( WH_KEYBOARD_LL,  LowLevelKeyboardProc, GetModuleHandle(NULL), 0 );

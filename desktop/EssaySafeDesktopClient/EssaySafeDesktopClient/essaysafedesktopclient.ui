@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
-    <height>400</height>
+    <width>533</width>
+    <height>340</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,10 +20,10 @@
    <widget class="MyButton" name="pushButton">
     <property name="geometry">
      <rect>
-      <x>190</x>
-      <y>130</y>
-      <width>231</width>
-      <height>141</height>
+      <x>180</x>
+      <y>190</y>
+      <width>151</width>
+      <height>91</height>
      </rect>
     </property>
     <property name="text">
@@ -34,6 +34,75 @@
     </property>
     <property name="flat">
      <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit">
+    <property name="geometry">
+     <rect>
+      <x>280</x>
+      <y>40</y>
+      <width>113</width>
+      <height>22</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_2">
+    <property name="geometry">
+     <rect>
+      <x>280</x>
+      <y>80</y>
+      <width>113</width>
+      <height>22</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_3">
+    <property name="geometry">
+     <rect>
+      <x>280</x>
+      <y>120</y>
+      <width>113</width>
+      <height>22</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>40</y>
+      <width>71</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Essay Name</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>80</y>
+      <width>61</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Full Name</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>120</y>
+      <width>53</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Gmail</string>
     </property>
    </widget>
   </widget>
@@ -78,8 +147,8 @@
    <slot>buttonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>248</x>
-     <y>136</y>
+     <x>238</x>
+     <y>196</y>
     </hint>
     <hint type="destinationlabel">
      <x>241</x>
@@ -87,9 +156,75 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>EssaySafeDesktopClientClass</sender>
+   <signal>getText()</signal>
+   <receiver>lineEdit_3</receiver>
+   <slot>getText()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>437</x>
+     <y>134</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>382</x>
+     <y>132</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>EssaySafeDesktopClientClass</sender>
+   <signal>getText()</signal>
+   <receiver>lineEdit_2</receiver>
+   <slot>getText()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>459</x>
+     <y>87</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>375</x>
+     <y>87</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>EssaySafeDesktopClientClass</sender>
+   <signal>getText()</signal>
+   <receiver>lineEdit</receiver>
+   <slot>getText()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>432</x>
+     <y>58</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>371</x>
+     <y>45</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>lineEdit</sender>
+   <signal>sendText(QString)</signal>
+   <receiver>EssaySafeDesktopClientClass</receiver>
+   <slot>receiveText(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>383</x>
+     <y>54</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>461</x>
+     <y>64</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <signal>changeText(QString)</signal>
+  <signal>getText()</signal>
   <slot>buttonClicked()</slot>
+  <slot>receiveText(QString)</slot>
  </slots>
 </ui>

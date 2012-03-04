@@ -53,13 +53,19 @@
 </script>
 {% endblock scripts %}
 
+{% block topright %}
+  <p>hello, {{user.email}}</p>
+  {% if new_doc %}
+    <a href="../distribute/{{exam.id}}" class="btn btn-large">I'm Done <i class="icon-chevron-right"></i></a>
+  {% endif %}
+{% endblock %}
+
 {% block content %}
   <div class="content">
     {% if new_doc %}
       <iframe src="https://docs.google.com/document/d/{{new_doc}}/edit" class="iframe" scrolling="no" allowTransparency="true">
         <p>Your browser does not support iframes.</p>
-      </iframe>{% csrf_token %}
-      <center><a href="../distribute/{{exam.id}}" class="btn btn-large">The Exam Template is Ready <i class="icon-chevron-right"></i></a></center>
+      <center><a href="../distribute/{{exam.id}}" class="btn btn-large">I'm Done <i class="icon-chevron-right"></i></a></center>
     {% else %}
     <center><h1>Create an Exam</h1></center>
     <hr>
@@ -177,3 +183,5 @@
   </script>
 {% endblock content %}
 
+
+      </iframe>{% csrf_token %}
