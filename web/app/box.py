@@ -15,6 +15,8 @@ box_auth = '8kf9roqysu8jmqskys9vg0hovkmyqtv3'
 
 conn = httplib.HTTPConnection("www.box.net")
 
+prefix = "prof_"
+
 ## Functions
 def get_content_type(filename):
   return mimetypes.guess_type(filename)[0] or 'application/octet-stream'
@@ -87,10 +89,10 @@ def chkHTTPstatus(xmlResponse, desired):
     raise Exception('chkHTTPstatus Exception. Wanted "%s", received "%s"' % (desired, status))
   return response
 
-def createProfFolder(name):
+def createProfFolder(id):
 # creates a folder in the top level with name "name"
 # returns the id of that folder
-  response = getBox('create_folder',{'parent_id': [0], 'name': [name], 'share': [0]})
+  response = getBox('create_folder',{'parent_id': [0], 'name': [prefix+id], 'share': [0]})
   rep = chkHTTPstatus(response, 'create_ok')
   return int(getText(rep.getElementsByTagName("folder")[0].getElementsByTagName("folder_id")[0].toxml(), 'folder_id'))
 
@@ -104,7 +106,7 @@ def createSubFolder(FID, name):
 def listFoldersIn(FID):
 # returns a dictionary of Folder Names in the folder with
 # id = FID, as key with id as value
-  response = getBox('get_account_tree',{'folder_id': [FID], 'params': ['onelevel', 'nozip','simple']})
+  response = getBox('get_account_tree',{'folder_id': [prefix+FID], 'params': ['onelevel', 'nozip','simple']})
   rep = chkHTTPstatus(response, 'listing_ok')
   folderDict = {}
   folders = rep.getElementsByTagName("tree")[0].firstChild.getElementsByTagName("folders")
