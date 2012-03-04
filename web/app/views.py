@@ -183,6 +183,7 @@ def index(request):
     }
   return render_to_response('index.html', context)
 
+@oauth_required
 def take_one(request):
   # need to verify with passed in token
   # url = request.url;
