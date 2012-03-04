@@ -1,5 +1,5 @@
-﻿Build started 3/3/2012 4:17:09 PM.
-     1>Project "c:\Users\greg terrono\documents\visual studio 2010\Projects\EssaySafeDesktopClient\EssaySafeDesktopClient\EssaySafeDesktopClient.vcxproj" on node 2 (build target(s)).
+﻿Build started 3/3/2012 8:26:27 PM.
+     1>Project "C:\Users\Greg Terrono\pre-essaysafe\desktop\EssaySafeDesktopClient\EssaySafeDesktopClient\EssaySafeDesktopClient.vcxproj" on node 2 (build target(s)).
      1>InitializeBuildStatus:
          Creating "Debug\EssaySafeDesktopClient.unsuccessfulbuild" because "AlwaysCreate" was specified.
        CustomBuild:
@@ -9,19 +9,19 @@
          main.cpp
          All outputs are up-to-date.
        Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"c:\users\greg terrono\documents\visual studio 2010\Projects\EssaySafeDesktopClient\\EssaySafeDesktopClient.exe" /NOLOGO /LIBPATH:C:\Qt\4.8.0\lib qtmaind.lib QtCored4.lib QtGuid4.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug\EssaySafeDesktopClient.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"c:\users\greg terrono\documents\visual studio 2010\Projects\EssaySafeDesktopClient\EssaySafeDesktopClient.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"c:\users\greg terrono\documents\visual studio 2010\Projects\EssaySafeDesktopClient\EssaySafeDesktopClient.lib" /MACHINE:X86 Debug\essaysafedesktopclient.obj
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Greg Terrono\pre-essaysafe\desktop\EssaySafeDesktopClient\\EssaySafeDesktopClient.exe" /NOLOGO /LIBPATH:C:\Qt\4.8.0\lib qtmaind.lib QtCored4.lib QtGuid4.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug\EssaySafeDesktopClient.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\Greg Terrono\pre-essaysafe\desktop\EssaySafeDesktopClient\EssaySafeDesktopClient.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Greg Terrono\pre-essaysafe\desktop\EssaySafeDesktopClient\EssaySafeDesktopClient.lib" /MACHINE:X86 Debug\essaysafedesktopclient.obj
          Debug\moc_essaysafedesktopclient.obj
          Debug\qrc_essaysafedesktopclient.obj
          Debug\main.obj
-         LINK : c:\users\greg terrono\documents\visual studio 2010\Projects\EssaySafeDesktopClient\\EssaySafeDesktopClient.exe not found or not built by the last incremental link; performing full link
-         EssaySafeDesktopClient.vcxproj -> c:\users\greg terrono\documents\visual studio 2010\Projects\EssaySafeDesktopClient\EssaySafeDesktopClient.exe
+         LINK : C:\Users\Greg Terrono\pre-essaysafe\desktop\EssaySafeDesktopClient\\EssaySafeDesktopClient.exe not found or not built by the last incremental link; performing full link
+         EssaySafeDesktopClient.vcxproj -> C:\Users\Greg Terrono\pre-essaysafe\desktop\EssaySafeDesktopClient\EssaySafeDesktopClient.exe
        Manifest:
-         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"c:\users\greg terrono\documents\visual studio 2010\Projects\EssaySafeDesktopClient\\EssaySafeDesktopClient.exe;#1" /manifest Debug\EssaySafeDesktopClient.exe.intermediate.manifest
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"C:\Users\Greg Terrono\pre-essaysafe\desktop\EssaySafeDesktopClient\\EssaySafeDesktopClient.exe;#1" /manifest Debug\EssaySafeDesktopClient.exe.intermediate.manifest
        FinalizeBuildStatus:
          Deleting file "Debug\EssaySafeDesktopClient.unsuccessfulbuild".
          Touching "Debug\EssaySafeDesktopClient.lastbuildstate".
-     1>Done Building Project "c:\Users\greg terrono\documents\visual studio 2010\Projects\EssaySafeDesktopClient\EssaySafeDesktopClient\EssaySafeDesktopClient.vcxproj" (build target(s)).
+     1>Done Building Project "C:\Users\Greg Terrono\pre-essaysafe\desktop\EssaySafeDesktopClient\EssaySafeDesktopClient\EssaySafeDesktopClient.vcxproj" (build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:05.48
+Time Elapsed 00:00:04.33
