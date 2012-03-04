@@ -42,14 +42,14 @@ class Exam(models.Model):
     return self.name
 
 class Essay(models.Model):
-  exam = models.ForeignKey(Exam)
-  student_name = models.CharField(max_length=80)
-  student_email = models.CharField(max_length=80)
-  start_date = models.DateTimeField('date finished')
-  end_date = models.DateTimeField('date finished')
-  latitude = models.DecimalField(blank=True)
-  longitude = models.DecimalField(blank=True)
-  resource_id = models.CharField()
+  exam = models.ForeignKey(Exam, blank=True, null=True)
+  student_name = models.CharField(max_length=80, blank=True)
+  student_email = models.CharField(max_length=80, blank=True)
+  start_date = models.DateTimeField('date finished', blank=True, null=True)
+  end_date = models.DateTimeField('date finished', blank=True, null=True)
+  latitude = models.DecimalField(blank=True, null=True)
+  longitude = models.DecimalField(blank=True, null=True)
+  resource_id = models.CharField(blank=True, null=True)
 
 class Doc(models.Model):
   doc_name = models.CharField(max_length=80)

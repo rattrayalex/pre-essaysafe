@@ -26,7 +26,7 @@ import simplejson
 
 try: from functools import wraps
 except ImportError: from django.utils.functional import wraps # Python 2.4 fallback.
-
+from box import *
 from models import *
 from django.contrib import auth
 
@@ -137,42 +137,43 @@ def info_submit(request):
     auth_token = client.ClientLogin('essay.safe.hack@gmail.com','angelhack', APP_NAME)
     date_format = '%m/%d%/%Y'
     time_format = '%I:%M%p'
-    if len(post.get('start_time')) == 6:
-      start_time = '0'+post.get('start_time')
-    else:
-      end_time = post.get('end_time')
-    logging.warning(start_time)
-    if len(post.get('end_time')) == 6:
-      end_time = '0'+post.get('end_time')
-    else:
-      start_time = post.get('start_time')
-    logging.warning(end_time)
-    datetime_format = date_format+'-'+time_format
-    start = post.get('start_date')+'-'+post.get('start_time')
-    start_datetime = start_datetime = datetime.datetime(
-            int(start[0:4]),
-            int(start[5:7]),
-            int(start[8:10]),
-            int(start[11:13]),
-            int(start[14:16])
-            )
-    logging.warning(start_datetime)
-    end = post.get('end_date')+'-'+end_time
-    end_datetime = end_datetime = datetime.datetime(
-            int(end[0:4]),
-            int(end[5:7]),
-            int(end[8:10]),
-            int(end[11:13]),
-            int(end[14:16])
-            )
+    #if len(post.get('start_time')) == 6:
+    #  start_time = '0'+post.get('start_time')
+    #else:
+    #  end_time = post.get('end_time')
+    #logging.warning(start_time)
+    ##if len(post.get('end_time')) == 6:
+     # end_time = '0'+post.get('end_time')
+    #else:
+    #  start_time = post.get('start_time')
+    #logging.warning(end_time)
+    ##datetime_format = date_format+'-'+time_format
+    #start = post.get('start_date')+'-'+post.get('start_time')
+    #start_datetime = start_datetime = datetime.datetime(
+    #        int(start[0:4]),
+     #       int(start[5:7]),
+     #       int(start[8:10]),
+     #       int(start[11:13]),
+      #      int(start[14:16])
+      #      )
+    #logging.warning(start_datetime)
+    #end = post.get('end_date')+'-'+end_time
+    #end_datetime = end_datetime = datetime.datetime(
+    #        int(end[0:4]),
+    #        int(end[5:7]),
+    #        int(end[8:10]),
+    #        int(end[11:13]),
+    #        int(end[14:16])
+    #        )
     prof = Professor.objects.get(user=request.user)
     exam_name = post.get('exam_name')
     exam = Exam()
     exam.professor = prof
     exam.name = exam_name
     logging.warning('done the exam name: '+exam_name)
-    exam.start_time = start_datetime
-    exam.end_time = end_datetime
+    #exam.start_time = start_datetime
+    exam.start_time = datetime.datetime.now()
+    exam.end_time = datetime.datetime.now()
     new_doc, new_folder = create_doc(request, client, prof, exam_name)
     logging.warning('done the times')
     exam.resource_id = new_doc.resource_id.text

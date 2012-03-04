@@ -65,6 +65,7 @@
     {% if new_doc %}
       <iframe src="https://docs.google.com/document/d/{{new_doc}}/edit" class="iframe" scrolling="no" allowTransparency="true">
         <p>Your browser does not support iframes.</p>
+		</iframe>
       <center><a href="../distribute/{{exam.id}}" class="btn btn-large">I'm Done <i class="icon-chevron-right"></i></a></center>
     {% else %}
     <center><h1>Create an Exam</h1></center>
@@ -182,6 +183,3 @@
     });
   </script>
 {% endblock content %}
-
-
-      </iframe>{% csrf_token %}
