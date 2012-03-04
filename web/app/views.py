@@ -162,6 +162,9 @@ def info_submit(request):
     logging.warning('done the times')
     exam.resource_id = new_doc.resource_id.text
     exam.folder_id = new_folder.resource_id.text
+    exam.box_fid = createSubFolder(prof.box_id, exam_name)
+    element = getBox('toggle_folder_email', {'folder_id':folder_id, 'enable':'1'})
+    exam.box_email = getText(element, 'upload_email')
     exam.save()
     logging.warning('saved')
     logging.warning('created'+ str(new_doc.resource_id.text))
@@ -176,6 +179,30 @@ def index(request):
   context = {
     }
   return render_to_response('index.html', context)
+
+def send_an_email(receiver, subject, body):
+  s = smtplib.SMTP('smtp.gmail.com', 587)
+  myGmail = 'essay.safe.hack@gmail.com'
+  myGMPasswd = 'angelhack'
+  s.ehlo()
+  s.starttls()
+  s.login(myGmail, myGMPasswd)
+  msg = ("From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n%s" 
+  %(myGmail, receiver, subject, body))
+  s.sendmail(myGmail, [receiver], msg)
+  s.quit()
+
+def email_a_file(filename, stream):
+  logging.warning('in email_file')
+  msg = "You have received a file from UploadToMail.appspot.com"
+  subject = 'New File from UploadToMail'
+  attachments = [(filename, stream)]
+  ##  msg = MIMEMultipart()
+  ##  msg.attach(MIMEImage(photo.read()))
+  ##  send_an_email('rattray.alex@gmail.com', 'sup, an image', msg)
+  send_app_email(('mapp.webmaster@gmail.com','midatlantic_7ndu@sendtodropbox.com'), subject, msg, attachments)
+  photo.close()
+  return 1
 
 def take(request, exam_name, student_name, student_email):
   if request.session.get(GOOGLE_OAUTH_TOKEN, False):
