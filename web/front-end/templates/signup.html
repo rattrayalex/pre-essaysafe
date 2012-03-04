@@ -1,0 +1,17 @@
+{% extends "general.html" %}
+
+{% block title %}{{ block.super }} | Sign Up {% endblock %}
+
+
+{% block content %}
+<h1 class="frontcenter">Sign on up!</h1>
+<section class="center" id='signup'>
+  <form action="/signup/" method="post">{% csrf_token %}
+    {% include "form_renderer.html" with form=form %}
+    <div class="clearfix">
+      <input type="submit" value="Sign Up" class="btn large primary"/>
+    </div>
+    <input type="hidden" name="next" value="{{ next }}">
+  </form>
+</section>
+{% endblock content %}

@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseRedirect
 from google.appengine.ext import db
@@ -12,16 +13,17 @@ import gdata.gauth
 import gdata.docs.data
 import gdata.docs.client
 import gdata.docs.service
+from gdata.acl.data import AclScope, AclRole
+from app.forms import LogInForm, SignUpForm
 from StringIO import StringIO
 
-
-import oauth2
 try: from functools import wraps
 except ImportError: from django.utils.functional import wraps # Python 2.4 fallback.
 
 from models import *
+from django.contrib import auth
 
-from box import listFoldersIn, uploadFile
+from box import listFoldersIn, uploadFile, listFilesIn
 
 from google_oauth.views import oauth_start, get_client, clear_google_oauth_session, oauth_get_access_token
 from google_oauth.views import GOOGLE_OAUTH_REQ_TOKEN, GOOGLE_OAUTH_TOKEN
@@ -53,21 +55,6 @@ def oauth_required(view_func):
     return wraps(view_func)(_checklogin)
 
 @oauth_required
-def make(request):
-  """Test callback view"""
-  client = get_client(
-    request.session[GOOGLE_OAUTH_TOKEN].token,
-    request.session[GOOGLE_OAUTH_TOKEN].token_secret,
-    )
-  logging.warning(client)
-  feed = client.GetDocList(uri='/feeds/default/private/full/-/document')
-  
-  doclist = map (lambda entry: Doc(doc_name=entry.title.text.encode('UTF-8'), resource_id=entry.resource_id.text), feed.entry)
-  return  render_to_response('make.html', {
-      'doclist': doclist,
-      })
-
-@oauth_required
 def transfer(request, folder_name):
   client = get_client(
     request.session[GOOGLE_OAUTH_TOKEN].token,
@@ -81,9 +68,7 @@ def transfer(request, folder_name):
   feed = client.GetDocList(uri=folder.content.src)
   for doc in feed.entry:
     content = client.GetFileContent(uri=doc.content.src)
-    str_obj = StringIO()
-    str_obj.write(content)
-    uploadFile(str_obj)
+    uploadFile(content)
     #file_path = 'remote:http://localhost:8080/filehandler'
     #client.Export(doc, file_path)
 
@@ -92,11 +77,16 @@ class ExamForm(BootstrapModelForm):
     model = Exam
     exclude = ('professor',)
 
+@login_required
 def make(request):
   """Test callback view"""
+  message = ''
   if request.method == 'POST':
-    logging.info("in post")
-    return info_submit(request)
+    exams = Exam.objects.filter(name=request.POST.get('exam_name'))
+    if len(exams) == 0:
+      return info_submit(request)
+    else: 
+      message = 'Sorry, there is already an exam named "'+request.POST.get('exam_name')+'". Please choose another name.' 
   if request.session.get(GOOGLE_OAUTH_TOKEN, False):
     client = get_client(
           request.session[GOOGLE_OAUTH_TOKEN].token,
@@ -106,7 +96,8 @@ def make(request):
     ##feed = client.GetDocList(uri='/feeds/default/private/full/-/document') 
     ##doclist = map (lambda entry: Doc(doc_name=entry.title.text.encode('UTF-8'), resource_id=entry.resource_id.text), feed.entry)
     context = {
-      'form': form
+      'form': form,
+      'message': message,
     }
     return  render_to_response('make.html', RequestContext(request, context))
   elif request.session.get(GOOGLE_OAUTH_REQ_TOKEN, False):
@@ -129,42 +120,56 @@ def info_submit(request):
     logging.warning(post.get('exam_name'))
     date_format = '%m/%d%/%Y'
     time_format = '%I:%M%p'
+    if len(post.get('start_time')) == 6:
+      start_time = '0'+post.get('start_time')
+      logging.warning('thar be 6')
+    else:
+      end_time = post.get('end_time')
+    logging.warning(start_time)
+    if len(post.get('end_time')) == 6:
+      end_time = '0'+post.get('end_time')
+    else:
+      start_time = post.get('start_time')
+    logging.warning(end_time)
     datetime_format = date_format+'-'+time_format
-    start = post.get('start_date')+'-'+post.get('start_time')
+    start = post.get('start_date')+'-'+start_time
+    logging.warning(start)
     start_datetime = start_datetime = datetime.datetime(
-            int(start[6:10]),
-            int(start[0:2]),
-            int(start[3:5]),
+            int(start[0:4]),
+            int(start[5:7]),
+            int(start[8:10]),
             int(start[11:13]),
             int(start[14:16])
             )
     logging.warning(start_datetime)
-    end = post.get('end_date')+'-'+post.get('end_time')
+    end = post.get('end_date')+'-'+end_time
     end_datetime = end_datetime = datetime.datetime(
-            int(end[6:10]),
-            int(end[0:2]),
-            int(end[3:5]),
+            int(end[0:4]),
+            int(end[5:7]),
+            int(end[8:10]),
             int(end[11:13]),
             int(end[14:16])
             )
-    prof_name = 'Random Prof'
+    prof = Professor.objects.get(user=request.user)
     exam_name = post.get('exam_name')
     exam = Exam()
-    if prof_name != 'Random Prof':
-      exam.professor = Professor.objects.get(name=prof_name)
-    exam.exam_name = exam_name
+    exam.professor = prof
+    exam.name = exam_name
     logging.warning('done the exam name: '+exam_name)
     exam.start_time = start_datetime
     exam.end_time = end_datetime
-    new_doc = create_doc(request, client, prof_name, exam_name)
+    new_doc, new_folder = create_doc(request, client, prof, exam_name)
     logging.warning('done the times')
     exam.resource_id = new_doc.resource_id.text
+    exam.folder_id = new_folder.resource_id.text
+    exam.box_fid = createSubFolder(prof.box_id, exam_name)
     exam.save()
     logging.warning('saved')
     logging.warning('created'+ str(new_doc.resource_id.text))
     logging.warning('created'+ str(new_doc.resource_id.text).split(':')[1])
     reply = {'success': True,
            'form_valid': True,
+           'exam': exam,
            'new_doc': str(new_doc.resource_id.text).split(':')[1]}
     return render_to_response('make.html',RequestContext(request,reply))
     
@@ -197,56 +202,153 @@ def email_a_file(filename, stream):
   photo.close()
   return 1
 
-def take(request):
-  context = {
+def take(request, exam_name, student_name, student_email):
+  if request.session.get(GOOGLE_OAUTH_TOKEN, False):
+    client = get_client(
+          request.session[GOOGLE_OAUTH_TOKEN].token,
+          request.session[GOOGLE_OAUTH_TOKEN].token_secret,
+      )
+    
+    exam = get_object_or_404(Exam, name=exam_name)
+    prof = exam.professor
+    p_client = get_client(prof.token, prof.token_secret)
+    prompt_doc_id = str(exam.resource_id)
+    prompt_doc = client.GetDoc(prompt_doc_id)
+    doc_name = exam_name+' | '+student_name
+    student_doc = client.Copy(prompt_doc, doc_name)
+    folder = client.GetDoc(exam.folder_id)
+    new_student_doc = client.Move(student_doc, folder)
+    #scope = AclScope(client)
+    #role = AclRole('writer')
+    #acl_entry = gdata.docs.data.Acl(scope=scope, role=role)
+    #new_acl = client.Post(acl_entry, new_student_doc.GetAclFeedLink().href)
+    ##feed = client.GetDocList(uri='/feeds/default/private/full/-/document') 
+    ##doclist = map (lambda entry: Doc(doc_name=entry.title.text.encode('UTF-8'), resource_id=entry.resource_id.text), feed.entry)
+    context = {
+      'doc': str(student_doc.resource_id.text).split(':')[1]
     }
-  return render_to_response('take.html', context)
+    return  render_to_response('take.html', RequestContext(request, context))
+  elif request.session.get(GOOGLE_OAUTH_REQ_TOKEN, False):
+    oauth_get_access_token(request)
+    return HttpResponseRedirect("http://" + request.get_host() + request.path)
+  else:
+    return oauth_start(request)
 
-
+@login_required
+# @oath_required
 def dashboard(request):
+  prof = Professor.objects.get(user=request.user)
+  box_id = prof.box_id
+  # (name, id)
+  exams = listFoldersIn(box_id)
+  exam_count = dict()
+  ids = []
+  # for e in exams:
+    # exam_count[e] = len(listFilesIn(exams[e]))
+  # for e in exams:
+    
   context = {
-    'exams': listFoldersIn('1')
+    'exams': exams, 
+	'ids': ids,
+	'count': len(exams),
+	'box_id': box_id,
+	'exam_count':exam_count
   }
   return render_to_response('dashboard.html', context)
 
+def distribute(request, exam_id):
+  exam = Exam.objects.get(id=exam_id)
+  context = {
+    'exam': exam
+  }
+  return render_to_response('distribute.html', context)
+  
 def about(request):
   context = {
     }
   return render_to_response('about.html', context)
 
-def create_doc(request, client, prof_name, exam_name): 
+def create_doc(request, client, prof, exam_name): 
   """
   Create New Google Docs.
   """
-  doc_name = prof_name + ' ' + exam_name
+  doc_name = exam_name + ' | Prompt'
+  main_folder_id = prof.folder_id
   try:
-    folder = client.GetDocList(uri='/feeds/default/private/full/-/folder?title='+exam_name)[0]
+    main_folder = client.GetDoc(main_folder_id)
+    first_item = [d for d in client.GetDocList(main_folder.content.src).entry][0]
   except:
-    folder = client.Create(gdata.docs.data.FOLDER_LABEL, exam_name)
+    main_folder = client.Create(gdata.docs.data.FOLDER_LABEL, 'EssaySafe')
+    prof.folder_id = main_folder.resource_id.text
+    prof.save()
+  try:
+    folder = client.GetDocList(uri='/feeds/default/private/full/-/folder/?title='+exam_name+'&title-exact=true&max-results=1').entry[0]
+  except:
+    pre_folder = client.Create(gdata.docs.data.FOLDER_LABEL, exam_name)
+    folder = client.Move(pre_folder, main_folder)
+  logging.warning(folder)
+  #folder = client.Create(gdata.docs.data.FOLDER_LABEL, exam_name)
   ##new_doc = client.Create(gdata.docs.data.DOCUMENT_LABEL, doc_name, folder.resource_id.text)
   template = client.GetDoc('document:1OB40c2l26fL6BdRim1cKuQhG0Kyt8X6brsAvlVMQ1sE')
   new_doc = client.Copy(template, doc_name)
+  newer_doc = client.Move(new_doc, folder)
   ##txt = gdata.data.MediaSource(file_path="http://" + request.get_host()+'/media/welcome.txt', content_type="text")
   ##newer_doc = client.Update(new_doc, media_source=txt)
   ##new_doc = client.Upload('media/welcome.txt', doc_name, folder.resource_id.text, content_type="text")
-  return new_doc
+  return newer_doc, folder
 
 def index(request):
   context = {
     }
   return render_to_response('index.html', context)
+  
+def login(request): 
+  if request.method == 'POST':
+    form = LogInForm(None, request.POST)
+    next = request.POST['next']
+    if form.is_valid():
+      form.clean()
+      user = form.user_cache
+      if user is not None:
+        auth.login(request, user)
+        return HttpResponseRedirect(request.POST['next'])
+      else:
+        return render_to_response('login.html', {'form': form, 
+          'user': form.user_cache,}, context_instance=RequestContext(request))
+  else:
+    form = LogInForm() 
+    next = request.GET.get('next', '/dashboard/')
+  context = {'form': form, 'user': request.user, 'next': next}
+  return render_to_response('login.html', context, context_instance=RequestContext(request))
 
-def take(request):
-  context = {
-    }
-  return render_to_response('take.html', context)
+def logout(request):
+  auth.logout(request)
+  return HttpResponseRedirect('/')
 
-def CreateResourceInCollection(client, prof_name, exam_name):
-  """Create a collection, then create a document in it."""
-  col = gdata.docs.data.Resource(type='folder', title=exam_name)
-  col = client.CreateResource(col)
-  logging.warning('Created collection:', col.title.text, col.resource_id.text)
-  doc = gdata.docs.data.Resource(type='document', title=exam_name+' prompt')
-  doc = client.CreateResource(doc, collection=col)
-  logging.warning('Created:', doc.title.text, doc.resource_id.text)
-  return doc.resource_id.text
+@oauth_required
+def signup(request):
+  if request.method == 'POST':
+    form = SignUpForm(request.POST)
+    next = request.POST['next']
+    if form.is_valid():
+      prof = form.save()
+      user = auth.authenticate(username=request.POST['email'], 
+        password=request.POST['password'])
+      client = get_client(
+          request.session[GOOGLE_OAUTH_TOKEN].token,
+          request.session[GOOGLE_OAUTH_TOKEN].token_secret,
+      )
+      main_folder = client.Create(gdata.docs.data.FOLDER_LABEL, 'EssaySafe')
+      prof.folder_id = main_folder.resource_id.text
+      prof.token = request.session[GOOGLE_OAUTH_TOKEN].token
+      prof.token_secret = request.session[GOOGLE_OAUTH_TOKEN].token_secret
+      prof.save()
+      if user is not None:
+        auth.login(request, user)
+      return HttpResponseRedirect(next)
+  else:
+    taken = False
+    form = SignUpForm()
+    next = request.GET.get('next', '/')
+  context = {'form':form, 'next': next,}
+  return render_to_response('signup.html', context, context_instance=RequestContext(request))

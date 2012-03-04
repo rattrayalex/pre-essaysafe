@@ -4,13 +4,34 @@
 {% endblock styles %}
 
 {% block content %}
-  <iframe src='https://docs.google.com/document/d/{{doc}}/edit' class='iframe' scrolling='no' allowTransparency='true'>
+
+<!-- $(window).load(getMap()); -->
+<body onload = "getMap();">
+<div id="content" class="row">
+  <div>
+	<iframe src="{{ url }}" width='900px' height='900px'></iframe>
+  </div>
+  <div class="span3">&nbsp;</div>
+  <div class="span6">
+    <div class="row">
+      <div class="span3">
+        <h1>I'm a Professor</h1>
+        <a href="" class="btn btn-large btn-primary">Make an Exam</a>
+      </div>
+      <div class="span3">
+        <h1>I'm a Student</h1>
+        <a href="" class="btn btn-large btn-primary">Download EssaySafe</a>
+      </div>
+    </div>
+  </div>
+  <div class="span3">&nbsp;</div>
+  <div id='mapDiv' style="position:relative; width:400px; height:400px;"></div>
+<div id="content">
+  
+  <iframe=src='https://docs.google.com/document/d/{{new_doc}}/edit' class='iframe' scrolling='no' allowTransparency='true'>
     <p>Your browser does not support iframes</p>
   </iframe>{% csrf_token %}
 </div>
-<!-- $(window).load(getMap()); -->
-<body onload = "getMap();">
-
 {% endblock content %}
 
 {% block scripts %}
@@ -40,6 +61,5 @@ function successCallback(object)
   alert('Success callback invoked, current map center' + object.center);
 }
 
-//$(window).load(getMap());
 </script>
 {% endblock scripts %}
