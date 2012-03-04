@@ -15,7 +15,6 @@ import gdata.docs.service
 from google_oauth.views import oauth_start, get_client, clear_google_oauth_session, oauth_get_access_token
 from google_oauth.views import GOOGLE_OAUTH_REQ_TOKEN, GOOGLE_OAUTH_TOKEN
 
-
 from app.models import *
 import os, sys, datetime, copy, logging, settings
 
@@ -36,6 +35,7 @@ def make(request):
       )
     logging.warning(client)
     feed = client.GetDocList(uri='/feeds/default/private/full/-/document')
+    
     doclist = map (lambda entry: Doc(doc_name=entry.title.text.encode('UTF-8'), resource_id=entry.resource_id.text), feed.entry)
     return  render_to_response('make.html', {
       'doclist': doclist,
@@ -67,24 +67,17 @@ def about(request):
     }
   return render_to_response('about.html', context)
 
-
-@login_required
-def auth_return(request):
-  try:
-    f = FlowModel.objects.get(id=request.user)
-    credential = f.flow.step2_exchange(request.REQUEST)
-    storage = Storage(CredentialsModel, 'id', request.user, 'credential')
-    storage.put(credential)
-    f.delete()
-    return HttpResponseRedirect("/")
-  except FlowModel.DoesNotExist:
-    pass
-
 def create_docs(request, exam_name, student_name): 
   """
-  Create Google Docs.
+  Create New Google Docs.
   """
   client = CreateClient()
   doc_name = prof_name + '_' + exam_name
-  new_doc = client.Create(gdata.docs.data.DOCUMENT_LABEL, doc_name, folder_or_id=exam_name)
+  try:
+    new_doc = client.Create(gdata.docs.data.DOCUMENT_LABEL, doc_name, folder_or_id=exam_name)
+  except:
+    new_folder = client.Create(gdata.docs.data.FOLDER_LABEL, 'My Folder')
+  
+  
   return True
+
