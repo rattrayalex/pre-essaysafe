@@ -145,9 +145,6 @@ def listFoldersIn(FID):
         folderDict[name] = fid
   return folderDict
 
-print listFoldersIn (224272124)
-print listFoldersIn (0)
-
 def createSubFolder(FID, name):
 # creates a Folder inside FID with name "name"
 # returns folder id
