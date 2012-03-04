@@ -1,9 +1,8 @@
 from xml.dom import minidom
 import httplib
-import urllib2
+import urllib2, urllib
 import mimetools
-import mimetypes
-
+import mimetypes, logging
 
 # Initialize and Make Connection
 box_api_key = 'e74usd65esyarrz614h75i93ik10kku4'
@@ -16,10 +15,9 @@ prefix = "prof_"
 
 
 ## Functions
-def uploadFile(data, FID=0):
+def uploadFile(data, filename, FID=0):
 
-  boundary = mimetools.choose_boundary()
-
+  boundary = '127.0.1.1.1000.8032.1330883846.658.1'
   body = ""
 
   # filename
@@ -28,17 +26,28 @@ def uploadFile(data, FID=0):
   body += "%s\r\n" % ('1')
   body += "--%s\r\n" % (boundary)
   body += "Content-Disposition: form-data; name=\"file\";"
+  body += " filename=\"%s\"\r\n" % "sample.txt"
+  body += "Content-Type: text/html\r\n\r\n" #% get_content_type(filename)
   url = 'http://upload.box.net/api/1.0/upload/%s/%s' % ('8kf9roqysu8jmqskys9vg0hovkmyqtv3', FID)
   #postData = body.encode("utf_8") + data
-  postData = body.encode("utf_8") + data + ("\r\n--%s--" % (boundary)).encode("utf_8")
-
+  postData = body.encode("utf_8") + 'feafefeff' + ("\r\n--%s--" % (boundary)).encode("utf_8")
+  #request.add_header("Content-Type", "multipart/form-data; boundary=%s" % boundary)
   #print data
-  request = urllib2.Request(url)
-  request.add_data(postData)
-  response = urllib2.urlopen(request)
+  #request = urllib.Request(url)
+  #request.add_data(postData)
+  #print postData
+  response = urllib.urlopen(url, postData)
+  #print "CODE ", response.getcode()
+  #logging.warning(postData)
+  #logging.warning(response)
+  #f = open ('log', 'w')
+  #f.write( postData)
+  #request = urllib2.Request(url)
+  #request.add_data(postData)
+  #response = urllib.urlopen(request)
+  print postData
   return response.read()
 
-  
 
 def get_content_type(filename):
   return mimetypes.guess_type(filename)[0] or 'application/octet-stream'
@@ -49,7 +58,7 @@ def upload(filename, FID=0):
   # construct POST data
   boundary = mimetools.choose_boundary()
   body = ""
-
+  print url
   # filename
   body += "--%s\r\n" % (boundary)
   body += 'Content-Disposition: form-data; name="share"\r\n\r\n'
@@ -67,12 +76,15 @@ def upload(filename, FID=0):
   fp.close()
 
   postData = body.encode("utf_8") + data + ("\r\n--%s--" % (boundary)).encode("utf_8")
-
   request = urllib2.Request(url)
   request.add_data(postData)
+  
+  print postData
+
   request.add_header("Content-Type", "multipart/form-data; boundary=%s" % boundary)
   response = urllib2.urlopen(request)
   return response.read()
+
 
 def getBox(action, inparams):
 # action is the action, inparams is a dictionary where
@@ -169,12 +181,15 @@ def listFilesIn(FID,ftype='all'):
   if (ftype != 'all'):
     raise Exception('listFilesIn Exception - functionality not yet implemented. please try with parameter "all"')
   fileDict = {}
-  if (rep.toxml().find('<file>') >= 0):
+  # if (rep.toxml().find('<file>') >= 0):
+  try:
     newrep = rep.getElementsByTagName('tree')[0].getElementsByTagName('folder')[0].getElementsByTagName('files')[0].getElementsByTagName('file')
-    for doc in newrep:
-      name = getAttribute(doc.toxml(), 'file_name')
-      fid = getAttribute(doc.toxml(), 'id')
-      fileDict[name] = fid
+  except:
+    return fileDict
+  for doc in newrep:
+    name = getAttribute(doc.toxml(), 'file_name')
+    fid = getAttribute(doc.toxml(), 'id')
+    fileDict[name] = fid
   return fileDict
 
 def chkStuTime(fID, method):
