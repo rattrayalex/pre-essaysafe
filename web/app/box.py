@@ -17,14 +17,22 @@ prefix = "prof_"
 
 ## Functions
 def uploadFile(data, FID=0):
+
+  boundary = mimetools.choose_boundary()
+
   body = ""
 
   # filename
+  body += "--%s\r\n" % (boundary)
   body += 'Content-Disposition: form-data; name="share"\r\n\r\n'
   body += "%s\r\n" % ('1')
+  body += "--%s\r\n" % (boundary)
   body += "Content-Disposition: form-data; name=\"file\";"
   url = 'http://upload.box.net/api/1.0/upload/%s/%s' % ('8kf9roqysu8jmqskys9vg0hovkmyqtv3', FID)
-  postData = body.encode("xsutf_8") + data 
+  #postData = body.encode("utf_8") + data
+  postData = body.encode("utf_8") + data + ("\r\n--%s--" % (boundary)).encode("utf_8")
+
+  #print data
   request = urllib2.Request(url)
   request.add_data(postData)
   response = urllib2.urlopen(request)
