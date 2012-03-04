@@ -220,11 +220,11 @@ def dashboard(request):
   ids = []
   # for e in exams:
     # exam_count[e] = len(listFilesIn(exams[e]))
-  for e in exams:
+  # for e in exams:
     
   context = {
     'exams': exams, 
-	'ids': 
+	'ids': ids,
 	'count': len(exams),
 	'box_id': box_id,
 	'exam_count':exam_count
