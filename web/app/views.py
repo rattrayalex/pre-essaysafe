@@ -216,7 +216,7 @@ def create_doc(request, client, prof_name, exam_name):
   """
   Create New Google Docs.
   """
-  doc_name = prof_name + ' ' + exam_name
+  doc_name = exam_name + ' Prompt'
   try:
     folder = client.GetDocList(uri='/feeds/default/private/full/-/folder/?title='+exam_name+'&title-exact=true&max-results=1').entry[0]
   except:
@@ -236,11 +236,6 @@ def index(request):
   context = {
     }
   return render_to_response('index.html', context)
-
-def take(request):
-  context = {
-    }
-  return render_to_response('take.html', context)
 
 def CreateResourceInCollection(client, prof_name, exam_name):
   """Create a collection, then create a document in it."""
