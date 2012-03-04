@@ -41,3 +41,13 @@
 #submissions {
   color: #999;
 }
+#sub a{
+  color: #777;
+  padding-left: 10px;
+}
+#sub a:before {
+  content: '- '
+}
+#sub a:hover {
+  color: #000;
+}
