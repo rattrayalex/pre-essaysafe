@@ -20,13 +20,16 @@ from google.appengine.api import mail
 
 import gdata.docs.service
 
+import simplejson
+
 try: from functools import wraps
 except ImportError: from django.utils.functional import wraps # Python 2.4 fallback.
 
 from models import *
 from django.contrib import auth
 
-from box import listFoldersIn, uploadFile, getBox, getText
+from settings import ES_TOKEN, ES_TOKEN_SECRET, APP_NAME
+from box import listFoldersIn, uploadFile, listFilesIn
 
 from google_oauth.views import oauth_start, get_client, clear_google_oauth_session, oauth_get_access_token
 from google_oauth.views import GOOGLE_OAUTH_REQ_TOKEN, GOOGLE_OAUTH_TOKEN
@@ -112,37 +115,22 @@ def make(request):
       return info_submit(request)
     else: 
       message = 'Sorry, there is already an exam named "'+request.POST.get('exam_name')+'". Please choose another name.' 
-  if request.session.get(GOOGLE_OAUTH_TOKEN, False):
-    client = get_client(
-          request.session[GOOGLE_OAUTH_TOKEN].token,
-          request.session[GOOGLE_OAUTH_TOKEN].token_secret,
-      )
-    form = ExamForm()
-    ##feed = client.GetDocList(uri='/feeds/default/private/full/-/document') 
-    ##doclist = map (lambda entry: Doc(doc_name=entry.title.text.encode('UTF-8'), resource_id=entry.resource_id.text), feed.entry)
-    context = {
-      'form': form,
-      'message': message,
-    }
-    return  render_to_response('make.html', RequestContext(request, context))
-  elif request.session.get(GOOGLE_OAUTH_REQ_TOKEN, False):
-    oauth_get_access_token(request)
-    return HttpResponseRedirect("http://" + request.get_host() + request.path)
-  else:
-    return oauth_start(request)
+  client = gdata.docs.client.DocsClient()
+  auth_token = client.ClientLogin('essay.safe.hack@gmail.com','angelhack', APP_NAME)
+  form = ExamForm()
+  ##feed = client.GetDocList(uri='/feeds/default/private/full/-/document') 
+  ##doclist = map (lambda entry: Doc(doc_name=entry.title.text.encode('UTF-8'), resource_id=entry.resource_id.text), feed.entry)
+  context = {
+    'form': form,
+    'message': message,
+  }
+  return render_to_response('make.html', RequestContext(request, context))
 
 def info_submit(request):
   if request.method == 'POST':
     post = request.POST
-    client = get_client(
-        request.session[GOOGLE_OAUTH_TOKEN].token,
-        request.session[GOOGLE_OAUTH_TOKEN].token_secret,
-    )
-    logging.warning(post.get('start_date'))
-    logging.warning(post.get('start_time'))
-    logging.warning(post.get('end_date'))
-    logging.warning(post.get('end_time'))
-    logging.warning(post.get('exam_name'))
+    client = gdata.docs.client.DocsClient()
+    auth_token = client.ClientLogin('essay.safe.hack@gmail.com','angelhack', APP_NAME)
     date_format = '%m/%d%/%Y'
     time_format = '%I:%M%p'
     if len(post.get('start_time')) == 6:
@@ -231,39 +219,25 @@ def email_a_file(add_email, filename, stream):
   return 1
 
 def take(request, exam_name, student_name, student_email):
-  if request.session.get(GOOGLE_OAUTH_TOKEN, False):
-    client = get_client(
-          request.session[GOOGLE_OAUTH_TOKEN].token,
-          request.session[GOOGLE_OAUTH_TOKEN].token_secret,
-      )
-    
-    exam = get_object_or_404(Exam, name=exam_name)
-    prof = exam.professor
-    p_client = get_client(prof.token, prof.token_secret)
-    prompt_doc_id = str(exam.resource_id)
-    prompt_doc = client.GetDoc(prompt_doc_id)
-    doc_name = exam_name+' | '+student_name
-    student_doc = client.Copy(prompt_doc, doc_name)
-    folder = client.GetDoc(exam.folder_id)
-    new_student_doc = client.Move(student_doc, folder)
-    #scope = AclScope(client)
-    #role = AclRole('writer')
-    #acl_entry = gdata.docs.data.Acl(scope=scope, role=role)
-    #new_acl = client.Post(acl_entry, new_student_doc.GetAclFeedLink().href)
-    ##feed = client.GetDocList(uri='/feeds/default/private/full/-/document') 
-    ##doclist = map (lambda entry: Doc(doc_name=entry.title.text.encode('UTF-8'), resource_id=entry.resource_id.text), feed.entry)
-    context = {
-      'doc': str(student_doc.resource_id.text).split(':')[1]
-    }
-    return  render_to_response('take.html', RequestContext(request, context))
-  elif request.session.get(GOOGLE_OAUTH_REQ_TOKEN, False):
-    oauth_get_access_token(request)
-    return HttpResponseRedirect("http://" + request.get_host() + request.path)
-  else:
-    return oauth_start(request)
-
-@login_required
-# @oath_required
+  client = gdata.docs.client.DocsClient()
+  auth_token = client.ClientLogin('essay.safe.hack@gmail.com','angelhack', APP_NAME)
+  exam = get_object_or_404(Exam, name=exam_name)
+  prof = exam.professor
+  prompt_doc_id = str(exam.resource_id)
+  prompt_doc = client.GetDoc(prompt_doc_id)
+  doc_name = exam_name+' | '+student_name
+  student_doc = client.Copy(prompt_doc, doc_name)
+  folder = client.GetDoc(exam.folder_id)
+  new_student_doc = client.Move(student_doc, folder)
+  scope = AclScope(value=student_email, type='user')
+  role = AclRole(value='writer')
+  acl_entry = gdata.docs.data.Acl(scope=scope, role=role)
+  new_acl = client.Post(acl_entry, new_student_doc.GetAclFeedLink().href)
+  context = {
+    'doc': str(student_doc.resource_id.text).split(':')[1]
+  }
+  return render_to_response('take.html', RequestContext(request, context))
+  
 def dashboard(request):
   prof = Professor.objects.get(user=request.user)
   box_id = prof.box_id
@@ -288,7 +262,21 @@ def distribute(request, exam_id):
     'exam': exam
   }
   return render_to_response('distribute.html', context)
-  
+
+def getfiles(request):  
+  if request.GET:
+    f_id = request.GET['folder_id']
+    logging.warning(str(f_id))
+    files = listFilesIn(f_id)
+    links = dict()
+    for f in files:
+      links[f] = url(str(files[f]))
+    logging.info(links)
+    return HttpResponse(simplejson.dumps(links), content_type='application/json')
+
+def url(ID):
+  return 'https://www.box.net/api/1.0/download/%s/%s' % ('8kf9roqysu8jmqskys9vg0hovkmyqtv3', ID)
+
 def about(request):
   context = {
     }
@@ -318,9 +306,10 @@ def create_doc(request, client, prof, exam_name):
   template = client.GetDoc('document:1OB40c2l26fL6BdRim1cKuQhG0Kyt8X6brsAvlVMQ1sE')
   new_doc = client.Copy(template, doc_name)
   newer_doc = client.Move(new_doc, folder)
-  ##txt = gdata.data.MediaSource(file_path="http://" + request.get_host()+'/media/welcome.txt', content_type="text")
-  ##newer_doc = client.Update(new_doc, media_source=txt)
-  ##new_doc = client.Upload('media/welcome.txt', doc_name, folder.resource_id.text, content_type="text")
+  scope = AclScope(value=prof.email, type='user')
+  role = AclRole(value='owner')
+  acl_entry = gdata.docs.data.Acl(scope=scope, role=role)
+  new_acl = client.Post(acl_entry, newer_doc.GetAclFeedLink().href)
   return newer_doc, folder
 
 def index(request):
@@ -351,7 +340,6 @@ def logout(request):
   auth.logout(request)
   return HttpResponseRedirect('/')
 
-@oauth_required
 def signup(request):
   if request.method == 'POST':
     form = SignUpForm(request.POST)
@@ -360,14 +348,14 @@ def signup(request):
       prof = form.save()
       user = auth.authenticate(username=request.POST['email'], 
         password=request.POST['password'])
-      client = get_client(
-          request.session[GOOGLE_OAUTH_TOKEN].token,
-          request.session[GOOGLE_OAUTH_TOKEN].token_secret,
-      )
-      main_folder = client.Create(gdata.docs.data.FOLDER_LABEL, 'EssaySafe')
+      client = gdata.docs.client.DocsClient()
+      auth_token = client.ClientLogin('essay.safe.hack@gmail.com','angelhack', APP_NAME)
+      auth_token = client.ClientLogin('essay.safe.hack@gmail.com','angelhack', APP_NAME)
+      main_folder = client.Create(gdata.docs.data.FOLDER_LABEL, 'EssaySafe | '+request.POST['email'])
       prof.folder_id = main_folder.resource_id.text
-      prof.token = request.session[GOOGLE_OAUTH_TOKEN].token
-      prof.token_secret = request.session[GOOGLE_OAUTH_TOKEN].token_secret
+      #prof.token = request.session[GOOGLE_OAUTH_TOKEN].token
+      #prof.token_secret = request.session[GOOGLE_OAUTH_TOKEN].token_secret
+      #prof.auth_token = client.auth_token
       prof.save()
       if user is not None:
         auth.login(request, user)

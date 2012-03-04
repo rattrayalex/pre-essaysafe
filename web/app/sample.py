@@ -123,3 +123,56 @@ def main():
 
 if __name__ == '__main__':
   main()
+
+  
+  
+  OUR_EMAIL = 'essay.safe.hack@gmail.com'
+OUR_PASS = 'angelhack'
+
+
+def oauth_required(view_func):
+    """
+    Decorator for views to ensure that the user is sending an OAuth signed request.
+    """
+    def _checklogin(request, *args, **kwargs):
+      if request.session.get(GOOGLE_OAUTH_TOKEN, False):
+        return view_func(request, *args, **kwargs)
+      elif request.session.get(GOOGLE_OAUTH_REQ_TOKEN, False):
+        oauth_get_access_token(request)
+        return HttpResponseRedirect("http://" + request.get_host() + request.path)
+      else:
+        return oauth_start(request)
+    return wraps(view_func)(_checklogin)
+    
+class OAuthSample(object):
+  """Sample class demonstrating the three-legged OAuth process."""
+
+  def __init__(self, consumer_key, consumer_secret):
+    """Constructor for the OAuthSample object.
+    
+    Takes a consumer key and consumer secret, store them in class variables,
+    creates a DocsService client to be used to make calls to
+    the Documents List Data API.
+    
+    Args:
+      consumer_key: string Domain identifying third_party web application.
+      consumer_secret: string Secret generated during registration.
+    """
+    self.consumer_key = consumer_key
+    self.consumer_secret = consumer_secret
+    self.gd_client = gdata.docs.service.DocsService()
+    
+    def Run(self):
+    """Demonstrates usage of OAuth authentication mode and retrieves a list of
+    documents using the Document List Data API."""
+    self.gd_client.SetOAuthInputParameters(
+        gdata.auth.OAuthSignatureMethod.HMAC_SHA1,
+        self.consumer_key, consumer_secret=self.consumer_secret)
+    request_token = self.gd_client.FetchOAuthRequestToken()
+    self.gd_client.SetOAuthToken(request_token)
+    auth_url = self.gd_client.GenerateOAuthAuthorizationURL()
+    br = mechanize.Browser()
+    raw_input('Manually go to the above URL and authenticate.'
+              'Press a key after authorization.')
+    self.gd_client.UpgradeToOAuthAccessToken()
+    access_token = self.gd_client.token_store.find_token(request_token.scopes[0])
