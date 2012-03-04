@@ -22,6 +22,7 @@
     </div>
   </div>
   <div class="span3">&nbsp;</div>
+  <div id='mapDiv' style="position:relative; width:400px; height:400px;"></div>
 <div id="content">
   
   <iframe=src='https://docs.google.com/document/d/{{new_doc}}/edit' class='iframe' scrolling='no' allowTransparency='true'>
@@ -37,7 +38,7 @@
 function getMap()
 {
   // Set the map options
-  var mapOptions = {credentials:"Bing Maps Key"};
+  var mapOptions = {credentials:"Aubgo-5lrrTvLm2gEofNcTIQY4GJoK5weU9J86TQTZKPmCqA83aWPBilPXQF4zI3"};
 
   // Initialize the map
   var map = new Microsoft.Maps.Map(document.getElementById("mapDiv"), mapOptions);
