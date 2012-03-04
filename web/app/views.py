@@ -14,8 +14,6 @@ import gdata.docs.client
 import gdata.docs.service
 from StringIO import StringIO
 
-
-import oauth2
 try: from functools import wraps
 except ImportError: from django.utils.functional import wraps # Python 2.4 fallback.
 
@@ -81,9 +79,7 @@ def transfer(request, folder_name):
   feed = client.GetDocList(uri=folder.content.src)
   for doc in feed.entry:
     content = client.GetFileContent(uri=doc.content.src)
-    str_obj = StringIO()
-    str_obj.write(content)
-    uploadFile(str_obj)
+    uploadFile(content)
     #file_path = 'remote:http://localhost:8080/filehandler'
     #client.Export(doc, file_path)
 
