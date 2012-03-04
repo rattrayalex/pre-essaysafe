@@ -3,6 +3,10 @@ import httplib
 import urllib2
 import mimetools
 import mimetypes
+import urllib2
+import mimetools
+import mimetypes
+
 
 # Initialize and Make Connection
 box_api_key = 'e74usd65esyarrz614h75i93ik10kku4'
@@ -12,6 +16,40 @@ box_auth = '8kf9roqysu8jmqskys9vg0hovkmyqtv3'
 conn = httplib.HTTPConnection("www.box.net")
 
 ## Functions
+def get_content_type(filename):
+  return mimetypes.guess_type(filename)[0] or 'application/octet-stream'
+
+def upload(filename, FID=0):
+  url = 'http://upload.box.net/api/1.0/upload/%s/%s' % ('8kf9roqysu8jmqskys9vg0hovkmyqtv3', FID)
+
+  # construct POST data
+  boundary = mimetools.choose_boundary()
+  body = ""
+
+  # filename
+  body += "--%s\r\n" % (boundary)
+  body += 'Content-Disposition: form-data; name="share"\r\n\r\n'
+  body += "%s\r\n" % ('1')
+
+  body += "--%s\r\n" % (boundary)
+  body += "Content-Disposition: form-data; name=\"file\";"
+  body += " filename=\"%s\"\r\n" % filename
+  body += "Content-Type: %s\r\n\r\n" % get_content_type(filename)
+
+  #print body
+
+  fp = file(filename, "rb")
+  data = fp.read()
+  fp.close()
+
+  postData = body.encode("utf_8") + data + ("\r\n--%s--" % (boundary)).encode("utf_8")
+
+  request = urllib2.Request(url)
+  request.add_data(postData)
+  request.add_header("Content-Type", "multipart/form-data; boundary=%s" % boundary)
+  response = urllib2.urlopen(request)
+  return response.read()
+
 def getBox(action, inparams):
 # action is the action, inparams is a dictionary where
 # format would amount to &key=value for input params
@@ -141,39 +179,8 @@ def downloadFilesIn(FID):
 # downloads all files in folder with id FID
 # returns the files or something
   return 0
-def get_content_type(filename):
-  return mimetypes.guess_type(filename)[0] or 'application/octet-stream'
 
-def uploadNewDoc(filepath, FID):
-# uploads a document into folder with id FID
-# returns id of that document
-  #check new
-  url = 'https://upload.box.net/api/1.0/upload/%s/%d' % (box_auth, FID)
-  # http://code.google.com/p/boxnet-client/source/browse/trunk/API/boxdotnet.py?r=5
-  # construct POST data
-  boundary = mimetools.choose_boundary()
-  body = ""
-  # filename
-  body += "--%s\r\n" % (boundary)
-  body += "Content-Disposition: form-data; name="share"\r\n\r\n"
-  body += "%s\r\n" % ('1')
-  body += "--%s\r\n" % (boundary)
-  body += "Content-Disposition: form-data; name=\"file\";"
-  body += " filename=\"%s\"\r\n" % filepath
-  body += "Content-Type: %s\r\n\r\n" % get_content_type(filepath)
-  # print body
-  fp = file(filepath, 'rb')
-  data = fp.read()
-  fp.close()  
-  post_data = body.encode("utf_8")
-  post_data += data
-  post_data += ("\r\n--%s--" % (boundary)).encode("utf_8")
-  request = urllib2.Request(url)
-  request.add_data(post_data)
-  request.add_header("Content-Type", "multiplipart/form-data; boundary=%s" % boundary)
-  response = urllib2.urlopen(request)
-
-print uploadNewDoc('C:/Users/geoff/Dropbox/ideas.txt',0)
+print upload('C:/Users/geoff/Dropbox/ideas.txt')
 
 def uploadNewDocP(FID, name):
 # uploads a document with name "name" in folder with id FID 
