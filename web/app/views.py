@@ -15,8 +15,6 @@ import gdata.docs.service
 from app.forms import LogInForm, SignUpForm
 from StringIO import StringIO
 
-
-import oauth2
 try: from functools import wraps
 except ImportError: from django.utils.functional import wraps # Python 2.4 fallback.
 
