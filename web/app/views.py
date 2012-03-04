@@ -211,6 +211,13 @@ def dashboard(request):
   }
   return render_to_response('dashboard.html', context)
 
+def distribute(request, exam_id):
+  exam = Exam.objects.get(id=exam_id)
+  context = {
+    'exam': exam
+  }
+  return render_to_response('distribute.html', context)
+  
 def about(request):
   context = {
     }
