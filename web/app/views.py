@@ -64,13 +64,14 @@ def oauth_required(view_func):
     return wraps(view_func)(_checklogin)
 
 @oauth_required
-def transfer_file(request, essay_id):
+def submit_file(request, resource_id, student_email, student_name):
   client = get_client(
     request.session[GOOGLE_OAUTH_TOKEN].token,
     request.session[GOOGLE_OAUTH_TOKEN].token_secret,
     )
   #feed = client.GetDocList(uri='/feeds/default/private/full/-/folder?title'+folder_name+'&title-exact=true&max-results=5')
-  essay = Essay.objects.get(id=essay_id)
+  #essay = Essay.objects.get(id=essay_id)
+  
   doc = client.GetDoc(essay.resource_id)
   content = client.GetFileContent(uri=doc.content.src)
   email = essay.exam.box_email
@@ -78,7 +79,7 @@ def transfer_file(request, essay_id):
   return HttpResponseRedirect('/done')
 
 @oauth_required
-def transfer_exam(request, exam_name):
+def submit_exam(request, exam_name):
   client = get_client(
     request.session[GOOGLE_OAUTH_TOKEN].token,
     request.session[GOOGLE_OAUTH_TOKEN].token_secret,
