@@ -64,13 +64,13 @@ def oauth_required(view_func):
     return wraps(view_func)(_checklogin)
 
 @oauth_required
-def submit_file(request, resource_id, student_email, student_name):
+def submit_file(request, essay_id):
   client = get_client(
     request.session[GOOGLE_OAUTH_TOKEN].token,
     request.session[GOOGLE_OAUTH_TOKEN].token_secret,
     )
   #feed = client.GetDocList(uri='/feeds/default/private/full/-/folder?title'+folder_name+'&title-exact=true&max-results=5')
-  #essay = Essay.objects.get(id=essay_id)
+  essay = Essay.objects.get(id=essay_id)
   
   doc = client.GetDoc(essay.resource_id)
   content = client.GetFileContent(uri=doc.content.src)
@@ -239,9 +239,16 @@ def take(request, exam_name, student_name, student_email):
   role = AclRole(value='writer')
   acl_entry = gdata.docs.data.Acl(scope=scope, role=role)
   new_acl = client.Post(acl_entry, new_student_doc.GetAclFeedLink().href)
+  essay = Essay()
+  essay.student_name = student_name
+  essay.student_email = student_email
+  essay.resource_id = student_doc.resource_id.text
+  essay.exam = exam
+  essay.start_date = datetime.datetime.now()
+  essay.save()
   context = {
     'doc': str(student_doc.resource_id.text).split(':')[1],
-    'exam': exam
+    'essay': essay,
   }
   return render_to_response('take.html', RequestContext(request, context))
   
