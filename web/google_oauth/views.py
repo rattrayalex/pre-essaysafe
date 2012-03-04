@@ -11,6 +11,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 
 import gdata.gauth
 import gdata.docs.client
+import logging
 
 #
 # NOTE: You must change the consumer key and consumer secret to the 
@@ -135,6 +136,7 @@ def get_client(token, token_secret):
         token_secret,
         gdata.gauth.ACCESS_TOKEN
     )
+    #logging.warning(client.auth_token)
     return client
 
 def clear_google_oauth_session(request):
