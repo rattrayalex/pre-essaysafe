@@ -12,9 +12,7 @@ import gdata.gauth
 import gdata.docs.data
 import gdata.docs.client
 import gdata.docs.service
-<<<<<<< HEAD
 from app.forms import LogInForm, SignUpForm
-=======
 from StringIO import StringIO
 
 
@@ -22,7 +20,6 @@ import oauth2
 try: from functools import wraps
 except ImportError: from django.utils.functional import wraps # Python 2.4 fallback.
 
->>>>>>> 752716fd2b1b12450d4508f6677b0a0987261778
 from models import *
 from django.contrib import auth
 

@@ -19,11 +19,7 @@ urlpatterns = patterns('',
     (r'^about/$', about),
     (r'^(?P<folder_name>\w+)/transfer/$', transfer),
     (r'info_submit/$', info_submit),
-<<<<<<< HEAD
 	(r'login/$', login),
 	(r'logout/$', logout),
 	(r'signup/$', signup),
  )
-=======
-    )
->>>>>>> 752716fd2b1b12450d4508f6677b0a0987261778
