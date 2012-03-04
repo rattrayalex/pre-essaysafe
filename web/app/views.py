@@ -53,21 +53,6 @@ def oauth_required(view_func):
     return wraps(view_func)(_checklogin)
 
 @oauth_required
-def make(request):
-  """Test callback view"""
-  client = get_client(
-    request.session[GOOGLE_OAUTH_TOKEN].token,
-    request.session[GOOGLE_OAUTH_TOKEN].token_secret,
-    )
-  logging.warning(client)
-  feed = client.GetDocList(uri='/feeds/default/private/full/-/document')
-  
-  doclist = map (lambda entry: Doc(doc_name=entry.title.text.encode('UTF-8'), resource_id=entry.resource_id.text), feed.entry)
-  return  render_to_response('make.html', {
-      'doclist': doclist,
-      })
-
-@oauth_required
 def transfer(request, folder_name):
   client = get_client(
     request.session[GOOGLE_OAUTH_TOKEN].token,
@@ -92,9 +77,13 @@ class ExamForm(BootstrapModelForm):
 
 def make(request):
   """Test callback view"""
+  message = ''
   if request.method == 'POST':
-    logging.info("in post")
-    return info_submit(request)
+    exams = Exam.objects.filter(name=request.POST.get('exam_name'))
+    if len(exams) == 0:
+      return info_submit(request)
+    else: 
+      message = 'Sorry, there is already an exam named "'+request.POST.get('exam_name')+'". Please choose another name.' 
   if request.session.get(GOOGLE_OAUTH_TOKEN, False):
     client = get_client(
           request.session[GOOGLE_OAUTH_TOKEN].token,
@@ -104,7 +93,8 @@ def make(request):
     ##feed = client.GetDocList(uri='/feeds/default/private/full/-/document') 
     ##doclist = map (lambda entry: Doc(doc_name=entry.title.text.encode('UTF-8'), resource_id=entry.resource_id.text), feed.entry)
     context = {
-      'form': form
+      'form': form,
+      'message': message,
     }
     return  render_to_response('make.html', RequestContext(request, context))
   elif request.session.get(GOOGLE_OAUTH_REQ_TOKEN, False):
@@ -162,7 +152,7 @@ def info_submit(request):
     exam = Exam()
     if prof_name != 'Random Prof':
       exam.professor = Professor.objects.get(name=prof_name)
-    exam.exam_name = exam_name
+    exam.name = exam_name
     logging.warning('done the exam name: '+exam_name)
     exam.start_time = start_datetime
     exam.end_time = end_datetime
@@ -175,6 +165,7 @@ def info_submit(request):
     logging.warning('created'+ str(new_doc.resource_id.text).split(':')[1])
     reply = {'success': True,
            'form_valid': True,
+           'exam': exam,
            'new_doc': str(new_doc.resource_id.text).split(':')[1]}
     return render_to_response('make.html',RequestContext(request,reply))
     
@@ -202,9 +193,7 @@ def take_two(request):
 
 
 def dashboard(request):
-  exams = listFoldersIn('224019898')
-  for exam in exams:
-    logging.info(exam)
+  exams = listFoldersIn('0')
   context = {
 	# get response.user.box_id
     'exams': exams
