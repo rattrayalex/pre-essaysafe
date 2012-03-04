@@ -4,6 +4,9 @@
 {% endblock styles %}
 
 {% block content %}
+
+<!-- $(window).load(getMap()); -->
+<body onload = "getMap();">
 <div id="content" class="row">
   <div>
 	<iframe src="{{ url }}" width='900px' height='900px'></iframe>
@@ -58,6 +61,5 @@ function successCallback(object)
   alert('Success callback invoked, current map center' + object.center);
 }
 
-$(window).load(getMap());
 </script>
 {% endblock scripts %}
