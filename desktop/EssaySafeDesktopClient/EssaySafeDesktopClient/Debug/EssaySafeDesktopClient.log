@@ -1,19 +1,12 @@
-﻿Build started 3/3/2012 10:13:53 PM.
+﻿Build started 3/3/2012 11:44:57 PM.
      1>Project "C:\Users\Greg Terrono\pre-essaysafe\desktop\EssaySafeDesktopClient\EssaySafeDesktopClient\EssaySafeDesktopClient.vcxproj" on node 2 (build target(s)).
      1>InitializeBuildStatus:
          Creating "Debug\EssaySafeDesktopClient.unsuccessfulbuild" because "AlwaysCreate" was specified.
        CustomBuild:
-         Moc'ing essaysafedesktopclient.h...
-         Uic'ing essaysafedesktopclient.ui...
-         Moc'ing MyButton.h...
+         All outputs are up-to-date.
        ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I.\GeneratedFiles /IC:\Qt\4.8.0\include /I.\GeneratedFiles\Debug /IC:\Qt\4.8.0\include\QtCore /IC:\Qt\4.8.0\include\QtGui /I.\ /Zi /nologo /W1 /WX- /Od /Oy- /D UNICODE /D WIN32 /D QT_LARGEFILE_SUPPORT /D QT_CORE_LIB /D QT_GUI_LIB /Gm- /EHsc /MDd /GS /fp:precise /Zc:wchar_t- /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt GeneratedFiles\Debug\moc_MyButton.cpp GeneratedFiles\Debug\moc_essaysafedesktopclient.cpp MyButton.cpp essaysafedesktopclient.cpp main.cpp
-         moc_MyButton.cpp
-         moc_essaysafedesktopclient.cpp
-         MyButton.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I.\GeneratedFiles /IC:\Qt\4.8.0\include /I.\GeneratedFiles\Debug /IC:\Qt\4.8.0\include\QtCore /IC:\Qt\4.8.0\include\QtGui /I.\ /Zi /nologo /W1 /WX- /Od /Oy- /D UNICODE /D WIN32 /D QT_LARGEFILE_SUPPORT /D QT_CORE_LIB /D QT_GUI_LIB /Gm- /EHsc /MDd /GS /fp:precise /Zc:wchar_t- /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt essaysafedesktopclient.cpp
          essaysafedesktopclient.cpp
-         main.cpp
-         Generating Code...
          All outputs are up-to-date.
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Greg Terrono\pre-essaysafe\desktop\EssaySafeDesktopClient\\EssaySafeDesktopClient.exe" /NOLOGO /LIBPATH:C:\Qt\4.8.0\lib qtmaind.lib QtCored4.lib QtGuid4.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug\EssaySafeDesktopClient.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\Greg Terrono\pre-essaysafe\desktop\EssaySafeDesktopClient\EssaySafeDesktopClient.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Greg Terrono\pre-essaysafe\desktop\EssaySafeDesktopClient\EssaySafeDesktopClient.lib" /MACHINE:X86 Debug\essaysafedesktopclient.obj
@@ -33,4 +26,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:10.34
+Time Elapsed 00:00:04.58

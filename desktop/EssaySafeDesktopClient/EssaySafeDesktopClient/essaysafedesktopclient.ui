@@ -27,7 +27,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Block My Keys!</string>
+     <string>Start Test</string>
     </property>
     <property name="default">
      <bool>false</bool>
