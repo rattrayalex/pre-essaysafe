@@ -17,15 +17,15 @@ import logging
 # NOTE: You must change the consumer key and consumer secret to the 
 #       key and secret that you received from Google
 #
-from settings import GDATA_CONSUMER_KEY, GDATA_CONSUMER_SECRET
+from settings import P_GDATA_CONSUMER_KEY, P_GDATA_CONSUMER_SECRET
 
-SOURCE_NAME = "essaysafe-essaysafe-v1"
+SOURCE_NAME = "essaysafe-p_essaysafe-v1"
 SCOPES = ['https://docs.google.com/feeds/', ]   # include others for multi-scope keys
 
 
 # session keys
-GOOGLE_OAUTH_REQ_TOKEN = 'google_oauth_req_token'
-GOOGLE_OAUTH_TOKEN = 'google_oauth_token'
+GOOGLE_OAUTH_REQ_TOKEN = 'p_google_oauth_req_token'
+GOOGLE_OAUTH_TOKEN = 'p_google_oauth_token'
 
 def oauth_start(request):
     """View function that begins the Google OAuth authentication process"""
