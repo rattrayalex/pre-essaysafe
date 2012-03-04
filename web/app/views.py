@@ -21,7 +21,7 @@ except ImportError: from django.utils.functional import wraps # Python 2.4 fallb
 from models import *
 from django.contrib import auth
 
-from box import listFoldersIn, uploadFile
+from box import listFoldersIn, uploadFile, listFilesIn
 
 from google_oauth.views import oauth_start, get_client, clear_google_oauth_session, oauth_get_access_token
 from google_oauth.views import GOOGLE_OAUTH_REQ_TOKEN, GOOGLE_OAUTH_TOKEN
@@ -191,12 +191,25 @@ def take_two(request):
     }
   return render_to_response('take_two.html', context)
 
-
+@login_required
+# @oath_required
 def dashboard(request):
-  exams = listFoldersIn('0')
+  prof = Professor.objects.get(user=request.user)
+  box_id = prof.box_id
+  # (name, id)
+  exams = listFoldersIn(box_id)
+  exam_count = dict()
+  ids = []
+  # for e in exams:
+    # exam_count[e] = len(listFilesIn(exams[e]))
+  for e in exams:
+    
   context = {
-	# get response.user.box_id
-    'exams': exams
+    'exams': exams, 
+	'ids': 
+	'count': len(exams),
+	'box_id': box_id,
+	'exam_count':exam_count
   }
   return render_to_response('dashboard.html', context)
 
