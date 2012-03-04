@@ -1,0 +1,40 @@
+﻿Build started 3/4/2012 12:49:41 AM.
+     1>Project "C:\Users\Greg Terrono\pre-essaysafe\desktop\EssaySafeDesktopClient\EssaySafeDesktopClient\EssaySafeDesktopClient.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating "Release\EssaySafeDesktopClient.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       CustomBuild:
+         Moc'ing essaysafedesktopclient.h...
+         Uic'ing essaysafedesktopclient.ui...
+         Could not create output file
+         Moc'ing MyButton.h...
+         Rcc'ing essaysafedesktopclient.qrc...
+     1>RCC : warning : No resources in 'C:\Users\Greg Terrono\pre-essaysafe\desktop\EssaySafeDesktopClient\EssaySafeDesktopClient\essaysafedesktopclient.qrc'.
+         
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I.\GeneratedFiles /IC:\Qt\4.8.0\include /I.\GeneratedFiles\Release /IC:\Qt\4.8.0\include\QtCore /IC:\Qt\4.8.0\include\QtGui /I.\ /nologo /W1 /WX- /O2 /Oy- /D UNICODE /D WIN32 /D QT_LARGEFILE_SUPPORT /D QT_NO_DEBUG /D NDEBUG /D QT_CORE_LIB /D QT_GUI_LIB /Gm- /EHsc /MD /GS /fp:precise /Zc:wchar_t- /Zc:forScope /Fo"Release\\" /Fd"Release\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt essaysafedesktopclient.cpp GeneratedFiles\Release\moc_essaysafedesktopclient.cpp GeneratedFiles\Release\moc_MyButton.cpp main.cpp MyButton.cpp
+         essaysafedesktopclient.cpp
+         moc_essaysafedesktopclient.cpp
+         moc_MyButton.cpp
+         main.cpp
+         MyButton.cpp
+         Generating Code...
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I.\GeneratedFiles /IC:\Qt\4.8.0\include /I.\GeneratedFiles\Release /IC:\Qt\4.8.0\include\QtCore /IC:\Qt\4.8.0\include\QtGui /I.\ /nologo /W1 /WX- /O2 /Oy- /D UNICODE /D WIN32 /D QT_LARGEFILE_SUPPORT /D QT_NO_DEBUG /D NDEBUG /D QT_CORE_LIB /D QT_GUI_LIB /Gm- /EHsc /MD /GS /fp:precise /Zc:wchar_t- /Zc:forScope /Fo"Release\\" /Fd"Release\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt GeneratedFiles\qrc_essaysafedesktopclient.cpp
+         qrc_essaysafedesktopclient.cpp
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Greg Terrono\pre-essaysafe\desktop\EssaySafeDesktopClient\\EssaySafeDesktopClient.exe" /NOLOGO /LIBPATH:C:\Qt\4.8.0\lib qtmain.lib QtCore4.lib QtGui4.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Release\EssaySafeDesktopClient.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /PDB:"C:\Users\Greg Terrono\pre-essaysafe\desktop\EssaySafeDesktopClient\EssaySafeDesktopClient.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Greg Terrono\pre-essaysafe\desktop\EssaySafeDesktopClient\EssaySafeDesktopClient.lib" /MACHINE:X86 Release\essaysafedesktopclient.obj
+         Release\qrc_essaysafedesktopclient.obj
+         Release\moc_essaysafedesktopclient.obj
+         Release\moc_MyButton.obj
+         Release\main.obj
+         Release\MyButton.obj
+         EssaySafeDesktopClient.vcxproj -> C:\Users\Greg Terrono\pre-essaysafe\desktop\EssaySafeDesktopClient\EssaySafeDesktopClient.exe
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"C:\Users\Greg Terrono\pre-essaysafe\desktop\EssaySafeDesktopClient\\EssaySafeDesktopClient.exe;#1" /manifest Release\EssaySafeDesktopClient.exe.intermediate.manifest
+       FinalizeBuildStatus:
+         Deleting file "Release\EssaySafeDesktopClient.unsuccessfulbuild".
+         Touching "Release\EssaySafeDesktopClient.lastbuildstate".
+     1>Done Building Project "C:\Users\Greg Terrono\pre-essaysafe\desktop\EssaySafeDesktopClient\EssaySafeDesktopClient\EssaySafeDesktopClient.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:08.29
