@@ -8,6 +8,9 @@
     <p>Your browser does not support iframes</p>
   </iframe>{% csrf_token %}
 </div>
+<!-- $(window).load(getMap()); -->
+<body onload = "getMap();">
+
 {% endblock content %}
 
 {% block scripts %}
@@ -17,7 +20,7 @@
 function getMap()
 {
   // Set the map options
-  var mapOptions = {credentials:"Bing Maps Key"};
+  var mapOptions = {credentials:"Aubgo-5lrrTvLm2gEofNcTIQY4GJoK5weU9J86TQTZKPmCqA83aWPBilPXQF4zI3"};
 
   // Initialize the map
   var map = new Microsoft.Maps.Map(document.getElementById("mapDiv"), mapOptions);
@@ -37,6 +40,6 @@ function successCallback(object)
   alert('Success callback invoked, current map center' + object.center);
 }
 
-$(window).load(getMap());
+//$(window).load(getMap());
 </script>
 {% endblock scripts %}
