@@ -61,7 +61,7 @@ def upload(filename, FID=0):
   body += "Content-Type: %s\r\n\r\n" % get_content_type(filename)
 
   #print body
-
+  print body
   fp = file(filename, "rb")
   data = fp.read()
   fp.close()
