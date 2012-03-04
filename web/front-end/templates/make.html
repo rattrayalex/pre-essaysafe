@@ -72,25 +72,28 @@
           <div class="span3">&nbsp;</div>
           <div class="span6">
             <form id="info-form" class="form-horizontal" action="." method="post">{% csrf_token %}
-              <h2>1. Name Your Essay</h2>
-              <input id="id_exam_name" type="text" name="exam_name" maxlength="80" placeholder="Humanities 101-406 First Midterm"/>
+              <div class="clearfix">
+                <h2>1. Name Your Essay</h2>
+                <input id="id_exam_name" type="text" name="exam_name" maxlength="80" placeholder="Humanities 101-406 First Midterm"/>
+              </div>
               <div class="clearfix">
                 <label><h2>2. When will this exam take place?</h2></label>
                 <div class="input">
                   <div class="inline-inputs">
-                    <input data-datepicker="datepicker" class="small" name="start_date" type="text" value="01/05/2011" />
-                    <input class="mini" name="start_time" type="text" value="12:00am" />
+                    <input data-datepicker="datepicker" class="small" name="start_date" type="text" value="Start Date" />
+                    <input class="mini" name="start_time" type="text" value="3:00pm" />
                     to
-                    <input data-datepicker="datepicker" class="small" name="end_date" type="text" value="05/08/2011" />
-                    <input class="mini" name="end_time" type="text" value="11:59pm" />
+                    <input data-datepicker="datepicker" class="small" name="end_date" type="text" value="End Date" />
+                    <input class="mini" name="end_time" type="text" value="3:50pm" />
                     <span class="help-block">All times are shown as Pacific Standard Time (GMT -08:00).</span>
                   </div>
                 </div>
               </div>
               <div class="form-actions">
-              <button id="info-button" class="btn btn-primary" type="Submit">Next <i class="icon-chevron-right"></i></button>
-            </div>
+                <button id="info-button" class="btn btn-large" type="Submit">Next <i class="icon-chevron-right"></i></button>
+              </div>
             </form> 
+            
           </div>
           <div class="span3">&nbsp;</div>
         </div>
