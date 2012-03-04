@@ -47,6 +47,7 @@ class Essay(models.Model):
   end_date = models.DateTimeField('date finished')
   latitude = models.DecimalField()
   longitude = models.DecimalField()
+  resource_id = models.CharField()
 
 class Doc(models.Model):
   doc_name = models.CharField(max_length=80)
