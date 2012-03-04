@@ -140,7 +140,9 @@ def uploadNewDocS(prof, name, student):
 # tags as created by Student with name Student
   #check new
   # wait
-  return 0
+  response = getBox('create_folder',{'parent_id': [0], 'name': [name], 'share': [0]})
+  rep = chkHTTPstatus(response, 'upload_ok')
+  # return int(getText(rep.getElementsByTagName("folder")[0].getElementsByTagName("folder_id")[0].toxml(), 'folder_id'))
 
 
 def uploadEditedDoc(ID):
