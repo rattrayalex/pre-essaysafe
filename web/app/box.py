@@ -3,9 +3,6 @@ import httplib
 import urllib2
 import mimetools
 import mimetypes
-import urllib2
-import mimetools
-import mimetypes
 
 
 # Initialize and Make Connection
@@ -120,8 +117,6 @@ def listFoldersIn(FID):
       name = getAttribute(folderseg, 'name')
       folderDict[name] = fid
   return folderDict
-
-print listFoldersIn("0")
 
 def createSubFolder(FID, name):
 # creates a Folder inside FID with name "name"
