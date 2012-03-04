@@ -131,11 +131,13 @@ INSTALLED_APPS = (
     'djangotoolbox',
     'autoload',
     'dbindexer',
-
+    'google_oauth',
     # djangoappengine should come last, so it can override a few manage.py commands
     'djangoappengine',
 )
 
+GDATA_CONSUMER_KEY = '1075895061839-air2l59at4t8gsng9ml8a3j0qspfp8i8.apps.googleusercontent.com'
+GDATA_CONSUMER_SECRET = '6savVHl6blxgIwodzBRKXPMc'
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',

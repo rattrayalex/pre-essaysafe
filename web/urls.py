@@ -6,6 +6,7 @@ import app
 admin.autodiscover()
 
 urlpatterns = patterns('',
+    (r'^google/oauth/', include('google_oauth.urls', namespace='google_oauth', app_name='google_oauth'))
     (r'^app/', include(app.urls)),
 
     # Uncomment the admin/doc line below to enable admin documentation:

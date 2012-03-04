@@ -7,14 +7,14 @@ from django.core.files import File
 import os.path
 import djangotoolbox.fields as models2
 from django.template.defaultfilters import slugify
-from oauth2client.django_orm import FlowField
-from oauth2client.django_orm import CredentialsField
+
 
 class Professor(models.Model):
   """ 
   Professor model.
   """
-  name = models.CharField(max_length=80)
+  email = models.CharField(max_length=80)
+  client_id = models.CharField(max_length=100)
   
   def __unicode__(self):
     return self.name
@@ -22,7 +22,10 @@ class Professor(models.Model):
 class Exam(models.Model):
   """ Exam model.
   """
-  exam_name = models.CharField(max_length=80)
+  professor = models.ForeignKey(Professor)
+  exam_name = models.CharField(max_length=80, unique=True)
+  start_time = models.DateTimeField(blank=True)
+  end_time = models.DateTimeField(blank=True)
   
   def __unicode__(self):
     return self.name
@@ -31,27 +34,8 @@ class Essay(models.Model):
   exam = models.ForeignKey(Exam)
   student_name = models.CharField(max_length=80)
   begin_date = models.DateTimeField('date started')
-  end_date = models.DateTimeFiled('date finished')
+  end_date = models.DateTimeField('date finished')
 
 class Doc(models.Model):
   doc_name = models.CharField(max_length=80)
-  resource_id_text = models.CharField(max_length=80)
-
-class FlowModel(models.Model):
-  id = models.ForeignKey(User, primary_key=True)
-  flow = FlowField()
-
-class CredentialsModel(models.Model):
-  id = models.ForeignKey(User, primary_key=True)
-  credential = CredentialsField()
-
-
-class CredentialsAdmin(admin.ModelAdmin):
-  pass
-
-class FlowAdmin(admin.ModelAdmin):
-  pass
-
-
-admin.site.register(CredentialsModel, CredentialsAdmin)
-admin.site.register(FlowModel, FlowAdmin)
+  resource_id = models.CharField(max_length=80)
