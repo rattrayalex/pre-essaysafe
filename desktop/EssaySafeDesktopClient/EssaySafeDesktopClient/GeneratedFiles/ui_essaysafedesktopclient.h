@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'essaysafedesktopclient.ui'
 **
-** Created: Sat Mar 3 22:13:54 2012
+** Created: Sat Mar 3 22:45:24 2012
 **      by: Qt User Interface Compiler version 4.8.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -52,7 +52,7 @@ public:
     void retranslateUi(QMainWindow *EssaySafeDesktopClientClass)
     {
         EssaySafeDesktopClientClass->setWindowTitle(QApplication::translate("EssaySafeDesktopClientClass", "EssaySafeDesktopClient", 0, QApplication::UnicodeUTF8));
-        pushButton->setText(QApplication::translate("EssaySafeDesktopClientClass", "Block My Keys!", 0, QApplication::UnicodeUTF8));
+        pushButton->setText(QApplication::translate("EssaySafeDesktopClientClass", "Start Test", 0, QApplication::UnicodeUTF8));
     } // retranslateUi
 
 };
