@@ -21,6 +21,7 @@ class Professor(models.Model):
   folder_id = models.CharField(max_length=80, blank=True)
   token = models.CharField(max_length=100, blank=True)
   token_secret = models.CharField(max_length=100, blank=True)
+  ##auth_token = models.CharField(max_length=100, blank=True)
   
   def __unicode__(self):
     return self.name
