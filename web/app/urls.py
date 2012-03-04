@@ -17,5 +17,6 @@ urlpatterns = patterns('',
     (r'^dashboard/$', dashboard),
     (r'^take/$', take),
     (r'^about/$', about),
+    (r'info_submit/$', info_submit),
                 
     )
