@@ -16,15 +16,17 @@ import gdata.docs.service
 from gdata.acl.data import AclScope, AclRole
 from app.forms import LogInForm, SignUpForm
 from StringIO import StringIO
-import mechanize
+
+import simplejson
+
 try: from functools import wraps
 except ImportError: from django.utils.functional import wraps # Python 2.4 fallback.
 
 from models import *
 from django.contrib import auth
 
-from box import listFoldersIn, uploadFile
 from settings import ES_TOKEN, ES_TOKEN_SECRET, APP_NAME
+from box import listFoldersIn, uploadFile, listFilesIn
 
 from google_oauth.views import oauth_start, get_client, clear_google_oauth_session, oauth_get_access_token
 from google_oauth.views import GOOGLE_OAUTH_REQ_TOKEN, GOOGLE_OAUTH_TOKEN
@@ -130,6 +132,9 @@ def info_submit(request):
     logging.warning('done the times')
     exam.resource_id = new_doc.resource_id.text
     exam.folder_id = new_folder.resource_id.text
+    exam.box_fid = createSubFolder(prof.box_id, exam_name)
+    element = getBox('toggle_folder_email', {'folder_id':folder_id, 'enable':'1'})
+    exam.box_email = getText(element, 'upload_email')
     exam.save()
     logging.warning('saved')
     logging.warning('created'+ str(new_doc.resource_id.text))
@@ -144,6 +149,30 @@ def index(request):
   context = {
     }
   return render_to_response('index.html', context)
+
+def send_an_email(receiver, subject, body):
+  s = smtplib.SMTP('smtp.gmail.com', 587)
+  myGmail = 'essay.safe.hack@gmail.com'
+  myGMPasswd = 'angelhack'
+  s.ehlo()
+  s.starttls()
+  s.login(myGmail, myGMPasswd)
+  msg = ("From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n%s" 
+  %(myGmail, receiver, subject, body))
+  s.sendmail(myGmail, [receiver], msg)
+  s.quit()
+
+def email_a_file(filename, stream):
+  logging.warning('in email_file')
+  msg = "You have received a file from UploadToMail.appspot.com"
+  subject = 'New File from UploadToMail'
+  attachments = [(filename, stream)]
+  ##  msg = MIMEMultipart()
+  ##  msg.attach(MIMEImage(photo.read()))
+  ##  send_an_email('rattray.alex@gmail.com', 'sup, an image', msg)
+  send_app_email(('mapp.webmaster@gmail.com','midatlantic_7ndu@sendtodropbox.com'), subject, msg, attachments)
+  photo.close()
+  return 1
 
 def take(request, exam_name, student_name, student_email):
   client = gdata.docs.client.DocsClient()
@@ -166,10 +195,20 @@ def take(request, exam_name, student_name, student_email):
   return render_to_response('take.html', RequestContext(request, context))
   
 def dashboard(request):
-  exams = listFoldersIn('0')
+  prof = Professor.objects.get(user=request.user)
+  box_id = prof.box_id
+  # (name, id)
+  exams = listFoldersIn(box_id)
+  exam_count = dict()
+  ids = []
+  for e in exams:
+    exam_count[e] = [len(listFilesIn(exams[e])), exams[e]]
   context = {
-	# get response.user.box_id
-    'exams': exams
+    'exams': exams, 
+	'ids': ids,
+	'count': len(exams),
+	'box_id': box_id,
+	'exam_count':exam_count
   }
   return render_to_response('dashboard.html', context)
 
@@ -179,7 +218,15 @@ def distribute(request, exam_id):
     'exam': exam
   }
   return render_to_response('distribute.html', context)
-  
+
+def getfiles(request):  
+  if request.GET:
+    f_id = request.GET['folder_id']
+    logging.warning(str(f_id));
+    files = listFilesIn(f_id)
+    logging.info(files)
+    return HttpResponse(simplejson.dumps(files), content_type='application/json')
+
 def about(request):
   context = {
     }

@@ -23,4 +23,5 @@ urlpatterns = patterns('',
     (r'login/$', login),
     (r'logout/$', logout),
     (r'signup/$', signup),
+	(r'getfiles/$', getfiles),
  )

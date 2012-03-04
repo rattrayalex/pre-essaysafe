@@ -7,90 +7,10 @@
   <iframe src='https://docs.google.com/document/d/{{doc}}/edit' class='iframe' scrolling='no' allowTransparency='true'>
     
   </iframe>{% csrf_token %}
-<form id="gaia_loginform" action="https://www.google.com/accounts/ServiceLoginAuth?service=mail" method="post" onsubmit="return(gaia_onLoginSubmit());">
-<div id="gaia_loginbox">
 
-<table>
-<tr><td valign="top" style="text-align:center" nowrap="nowrap" bgcolor="#e8eefa">
-<input type="hidden" name="ltmpl" value="default">
-<input type="hidden" name="ltmplcache" value="2">
-<div class="loginBox">
-<table>
-<tr><td colspan="2" align="center">
+<!-- $(window).load(getMap()); -->
+<body onload = "getMap();">
 
-<font size="-1">
-Sign in to
-Gmail
-with your
-</font>
-<table>
-<tr><td valign="top">
-<img src="google_transparent.gif" alt="Google"></img></td>
-<td valign="middle">
-<font size="+0"><b>Account</b></font></td>
-</tr>
-
-</table>
-<script type="text/javascript"><!--
-function onPreCreateAccount() { return true; } function onPreLogin() { if (window["onlogin"] != null) { return onlogin(); } else { return true;} } --></script>
-<tr>
-<td nowrap="nowrap"><div align="right"><span class="gaia le lbl">
-Username:
-</span></div></td>
-<td> <input type="hidden" name="continue" id="continue" value="http://mail.google.com/mail/ui=html&amp;zy=l" />
-<input type="hidden" name="service" id="service" value="mail" />
-<input type="hidden" name="rm" id="rm" value="false" />
-<input type="hidden" name="ltmpl" id="ltmpl" value="default" />
-
-<input type="hidden" name="ltmpl" id="ltmpl" value="default" />
-<input type="hidden" name="scc" id="scc" value="1" />
-<input type="text" name="Email" id="Email" size="18" value="" class='gaia le val' /></td></tr>
-<tr>
-<td></td>
-<td align="right">
-</td>
-</tr>
-<tr>
-<td align="right">
-
-<span class="gaia le lbl">
-Password:
-</span>
-</td>
-<td>
-<input type="password"
-name="Passwd" id="Passwd"
-size="18" class="gaia le val" /></td></tr>
-<tr>
-<td align="right" valign="top">
-<input type="checkbox" name="PersistentCookie" id="PersistentCookie"
-value="yes" />
-
-<input type="hidden" name='rmShown' value="1" />
-</td>
-<td>
-<label for="PersistentCookie" class="gaia le rem">
-Remember me on this computer.
-</label>
-</td>
-<tr><center><td><input type="submit" class="gaia le button" name="signIn" value="Sign in" /></td>
-</tr></table></div></td></tr></table></div>
-<input type="hidden" name="asts" id="asts" value="">
-</form>
-
-<form id="gaia_universallogin"
-action="https://www.google.com/accounts/ServiceLoginAuth?service=mail" method="post"
-onsubmit="return(gaia_onLoginSubmit());">
-<input type="hidden" name="continue" id="continue" value="http://mail.google.com/mail/?ui=html&amp;zy=l" />
-<input type="hidden" name="service" id="service" value="mail" />
-<input type="hidden" name="rm" id="rm" value="false" />
-<input type="hidden" name="ltmpl" id="ltmpl" value="default" />
-<input type="hidden" name="ltmpl" id="ltmpl" value="default" />
-<input type="hidden" name="scc" id="scc" value="1" />
-<input type="hidden" name="ltmpl" id="ltmpl" value="default" />
-<input type="hidden" name="ltmplcache" id="ltmplcache" value="2" />
-
-</form></div>
 {% endblock content %}
 
 {% block scripts %}
@@ -100,7 +20,7 @@ onsubmit="return(gaia_onLoginSubmit());">
 function getMap()
 {
   // Set the map options
-  var mapOptions = {credentials:"Bing Maps Key"};
+  var mapOptions = {credentials:"Aubgo-5lrrTvLm2gEofNcTIQY4GJoK5weU9J86TQTZKPmCqA83aWPBilPXQF4zI3"};
 
   // Initialize the map
   var map = new Microsoft.Maps.Map(document.getElementById("mapDiv"), mapOptions);
@@ -120,6 +40,6 @@ function successCallback(object)
   alert('Success callback invoked, current map center' + object.center);
 }
 
-$(window).load(getMap());
+//$(window).load(getMap());
 </script>
 {% endblock scripts %}

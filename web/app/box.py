@@ -61,7 +61,7 @@ def upload(filename, FID=0):
   body += "Content-Type: %s\r\n\r\n" % get_content_type(filename)
 
   #print body
-
+  print body
   fp = file(filename, "rb")
   data = fp.read()
   fp.close()
@@ -131,16 +131,18 @@ def listFoldersIn(FID):
   response = getBox('get_account_tree',{'folder_id': [FID], 'params': ['onelevel', 'nozip','simple']})
   rep = chkHTTPstatus(response, 'listing_ok')
   folderDict = {}
-  folders = rep.getElementsByTagName("tree")[0].firstChild.getElementsByTagName("folders")
-  for folder in folders:
-    nextseg = (folder.toxml().partition('</folders>')[0]).partition('<folders><fold')[2]
-    while (nextseg != ""):
-      segs = nextseg.partition('<fold')
-      folderseg = segs[0]
-      nextseg = segs[2]
-      fid = getAttribute(folderseg, 'id')
-      name = getAttribute(folderseg, 'name')
-      folderDict[name] = fid
+  
+  if (rep.toxml().find('<folders>') >= 0):
+    folders = rep.getElementsByTagName("tree")[0].firstChild.getElementsByTagName("folders")
+    for folder in folders:
+      nextseg = (folder.toxml().partition('</folders>')[0]).partition('<folders><fold')[2]
+      while (nextseg != ""):
+        segs = nextseg.partition('<fold')
+        folderseg = segs[0]
+        nextseg = segs[2]
+        fid = getAttribute(folderseg, 'id')
+        name = getAttribute(folderseg, 'name')
+        folderDict[name] = fid
   return folderDict
 
 def createSubFolder(FID, name):
@@ -167,11 +169,12 @@ def listFilesIn(FID,ftype='all'):
   if (ftype != 'all'):
     raise Exception('listFilesIn Exception - functionality not yet implemented. please try with parameter "all"')
   fileDict = {}
-  newrep = rep.getElementsByTagName('tree')[0].getElementsByTagName('folder')[0].getElementsByTagName('files')[0].getElementsByTagName('file')
-  for doc in newrep:
-    name = getAttribute(doc.toxml(), 'file_name')
-    fid = getAttribute(doc.toxml(), 'id')
-    fileDict[name] = fid
+  if (rep.toxml().find('<file>') >= 0):
+    newrep = rep.getElementsByTagName('tree')[0].getElementsByTagName('folder')[0].getElementsByTagName('files')[0].getElementsByTagName('file')
+    for doc in newrep:
+      name = getAttribute(doc.toxml(), 'file_name')
+      fid = getAttribute(doc.toxml(), 'id')
+      fileDict[name] = fid
   return fileDict
 
 def chkStuTime(fID, method):

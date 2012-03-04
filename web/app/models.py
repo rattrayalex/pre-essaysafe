@@ -35,6 +35,8 @@ class Exam(models.Model):
   end_time = models.DateTimeField(blank=True)
   resource_id = models.CharField(max_length=80)
   folder_id = models.CharField(max_length=80)
+  box_fid = models.CharField()
+  box_email = models.CharField()
   
   def __unicode__(self):
     return self.name
@@ -44,7 +46,11 @@ class Essay(models.Model):
   student_name = models.CharField(max_length=80)
   begin_date = models.DateTimeField('date started')
   end_date = models.DateTimeField('date finished')
+  latitude = models.DecimalField()
+  longitude = models.DecimalField()
+  resource_id = models.CharField()
 
 class Doc(models.Model):
   doc_name = models.CharField(max_length=80)
   resource_id = models.CharField(max_length=80)
+
