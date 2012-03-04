@@ -1,10 +1,12 @@
 {% extends "general.html" %}
 
 {% block styles %}
+<link rel="stylesheet" href="/media/css/chosen.css">
 {% endblock styles %}
 
 {% block content %}
-   <select data-placeholder="Choose a Country" class="chzn-select" style="width:350px;" id="country-select" tabindex="2">
+
+   <select data-placeholder="Choose an Essay Prompt" class="chzn-select" style="width:350px;" id="country-select" tabindex="2">
       <option value=""></option> 
       {% for doc in doclist %}
       <option value="{{doc.resource_id}}">{{doc.doc_name}}</option> 
@@ -13,4 +15,11 @@
 {% endblock content %}
 
 {% block scripts %}
+  <script src="/media/js/chosen.jquery.js" type="text/javascript"></script>
+  <script>
+    $(".chzn-select").chosen();
+    $("#country-select").chosen().change(function () {
+        window.location.href = '/' + $(this).val()
+    });
+  </script>
 {% endblock scripts %}
