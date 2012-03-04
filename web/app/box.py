@@ -121,6 +121,8 @@ def listFoldersIn(FID):
       folderDict[name] = fid
   return folderDict
 
+print listFoldersIn("0")
+
 def createSubFolder(FID, name):
 # creates a Folder inside FID with name "name"
 # returns folder id
@@ -132,7 +134,7 @@ def listProfFolders():
 # returns a dictionary of Professor Folder Names as key with id as value
   return listFoldersIn('0')
 
-def listFilesIn(FID,ftype):
+def listFilesIn(FID,ftype='all'):
 # lists files in folder with id FID. values for ftype:
 # format is a dict, with keys file_names and values ids
 #    'all' - list all files
@@ -218,7 +220,6 @@ def uploadEditedDocP(prof, name):
 def renameDoc(ID, name):
 # changes a document with id ID to name "name"
   return 0
-
 
 
 #print getBox('get_account_tree',{'folder_id': [23610430], 'params': ['onelevel', 'nozip']})
