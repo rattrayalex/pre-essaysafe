@@ -3,9 +3,6 @@ import httplib
 import urllib2
 import mimetools
 import mimetypes
-import urllib2
-import mimetools
-import mimetypes
 
 
 # Initialize and Make Connection
@@ -18,6 +15,16 @@ conn = httplib.HTTPConnection("www.box.net")
 prefix = "prof_"
 
 ## Functions
+def uploadFile(f, FID=0):
+  url = 'http://upload.box.net/api/1.0/upload/%s/%s' % ('8kf9roqysu8jmqskys9vg0hovkmyqtv3', FID)
+  postData = f;
+  request = urllib2.Request(url)
+  request.add_data(postData)
+  request.add_header("Content-Type", "multipart/form-data; boundary=%s" % boundary)
+  response = urllib2.urlopen(request)
+  return response.read()
+  
+
 def get_content_type(filename):
   return mimetypes.guess_type(filename)[0] or 'application/octet-stream'
 
@@ -132,7 +139,7 @@ def listProfFolders():
 # returns a dictionary of Professor Folder Names as key with id as value
   return listFoldersIn(0)
 
-def listFilesIn(FID,ftype):
+def listFilesIn(FID,ftype='all'):
 # lists files in folder with id FID. values for ftype:
 # format is a dict, with keys file_names and values ids
 #    'all' - list all files
@@ -218,7 +225,6 @@ def uploadEditedDocP(prof, name):
 def renameDoc(ID, name):
 # changes a document with id ID to name "name"
   return 0
-
 
 
 #print getBox('get_account_tree',{'folder_id': [23610430], 'params': ['onelevel', 'nozip']})
