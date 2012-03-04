@@ -239,9 +239,16 @@ def take(request, exam_name, student_name, student_email):
   role = AclRole(value='writer')
   acl_entry = gdata.docs.data.Acl(scope=scope, role=role)
   new_acl = client.Post(acl_entry, new_student_doc.GetAclFeedLink().href)
+  essay = Essay()
+  essay.student_name = student_name
+  essay.student_email = student_email
+  essay.resource_id = student_doc.resource_id.text
+  essay.exam = exam
+  essay.start_date = datetime.datetime.now()
+  essay.save()
   context = {
     'doc': str(student_doc.resource_id.text).split(':')[1],
-    'exam': exam
+    'essay': essay,
   }
   return render_to_response('take.html', RequestContext(request, context))
   

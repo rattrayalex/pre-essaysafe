@@ -4,18 +4,8 @@
 {% endblock styles %}
 
 {% block topright %}
-<script>
-TargetDate = "{{exam.end_time}}";
-BackColor = "white";
-ForeColor = "black";
-CountActive = true;
-CountStepper = -1;
-LeadingZero = false;
-DisplayFormat = "%%H%%:%%M%%:%%S%% Remaining.";
-FinishMessage = "Your exam is now late. Your instructor will be notified";
-</script>
-<script language="JavaScript" src="http://scripts.hashemian.com/js/countdown.js"></script>
-<a href="../submit/{{doc}}/{{email}}/{{name}}/" class="btn btn-large">I'm Done</a>
+<p>exam due at {{exam.end_time}}</p>
+<a href="" class="btn btn-large" id="done">I'm Done</a>
 {% endblock topright %}
 
 {% block content %}
@@ -29,32 +19,31 @@ FinishMessage = "Your exam is now late. Your instructor will be notified";
 {% endblock content %}
 
 {% block scripts %}
+<script>
+
+</script>
 <script type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
 <script type="text/javascript">
-//var map = null;
-function getMap()
-{
-  // Set the map options
-  var mapOptions = {credentials:"Aubgo-5lrrTvLm2gEofNcTIQY4GJoK5weU9J86TQTZKPmCqA83aWPBilPXQF4zI3"};
-
-  // Initialize the map
-  var map = new Microsoft.Maps.Map(document.getElementById("mapDiv"), mapOptions);
-
-  // Initialize the location provider
-  var geoLocationProvider = new Microsoft.Maps.GeoLocationProvider(map);
-
-  // Get the user's current location
-  geoLocationProvider.getCurrentPosition();
-  console.log(geoLocationProvider);
-
-  // map = new Microsoft.Maps.Maps.GeoLocationProvider(map);
-  // geoLocationProvider.getCurrentPosition({ successCallback: successCallback });
-}
-function successCallback(object)
-{
-  alert('Success callback invoked, current map center' + object.center);
-}
-
-//$(window).load(getMap());
+       if (navigator.geolocation) {
+	      navigator.geolocation.getCurrentPosition(success, failure);
+		  } else {
+		  alert('not supported');
+		  }
+       
+	   function success(object) {
+        var lati = object.coords.latitude;
+         var longi = object.coords.longitude;
+         var accuracy = object.coords.accuracy;
+         var times = object.timestamp;
+		 alert('lati:' + lati + 'logi: ' + longi + 'accuracy: ' + accuracy + 'time: ' + times);
+		  }
+		  
+	   function failure(object) {
+	      //
+		  } 
+    var href="../../../../submit/{{essay.id}}/";
+  $('#done').click(function() {
+    window.href=href;
+  });
 </script>
 {% endblock scripts %}
