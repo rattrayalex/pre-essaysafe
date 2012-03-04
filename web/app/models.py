@@ -44,9 +44,11 @@ class Exam(models.Model):
 class Essay(models.Model):
   exam = models.ForeignKey(Exam)
   student_name = models.CharField(max_length=80)
+  student_email = models.CharField(max_length=80)
+  start_date = models.DateTimeField('date finished')
   end_date = models.DateTimeField('date finished')
-  latitude = models.DecimalField()
-  longitude = models.DecimalField()
+  latitude = models.DecimalField(blank=True)
+  longitude = models.DecimalField(blank=True)
   resource_id = models.CharField()
 
 class Doc(models.Model):

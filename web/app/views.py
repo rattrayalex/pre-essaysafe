@@ -150,18 +150,18 @@ def info_submit(request):
     datetime_format = date_format+'-'+time_format
     start = post.get('start_date')+'-'+post.get('start_time')
     start_datetime = start_datetime = datetime.datetime(
-            int(start[6:10]),
-            int(start[0:2]),
-            int(start[3:5]),
+            int(start[0:4]),
+            int(start[5:7]),
+            int(start[8:10]),
             int(start[11:13]),
             int(start[14:16])
             )
     logging.warning(start_datetime)
-    end = post.get('end_date')+'-'+post.get('end_time')
+    end = post.get('end_date')+'-'+end_time
     end_datetime = end_datetime = datetime.datetime(
-            int(end[6:10]),
-            int(end[0:2]),
-            int(end[3:5]),
+            int(end[0:4]),
+            int(end[5:7]),
+            int(end[8:10]),
             int(end[11:13]),
             int(end[14:16])
             )
@@ -239,9 +239,16 @@ def take(request, exam_name, student_name, student_email):
   role = AclRole(value='writer')
   acl_entry = gdata.docs.data.Acl(scope=scope, role=role)
   new_acl = client.Post(acl_entry, new_student_doc.GetAclFeedLink().href)
+  essay = Essay()
+  essay.student_name = student_name
+  essay.student_email = student_email
+  essay.resource_id = student_doc.resource_id.text
+  essay.exam = exam
+  essay.start_date = datetime.datetime.now()
+  essay.save()
   context = {
     'doc': str(student_doc.resource_id.text).split(':')[1],
-    'exam': exam
+    'essay': essay,
   }
   return render_to_response('take.html', RequestContext(request, context))
   
