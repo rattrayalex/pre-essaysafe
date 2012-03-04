@@ -17,6 +17,6 @@ urlpatterns = patterns('',
     (r'^dashboard/$', dashboard),
     (r'^take/$', take),
     (r'^about/$', about),
+    (r'^(?P<folder_name>\w+)/transfer/$', transfer),
     (r'info_submit/$', info_submit),
-                
     )
