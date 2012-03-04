@@ -8,10 +8,20 @@
 
 {% block content %}
 
-{% for exam in exams %}
-  <div id="content" class="row">
-    <div>{{ exam }}</div>
-  <div>
-{% endfor %}
-
+<div id='dashboard_wrapper'>
+  {% if count == 0 %}
+    <div id='none'>
+	  <p><h1>There doesn't seem to be anything here.</h1></p>
+	  <p><h1>Create a new <a id='dashboard_new' href='../make/'>essay template</a> to begin.</h1></p>
+	  <!-- <p><h1>Your folder_id is {{ box_id }}</h1></p> -->
+    </div>
+  {% else %}
+	{% for item in exam_count.items %}
+      <div id="{{ item.1.1 }}" class='exam'>
+        <p><h1>{{ item.0 }}</h1><h2 id='submissions'>There are {{ item.1.0 }} submissions.</h2></p>
+      </div>
+	  <hr>
+    {% endfor %}
+  {% endif %}
+</div>
 {% endblock content %}

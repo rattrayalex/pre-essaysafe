@@ -14,8 +14,30 @@
 }
 #footer {
   text-align:center;
+  cursor: default;
   /*width: 50%;*/
 }
-#footer p {
-  
+#footer a {
+  text-decoration: none;
+}
+#dashboard_wrapper {
+  cursor: default;
+  padding-top: 75px;
+  padding-bottom: 75px;
+}
+#dashboard_wrapper a:hover {
+  text-decoration: none;
+}
+.hilight {
+  background-color: #eeeeee; 
+  cursor: pointer;
+}
+.exam {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 25px;
+  padding-right: 25px;
+}
+#submissions {
+  color: #999;
 }
