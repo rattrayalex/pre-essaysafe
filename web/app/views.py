@@ -16,6 +16,7 @@ import gdata.docs.service
 from gdata.acl.data import AclScope, AclRole
 from app.forms import LogInForm, SignUpForm
 from StringIO import StringIO
+import simplejson
 
 try: from functools import wraps
 except ImportError: from django.utils.functional import wraps # Python 2.4 fallback.
@@ -262,7 +263,15 @@ def distribute(request, exam_id):
     'exam': exam
   }
   return render_to_response('distribute.html', context)
-  
+
+def getfiles(request):  
+  if request.GET:
+    f_id = request.GET['folder_id']
+    logging.warning(str(f_id));
+    files = listFilesIn(f_id)
+    logging.info(files)
+    return HttpResponse(simplejson.dumps(files), content_type='application/json')
+
 def about(request):
   context = {
     }
