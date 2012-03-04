@@ -131,17 +131,22 @@ def listFoldersIn(FID):
   response = getBox('get_account_tree',{'folder_id': [FID], 'params': ['onelevel', 'nozip','simple']})
   rep = chkHTTPstatus(response, 'listing_ok')
   folderDict = {}
-  folders = rep.getElementsByTagName("tree")[0].firstChild.getElementsByTagName("folders")
-  for folder in folders:
-    nextseg = (folder.toxml().partition('</folders>')[0]).partition('<folders><fold')[2]
-    while (nextseg != ""):
-      segs = nextseg.partition('<fold')
-      folderseg = segs[0]
-      nextseg = segs[2]
-      fid = getAttribute(folderseg, 'id')
-      name = getAttribute(folderseg, 'name')
-      folderDict[name] = fid
+  
+  if (rep.toxml().find('<folders>') >= 0):
+    folders = rep.getElementsByTagName("tree")[0].firstChild.getElementsByTagName("folders")
+    for folder in folders:
+      nextseg = (folder.toxml().partition('</folders>')[0]).partition('<folders><fold')[2]
+      while (nextseg != ""):
+        segs = nextseg.partition('<fold')
+        folderseg = segs[0]
+        nextseg = segs[2]
+        fid = getAttribute(folderseg, 'id')
+        name = getAttribute(folderseg, 'name')
+        folderDict[name] = fid
   return folderDict
+
+print listFoldersIn (224272124)
+print listFoldersIn (0)
 
 def createSubFolder(FID, name):
 # creates a Folder inside FID with name "name"
