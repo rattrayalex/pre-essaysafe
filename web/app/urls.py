@@ -17,11 +17,11 @@ urlpatterns = patterns('',
     (r'^dashboard/$', dashboard),
     (r'^take_one/$', take_one),
     (r'^take_two/$', take_two),
+    (r'^take2/$', take2),
     (r'^about/$', about),
     (r'^(?P<folder_name>\w+)/transfer/$', transfer),
     (r'info_submit/$', info_submit),
     (r'login/$', login),
     (r'logout/$', logout),
     (r'signup/$', signup),
-    
  )
