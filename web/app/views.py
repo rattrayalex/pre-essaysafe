@@ -55,13 +55,20 @@ def index(request):
   return render_to_response('index.html', context)
 
 def take(request):
+  # need to verify with passed in token
+  # url = request.url;
   context = {
+      'url': 'http://www.google.com/'
     }
   return render_to_response('take.html', context)
 
 def dashboard(request):
+  exams = listFoldersIn('224019898')
+  for exam in exams:
+    logging.info(exam)
   context = {
-    'exams': listFoldersIn('1')
+	# get response.user.box_id
+    'exams': exams
   }
   return render_to_response('dashboard.html', context)
 
