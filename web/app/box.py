@@ -169,11 +169,12 @@ def listFilesIn(FID,ftype='all'):
   if (ftype != 'all'):
     raise Exception('listFilesIn Exception - functionality not yet implemented. please try with parameter "all"')
   fileDict = {}
-  newrep = rep.getElementsByTagName('tree')[0].getElementsByTagName('folder')[0].getElementsByTagName('files')[0].getElementsByTagName('file')
-  for doc in newrep:
-    name = getAttribute(doc.toxml(), 'file_name')
-    fid = getAttribute(doc.toxml(), 'id')
-    fileDict[name] = fid
+  if (rep.toxml().find('<file>') >= 0):
+    newrep = rep.getElementsByTagName('tree')[0].getElementsByTagName('folder')[0].getElementsByTagName('files')[0].getElementsByTagName('file')
+    for doc in newrep:
+      name = getAttribute(doc.toxml(), 'file_name')
+      fid = getAttribute(doc.toxml(), 'id')
+      fileDict[name] = fid
   return fileDict
 
 def chkStuTime(fID, method):
