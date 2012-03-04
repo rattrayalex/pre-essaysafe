@@ -183,13 +183,21 @@ def index(request):
     }
   return render_to_response('index.html', context)
 
-def take(request):
+def take_one(request):
   # need to verify with passed in token
   # url = request.url;
   context = {
       'url': 'http://www.google.com/'
     }
-  return render_to_response('take.html', context)
+  return render_to_response('take_one.html', context)
+  
+def take_two(request):
+  # need to verify with passed in token
+  # url = request.url;
+  context = {
+      'url': 'http://www.google.com/'
+    }
+  return render_to_response('take_two.html', context)
 
 
 def dashboard(request):
