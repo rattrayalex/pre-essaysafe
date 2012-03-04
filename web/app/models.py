@@ -18,6 +18,9 @@ class Professor(models.Model):
   gdocs_id = models.CharField()
   user = models.OneToOneField(User, unique=True)
   name = models.CharField()
+  folder_id = models.CharField(max_length=80, blank=True)
+  token = models.CharField(max_length=100, blank=True)
+  token_secret = models.CharField(max_length=100, blank=True)
   
   def __unicode__(self):
     return self.name
@@ -30,6 +33,7 @@ class Exam(models.Model):
   start_time = models.DateTimeField(blank=True)
   end_time = models.DateTimeField(blank=True)
   resource_id = models.CharField(max_length=80)
+  folder_id = models.CharField(max_length=80)
   
   def __unicode__(self):
     return self.name
