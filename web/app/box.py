@@ -18,6 +18,16 @@ conn = httplib.HTTPConnection("www.box.net")
 prefix = "prof_"
 
 ## Functions
+def uploadFile(f, FID=0):
+  url = 'http://upload.box.net/api/1.0/upload/%s/%s' % ('8kf9roqysu8jmqskys9vg0hovkmyqtv3', FID)
+  postData = f;
+  request = urllib2.Request(url)
+  request.add_data(postData)
+  request.add_header("Content-Type", "multipart/form-data; boundary=%s" % boundary)
+  response = urllib2.urlopen(request)
+  return response.read()
+  
+
 def get_content_type(filename):
   return mimetypes.guess_type(filename)[0] or 'application/octet-stream'
 
