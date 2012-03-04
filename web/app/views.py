@@ -22,6 +22,8 @@ import gdata.docs.service
 
 import simplejson
 
+import simplejson
+
 try: from functools import wraps
 except ImportError: from django.utils.functional import wraps # Python 2.4 fallback.
 
@@ -135,7 +137,6 @@ def info_submit(request):
     time_format = '%I:%M%p'
     if len(post.get('start_time')) == 6:
       start_time = '0'+post.get('start_time')
-      logging.warning('thar be 6')
     else:
       end_time = post.get('end_time')
     logging.warning(start_time)
@@ -301,8 +302,6 @@ def create_doc(request, client, prof, exam_name):
     pre_folder = client.Create(gdata.docs.data.FOLDER_LABEL, exam_name)
     folder = client.Move(pre_folder, main_folder)
   logging.warning(folder)
-  #folder = client.Create(gdata.docs.data.FOLDER_LABEL, exam_name)
-  ##new_doc = client.Create(gdata.docs.data.DOCUMENT_LABEL, doc_name, folder.resource_id.text)
   template = client.GetDoc('document:1OB40c2l26fL6BdRim1cKuQhG0Kyt8X6brsAvlVMQ1sE')
   new_doc = client.Copy(template, doc_name)
   newer_doc = client.Move(new_doc, folder)

@@ -5,9 +5,9 @@
 
 {% block content %}
   <iframe src='https://docs.google.com/document/d/{{doc}}/edit' class='iframe' scrolling='no' allowTransparency='true'>
-    <p>Your browser does not support iframes</p>
+    
   </iframe>{% csrf_token %}
-</div>
+
 <!-- $(window).load(getMap()); -->
 <body onload = "getMap();">
 

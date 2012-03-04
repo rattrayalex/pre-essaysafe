@@ -31,10 +31,12 @@ LRESULT CALLBACK LowLevelKeyboardProc( int nCode, WPARAM wParam, LPARAM lParam )
 		case VK_F11:
             bEatKeystroke = true;
             break;
+		default:
+			cout<<p->vkCode;
     }
 	//1,0 = Windows button
 	if( ((p->vkCode == 91) && (p->flags == 1)) || ((p->vkCode == 92) 
-		&& (p->flags == 1)) || p->flags == LLKHF_ALTDOWN)
+		&& (p->flags == 1)) || p->flags == LLKHF_ALTDOWN||p->vkCode == 122)
 		bEatKeystroke = true;
 
     if( bEatKeystroke )
@@ -43,11 +45,40 @@ LRESULT CALLBACK LowLevelKeyboardProc( int nCode, WPARAM wParam, LPARAM lParam )
         return CallNextHookEx( g_hKeyboardHook, nCode, wParam, lParam );
 }
 
+void GenerateKey ( int vk , BOOL bExtended)
+{
+  KEYBDINPUT  kb={0};
+  INPUT    Input={0};
+  // generate down 
+  if ( bExtended )
+    kb.dwFlags  = KEYEVENTF_EXTENDEDKEY;
+  kb.wVk  = vk;  
+  Input.type  = INPUT_KEYBOARD;
+
+  Input.ki  = kb;
+  ::SendInput(1,&Input,sizeof(Input));
+
+  // generate up 
+  ::ZeroMemory(&kb,sizeof(KEYBDINPUT));
+  ::ZeroMemory(&Input,sizeof(INPUT));
+  kb.dwFlags  =  KEYEVENTF_KEYUP;
+  if ( bExtended )
+    kb.dwFlags  |= KEYEVENTF_EXTENDEDKEY;
+
+  kb.wVk    =  vk;
+  Input.type  =  INPUT_KEYBOARD;
+  Input.ki  =  kb;
+  ::SendInput(1,&Input,sizeof(Input));
+}
+
 void EssaySafeDesktopClient::buttonClicked() {
 	if(beforeTest) {
 		beforeTest = false;
+		system("\"C:\\Users\\Greg Terrono\\AppData\\Local\\Google\\Chrome\\Application\\chrome.exe\" essaysafetest.appspot.com");
+		GenerateKey(VK_F11, false);
 		emit changeText("Stop Test");
 		g_hKeyboardHook = SetWindowsHookEx( WH_KEYBOARD_LL,  LowLevelKeyboardProc, GetModuleHandle(NULL), 0 );
+
 	}
 	else {
 		UnhookWindowsHookEx( g_hKeyboardHook );
