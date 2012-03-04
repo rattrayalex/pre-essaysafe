@@ -58,14 +58,19 @@ def listProfFolders():
   response = getBox('get_account_tree',{'folder_id': [0], 'params': ['onelevel', 'nozip','simple']})
   rep = chkHTTPstatus(response, 'listing_ok')
   folderDict = {}
-  for folder in rep.getElementsByTagName("tree")[0].firstChild.getElementsByTagName("folders"):
-    # need to check if a file? [*]
-    fid = getAttribute(folder, 'id')
-    name = getAttribute(folder, 'name')
-    folderDict[name] = fid
+  folders = rep.getElementsByTagName("tree")[0].firstChild.getElementsByTagName("folders")
+  for folder in folders: 
+    nextseg = (folder.toxml().partition('</folders>')[0]).partition('<folders><fold')[2]
+    while (nextseg != ""):
+      segs = nextseg.partition('<fold')
+      folderseg = segs[0]
+      nextseg = segs[2]
+      fid = getAttribute(folderseg, 'id')
+      name = getAttribute(folderseg, 'name')
+      folderDict[name] = fid
   return folderDict
 
-listProfFolders()
+print listProfFolders()
 #print getAttribute('<folder id="4387" name="Incoming" shared="0"><tags><tag id="34" /></tags><files></files></folder>', 'name')
 
 def createSubFolder(FID, name):
