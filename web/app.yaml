@@ -27,8 +27,8 @@ handlers:
   expiration: '0'
 
 - url: /favicon.ico
-  static_files: front-end/media/images/favicon.ico
-  upload: front-end/media/images/favicon.ico
+  static_files: front-end/media/img/favicon.ico
+  upload: front-end/media/img/favicon.ico
 
 - url: /robot.txt
   static_files: front-end/media/static/robot.txt

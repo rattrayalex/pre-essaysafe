@@ -1,0 +1,28 @@
+{% extends "general.html" %}
+
+{% block styles %}
+{% endblock styles %}
+
+{% block scripts %}
+{% endblock scripts %}
+
+{% block content %}
+  <div class="content">
+    <center><h1>Distribute your Exam!</h1></center>
+    <hr>
+    <div class="row">
+      <div class="span3">&nbsp;</div>
+      <div class="span6">
+        <h2>Your Students will need the following code:</h2>
+        <center><code class="bigcode">{{exam.name}}</code></center>
+        <hr>
+        <p>You may also wish to remind them that 
+          the essay begins at <code>{{exam.start_time}}</code>
+          and ends at <code>{{exam.end_time}}</code>. 
+        </p>
+      </div>
+      <div class="span3">&nbsp;</div>
+    </div>
+  </div>
+ {% endblock content %}
+

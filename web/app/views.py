@@ -127,21 +127,33 @@ def info_submit(request):
     logging.warning(post.get('exam_name'))
     date_format = '%m/%d%/%Y'
     time_format = '%I:%M%p'
+    if len(post.get('start_time')) == 6:
+      start_time = '0'+post.get('start_time')
+      logging.warning('thar be 6')
+    else:
+      end_time = post.get('end_time')
+    logging.warning(start_time)
+    if len(post.get('end_time')) == 6:
+      end_time = '0'+post.get('end_time')
+    else:
+      start_time = post.get('start_time')
+    logging.warning(end_time)
     datetime_format = date_format+'-'+time_format
-    start = post.get('start_date')+'-'+post.get('start_time')
+    start = post.get('start_date')+'-'+start_time
+    logging.warning(start)
     start_datetime = start_datetime = datetime.datetime(
-            int(start[6:10]),
-            int(start[0:2]),
-            int(start[3:5]),
+            int(start[0:4]),
+            int(start[5:7]),
+            int(start[8:10]),
             int(start[11:13]),
             int(start[14:16])
             )
     logging.warning(start_datetime)
-    end = post.get('end_date')+'-'+post.get('end_time')
+    end = post.get('end_date')+'-'+end_time
     end_datetime = end_datetime = datetime.datetime(
-            int(end[6:10]),
-            int(end[0:2]),
-            int(end[3:5]),
+            int(end[0:4]),
+            int(end[5:7]),
+            int(end[8:10]),
             int(end[11:13]),
             int(end[14:16])
             )
@@ -171,13 +183,21 @@ def index(request):
     }
   return render_to_response('index.html', context)
 
-def take(request):
+def take_one(request):
   # need to verify with passed in token
   # url = request.url;
   context = {
       'url': 'http://www.google.com/'
     }
-  return render_to_response('take.html', context)
+  return render_to_response('take_one.html', context)
+  
+def take_two(request):
+  # need to verify with passed in token
+  # url = request.url;
+  context = {
+      'url': 'http://www.google.com/'
+    }
+  return render_to_response('take_two.html', context)
 
 
 def dashboard(request):
@@ -201,16 +221,19 @@ def create_doc(request, client, prof_name, exam_name):
   """
   doc_name = prof_name + ' ' + exam_name
   try:
-    folder = client.GetDocList(uri='/feeds/default/private/full/-/folder?title='+exam_name)[0]
+    folder = client.GetDocList(uri='/feeds/default/private/full/-/folder/?title='+exam_name+'&title-exact=true&max-results=1').entry[0]
   except:
     folder = client.Create(gdata.docs.data.FOLDER_LABEL, exam_name)
+  logging.warning(folder)
+  #folder = client.Create(gdata.docs.data.FOLDER_LABEL, exam_name)
   ##new_doc = client.Create(gdata.docs.data.DOCUMENT_LABEL, doc_name, folder.resource_id.text)
   template = client.GetDoc('document:1OB40c2l26fL6BdRim1cKuQhG0Kyt8X6brsAvlVMQ1sE')
   new_doc = client.Copy(template, doc_name)
+  newer_doc = client.Move(new_doc, folder)
   ##txt = gdata.data.MediaSource(file_path="http://" + request.get_host()+'/media/welcome.txt', content_type="text")
   ##newer_doc = client.Update(new_doc, media_source=txt)
   ##new_doc = client.Upload('media/welcome.txt', doc_name, folder.resource_id.text, content_type="text")
-  return new_doc
+  return newer_doc
 
 def index(request):
   context = {
