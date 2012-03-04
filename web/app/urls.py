@@ -18,5 +18,7 @@ urlpatterns = patterns('',
     (r'^take/$', take),
     (r'^about/$', about),
     (r'info_submit/$', info_submit),
-                
-    )
+	(r'login/$', login),
+	(r'logout/$', logout),
+	(r'signup/$', signup),
+ )
