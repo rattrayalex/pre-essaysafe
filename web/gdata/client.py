@@ -181,8 +181,6 @@ class GDClient(atom.client.AtomPubClient):
   auth_service = None
   # URL prefixes which should be requested for AuthSub and OAuth.
   auth_scopes = None
-  # Name of alternate auth service to use in certain cases
-  alt_auth_service = None
 
   def request(self, method=None, uri=None, auth_token=None,
               http_request=None, converter=None, desired_class=None,
@@ -214,7 +212,7 @@ class GDClient(atom.client.AtomPubClient):
                   gdata.gauth.ClientLoginToken and gdata.gauth.AuthSubToken
                   among others.
       http_request: (optional) atom.http_core.HttpRequest
-      converter: function which takes the body of the response as its only
+      converter: function which takes the body of the response as it's only
                  argument and returns the desired object.
       desired_class: class descended from atom.core.XmlElement to which a
                      successful response should be converted. If there is no
@@ -289,11 +287,14 @@ class GDClient(atom.client.AtomPubClient):
         location = (response.getheader('Location')
                     or response.getheader('location'))
         if location is not None:
+          m = re.compile('[\?\&]gsessionid=(\w*)').search(location)
+          if m is not None:
+            self.__gsessionid = m.group(1)
           # Make a recursive call with the gsession ID in the URI to follow
           # the redirect.
-          return self.request(method=method, uri=location, 
-                              auth_token=auth_token, http_request=http_request,
-                              converter=converter, desired_class=desired_class,
+          return self.request(method=method, uri=uri, auth_token=auth_token,
+                              http_request=http_request, converter=converter,
+                              desired_class=desired_class,
                               redirects_remaining=redirects_remaining-1,
                               **kwargs)
         else:
@@ -428,7 +429,7 @@ class GDClient(atom.client.AtomPubClient):
                         response text which was contained in the challenge.
 
       Returns:
-        Generated token, which is also stored in this object.
+        None
 
       Raises:
         A RequestError or one of its suclasses: BadAuthentication,
@@ -439,12 +440,6 @@ class GDClient(atom.client.AtomPubClient):
     self.auth_token = self.request_client_login_token(email, password,
         source, service=service, account_type=account_type, auth_url=auth_url,
         captcha_token=captcha_token, captcha_response=captcha_response)
-    if self.alt_auth_service is not None:
-      self.alt_auth_token = self.request_client_login_token(
-          email, password, source, service=self.alt_auth_service,
-          account_type=account_type, auth_url=auth_url,
-          captcha_token=captcha_token, captcha_response=captcha_response)
-    return self.auth_token
 
   ClientLogin = client_login
 
@@ -753,40 +748,9 @@ class GDClient(atom.client.AtomPubClient):
 
   Delete = delete
 
-  def batch(self, feed, uri=None, force=False, auth_token=None, **kwargs):
-    """Sends a batch request to the server to execute operation entries.
-
-    Args:
-      feed: A batch feed containing batch entries, each is an operation.
-      uri: (optional) The uri to which the batch request feed should be POSTed.
-          If none is provided, then the feed's edit link will be used.
-      force: (optional) boolean set to True if you want the batch update to
-          clobber all data. If False, the version in the information in the
-          feed object will cause the server to check to see that no changes
-          intervened between when you fetched the data and when you sent the
-          changes.
-      auth_token: (optional) An object which sets the Authorization HTTP header
-          in its modify_request method. Recommended classes include
-          gdata.gauth.ClientLoginToken and gdata.gauth.AuthSubToken
-          among others.
-    """
-    http_request = atom.http_core.HttpRequest()
-    http_request.add_body_part(
-        feed.to_string(get_xml_version(self.api_version)),
-        'application/atom+xml')
-    if force:
-      http_request.headers['If-Match'] = '*'
-    elif hasattr(feed, 'etag') and feed.etag:
-      http_request.headers['If-Match'] = feed.etag
-
-    if uri is None:
-      uri = feed.find_edit_link()
-
-    return self.request(method='POST', uri=uri, auth_token=auth_token,
-                        http_request=http_request,
-                        desired_class=feed.__class__, **kwargs)
-
-  Batch = batch
+  #TODO: implement batch requests.
+  #def batch(feed, uri, auth_token=None, converter=None, **kwargs):
+  #  pass
 
   # TODO: add a refresh method to request a conditional update to an entry
   # or feed.
@@ -802,7 +766,7 @@ class Query(object):
   def __init__(self, text_query=None, categories=None, author=None, alt=None,
                updated_min=None, updated_max=None, pretty_print=False,
                published_min=None, published_max=None, start_index=None,
-               max_results=None, strict=False, **custom_parameters):
+               max_results=None, strict=False):
     """Constructs a Google Data Query to filter feed contents serverside.
 
     Args:
@@ -848,7 +812,6 @@ class Query(object):
       strict: boolean (optional) If True, the server will return an error if
           the server does not recognize any of the parameters in the request
           URL. Defaults to False.
-      custom_parameters: other query parameters that are not explicitly defined.
     """
     self.text_query = text_query
     self.categories = categories or []
@@ -862,12 +825,6 @@ class Query(object):
     self.start_index = start_index
     self.max_results = max_results
     self.strict = strict
-    self.custom_parameters = custom_parameters
-
-  def add_custom_parameter(self, key, value):
-    self.custom_parameters[key] = value
-
-  AddCustomParameter = add_custom_parameter
 
   def modify_request(self, http_request):
     _add_query_param('q', self.text_query, http_request)
@@ -887,7 +844,7 @@ class Query(object):
       http_request.uri.query['max-results'] = str(self.max_results)
     if self.strict:
       http_request.uri.query['strict'] = 'true'
-    http_request.uri.query.update(self.custom_parameters)
+
 
   ModifyRequest = modify_request
 
@@ -908,9 +865,6 @@ class ResumableUploader(object):
   """Resumable upload helper for the Google Data protocol."""
 
   DEFAULT_CHUNK_SIZE = 5242880  # 5MB
-  # Initial chunks which are smaller than 256KB might be dropped. The last
-  # chunk for a file can be smaller tan this.
-  MIN_CHUNK_SIZE = 262144 # 256KB
 
   def __init__(self, client, file_handle, content_type, total_file_size,
                chunk_size=None, desired_class=None):
@@ -931,8 +885,6 @@ class ResumableUploader(object):
     self.content_type = content_type
     self.total_file_size = total_file_size
     self.chunk_size = chunk_size or self.DEFAULT_CHUNK_SIZE
-    if self.chunk_size < self.MIN_CHUNK_SIZE:
-      self.chunk_size = self.MIN_CHUNK_SIZE
     self.desired_class = desired_class or gdata.data.GDEntry
     self.upload_uri = None
 
@@ -941,7 +893,7 @@ class ResumableUploader(object):
       self.chunk_size = total_file_size
 
   def _init_session(self, resumable_media_link, entry=None, headers=None,
-                    auth_token=None, method='POST'):
+                    auth_token=None):
     """Starts a new resumable upload to a service that supports the protocol.
 
     The method makes a request to initiate a new upload session. The unique
@@ -962,11 +914,10 @@ class ResumableUploader(object):
           in its modify_request method. Recommended classes include
           gdata.gauth.ClientLoginToken and gdata.gauth.AuthSubToken
           among others.
-      method: (optional) Type of HTTP request to start the session with.
-          Defaults to 'POST', but may also be 'PUT'.
 
     Returns:
-      Result of HTTP request to intialize the session. See atom.client.request.
+      The final Atom entry as created on the server. The entry will be
+      parsed accoring to the class specified in self.desired_class.
 
     Raises:
       RequestError if the unique upload uri is not set or the
@@ -975,27 +926,25 @@ class ResumableUploader(object):
     """
     http_request = atom.http_core.HttpRequest()
     
-    # Send empty body if Atom XML wasn't specified.
+    # Send empty POST if Atom XML wasn't specified.
     if entry is None:
       http_request.add_body_part('', self.content_type, size=0)
     else:
       http_request.add_body_part(str(entry), 'application/atom+xml',
                                  size=len(str(entry)))
     http_request.headers['X-Upload-Content-Type'] = self.content_type
-    http_request.headers['X-Upload-Content-Length'] = str(self.total_file_size)
+    http_request.headers['X-Upload-Content-Length'] = self.total_file_size
 
     if headers is not None:
       http_request.headers.update(headers)
 
-    response = self.client.request(method=method,
+    response = self.client.request(method='POST',
                                    uri=resumable_media_link,
                                    auth_token=auth_token,
                                    http_request=http_request)
 
     self.upload_uri = (response.getheader('location') or
                        response.getheader('Location'))
-
-    return response
 
   _InitSession = _init_session
 
@@ -1033,7 +982,7 @@ class ResumableUploader(object):
                                                 self.total_file_size))
 
     try:
-      response = self.client.request(method='PUT', uri=self.upload_uri,
+      response = self.client.request(method='POST', uri=self.upload_uri,
                                      http_request=http_request,
                                      desired_class=self.desired_class)
       return response
@@ -1046,7 +995,7 @@ class ResumableUploader(object):
   UploadChunk = upload_chunk
 
   def upload_file(self, resumable_media_link, entry=None, headers=None,
-                  auth_token=None, **kwargs):
+                  auth_token=None):
     """Uploads an entire file in chunks using the resumable upload protocol.
 
     If you are interested in pausing an upload or controlling the chunking
@@ -1064,7 +1013,6 @@ class ResumableUploader(object):
           in its modify_request method. Recommended classes include
           gdata.gauth.ClientLoginToken and gdata.gauth.AuthSubToken
           among others.
-      kwargs: (optional) Other args to pass to self._init_session.
 
     Returns:
       The final Atom entry created on the server. The entry object's type will
@@ -1075,7 +1023,7 @@ class ResumableUploader(object):
       when the request raises an exception.
     """
     self._init_session(resumable_media_link, headers=headers,
-                       auth_token=auth_token, entry=entry, **kwargs)
+                       auth_token=auth_token, entry=entry)
 
     start_byte = 0
     entry = None
@@ -1090,7 +1038,7 @@ class ResumableUploader(object):
   UploadFile = upload_file
 
   def update_file(self, entry_or_resumable_edit_link, headers=None, force=False,
-                  auth_token=None, update_metadata=False, uri_params=None):
+                  auth_token=None):
     """Updates the contents of an existing file using the resumable protocol.
 
     If you are interested in pausing an upload or controlling the chunking
@@ -1111,44 +1059,33 @@ class ResumableUploader(object):
           in its modify_request method. Recommended classes include
           gdata.gauth.ClientLoginToken and gdata.gauth.AuthSubToken
           among others.
-      update_metadata: (optional) True to also update the entry's metadata
-          with that in the given GDEntry object in entry_or_resumable_edit_link.
-      uri_params: (optional) Dict of additional parameters to attach to the URI.
-          Some non-dict types are valid here, too, like list of tuple pairs.
 
     Returns:
       The final Atom entry created on the server. The entry object's type will
       be the class specified in self.desired_class.
 
     Raises:
-      RequestError if anything other than a HTTP 308 is returned when the
-      request raises an exception.
+      RequestError if anything other than a HTTP 308 is returned
+      when the request raises an exception.
     """
+    # Need to override the POST request for a resumable update (required).
+    customer_headers = {'X-HTTP-Method-Override': 'PUT'}
 
-    custom_headers = {}
     if headers is not None:
-      custom_headers.update(headers)
+      customer_headers.update(headers)
 
-    uri = None
-    entry = None
     if isinstance(entry_or_resumable_edit_link, gdata.data.GDEntry):
-      uri = entry_or_resumable_edit_link.find_url(
+      resumable_edit_link = entry_or_resumable_edit_link.find_url(
           'http://schemas.google.com/g/2005#resumable-edit-media')
-      custom_headers['If-Match'] = entry_or_resumable_edit_link.etag
-      if update_metadata:
-        entry = entry_or_resumable_edit_link
+      customer_headers['If-Match'] = entry_or_resumable_edit_link.etag
     else:
-      uri = entry_or_resumable_edit_link
-
-    uri = atom.http_core.parse_uri(uri)
-    if uri_params is not None:
-      uri.query.update(uri_params)
+      resumable_edit_link = entry_or_resumable_edit_link
 
     if force:
-      custom_headers['If-Match'] = '*'
+      customer_headers['If-Match'] = '*'
 
-    return self.upload_file(str(uri), entry=entry, headers=custom_headers,
-                            auth_token=auth_token, method='PUT')
+    return self.upload_file(resumable_edit_link, headers=customer_headers,
+                            auth_token=auth_token)
 
   UpdateFile = update_file
 

@@ -42,11 +42,6 @@ OVERWRITE_MODE = 'overwrite'
 
 WORKSHEETS_REL = 'http://schemas.google.com/spreadsheets/2006#worksheetsfeed'
 
-BATCH_POST_ID_TEMPLATE = ('https://spreadsheets.google.com/feeds/cells'
-                          '/%s/%s/private/full')
-BATCH_ENTRY_ID_TEMPLATE = '%s/R%sC%s'
-BATCH_EDIT_LINK_TEMPLATE = '%s/batch'
-
 
 class Error(Exception):
   pass
@@ -146,12 +141,6 @@ class Spreadsheet(gdata.data.GDEntry):
 
   FindWorksheetsFeed = find_worksheets_feed
 
-  def get_spreadsheet_key(self):
-    """Extracts the spreadsheet key unique to this spreadsheet."""
-    return self.get_id().split('/')[-1]
-
-  GetSpreadsheetKey = get_spreadsheet_key
-
 
 class SpreadsheetsFeed(gdata.data.GDFeed):
   """An Atom feed listing a user's Google Spreadsheets."""
@@ -162,12 +151,6 @@ class WorksheetEntry(gdata.data.GDEntry):
   """An Atom entry representing a single worksheet in a spreadsheet."""
   row_count = RowCount
   col_count = ColCount
-
-  def get_worksheet_id(self):
-    """The worksheet ID identifies this worksheet in its spreadsheet."""
-    return self.get_id().split('/')[-1]
-
-  GetWorksheetId = get_worksheet_id
 
 
 class WorksheetsFeed(gdata.data.GDFeed):
@@ -292,23 +275,6 @@ class ListEntry(gdata.data.GDEntry):
       new_value._qname = new_value._qname % (column_name,)
       self._other_elements.append(new_value)
 
-  def to_dict(self):
-    """Converts this row to a mapping of column names to their values."""
-    result = {}
-    values = self.get_elements(namespace=GSX_NAMESPACE)
-    for item in values:
-      result[item._get_tag()] = item.text
-    return result
-
-  def from_dict(self, values):
-    """Sets values for this row from the dictionary.
-    
-    Old values which are already in the entry will not be removed unless
-    they are overwritten with new values from the dict.
-    """
-    for column, value in values.iteritems():
-      self.set_value(column, value)
-
 
 class ListsFeed(gdata.data.GDFeed):
   """An Atom feed in which each entry represents a row in a worksheet.
@@ -346,38 +312,6 @@ class CellsFeed(gdata.data.BatchFeed):
   """
   entry = [CellEntry]
 
-  def add_set_cell(self, row, col, input_value):
-    """Adds a request to change the contents of a cell to this batch request.
-    
-    Args:
-      row: int, The row number for this cell. Numbering starts at 1.
-      col: int, The column number for this cell. Starts at 1.
-      input_value: str, The desired formula/content this cell should contain.
-    """
-    self.add_update(CellEntry(
-        id=atom.data.Id(text=BATCH_ENTRY_ID_TEMPLATE % (
-            self.id.text, row, col)),
-        cell=Cell(col=str(col), row=str(row), input_value=input_value)))
-    return self
+  def batch_set_cell(row, col, input):
+    pass
 
-  AddSetCell = add_set_cell
-
-
-def build_batch_cells_update(spreadsheet_key, worksheet_id):
-  """Creates an empty cells feed for adding batch cell updates to.
-  
-  Call batch_set_cell on the resulting CellsFeed instance then send the batch
-  request TODO: fill in
-
-  Args:
-    spreadsheet_key: The ID of the spreadsheet 
-    worksheet_id:
-  """
-  feed_id_text = BATCH_POST_ID_TEMPLATE % (spreadsheet_key, worksheet_id)
-  return CellsFeed(
-      id=atom.data.Id(text=feed_id_text),
-      link=[atom.data.Link(
-          rel='edit', href=BATCH_EDIT_LINK_TEMPLATE % (feed_id_text,))])
-
-
-BuildBatchCellsUpdate = build_batch_cells_update

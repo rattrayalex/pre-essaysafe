@@ -88,14 +88,8 @@ VACATION_RESPONDER_ENABLE = 'enable'
 VACATION_RESPONDER_SUBJECT = 'subject'
 # The apps:property message of the vacation responder property
 VACATION_RESPONDER_MESSAGE = 'message'
-# The apps:property startDate of the vacation responder property
-VACATION_RESPONDER_STARTDATE = 'startDate'
-# The apps:property endDate of the vacation responder property
-VACATION_RESPONDER_ENDDATE = 'endDate'
 # The apps:property contactsOnly of the vacation responder property
 VACATION_RESPONDER_CONTACTS_ONLY = 'contactsOnly'
-# The apps:property domainOnly of the vacation responder property
-VACATION_RESPONDER_DOMAIN_ONLY = 'domainOnly'
 
 # The apps:property signature of the signature property
 SIGNATURE_VALUE = 'signature'
@@ -113,15 +107,6 @@ GENERAL_ARROWS = 'arrows'
 GENERAL_SNIPPETS = 'snippets'
 # The apps:property uniAppsProcode of the general settings property
 GENERAL_UNICODE = 'unicode'
-
-# The apps:property delegationId of the email delegation property
-DELEGATION_ID = 'delegationId'
-# The apps:property address of the email delegation property
-DELEGATION_ADDRESS = 'address'
-# The apps:property delegate of the email delegation property
-DELEGATION_DELEGATE = 'delegate'
-# The apps:property status of the email delegation property
-DELEGATION_STATUS = 'status'
 
 
 class EmailSettingsEntry(gdata.data.GDEntry):
@@ -873,48 +858,6 @@ class EmailSettingsVacationResponder(EmailSettingsEntry):
 
   message = pyproperty(GetMessage, SetMessage)
 
-  def GetStartDate(self):
-    """Get the StartDate value of the Vacation Responder object.
-
-    Returns:
-      The StartDate value of this Vacation Responder object as a
-      string(YYYY-MM-DD) or None.
-    """
-
-    return self._GetProperty(VACATION_RESPONDER_STARTDATE)
-
-  def SetStartDate(self, value):
-    """Set the  StartDate value of this Vacation Responder object.
-
-    Args:
-      value: string The new StartDate value to give this object.
-    """
-
-    self._SetProperty(VACATION_RESPONDER_STARTDATE, value)
-
-  start_date = pyproperty(GetStartDate, SetStartDate)
-
-  def GetEndDate(self):
-    """Get the EndDate value of the Vacation Responder object.
-
-    Returns:
-      The EndDate value of this Vacation Responder object as a
-      string(YYYY-MM-DD) or None.
-    """
-
-    return self._GetProperty(VACATION_RESPONDER_ENDDATE)
-
-  def SetEndDate(self, value):
-    """Set the  EndDate value of this Vacation Responder object.
-
-    Args:
-      value: string The new EndDate value to give this object.
-    """
-
-    self._SetProperty(VACATION_RESPONDER_ENDDATE, value)
-
-  end_date = pyproperty(GetEndDate, SetEndDate)
-
   def GetContactsOnly(self):
     """Get the ContactsOnly value of the Vacation Responder object.
 
@@ -936,30 +879,8 @@ class EmailSettingsVacationResponder(EmailSettingsEntry):
 
   contacts_only = pyproperty(GetContactsOnly, SetContactsOnly)
 
-  def GetDomainOnly(self):
-    """Get the DomainOnly value of the Vacation Responder object.
-
-    Returns:
-      The DomainOnly value of this Vacation Responder object as a
-      string or None.
-    """
-
-    return self._GetProperty(VACATION_RESPONDER_DOMAIN_ONLY)
-
-  def SetDomainOnly(self, value):
-    """Set the DomainOnly value of this Vacation Responder object.
-
-    Args:
-      value: string The new DomainOnly value to give this object.
-    """
-
-    self._SetProperty(VACATION_RESPONDER_DOMAIN_ONLY, value)
-
-  domain_only = pyproperty(GetDomainOnly, SetDomainOnly)
-
   def __init__(self, uri=None, enable=None, subject=None,
-    message=None, start_date=None, end_date=None, contacts_only=None,
-    domain_only=None, *args, **kwargs):
+    message=None, contacts_only=None, *args, **kwargs):
     """Constructs a new EmailSettingsVacationResponder object with the
        given arguments.
 
@@ -970,14 +891,8 @@ class EmailSettingsVacationResponder(EmailSettingsEntry):
                autoresponse.
       message: string (optional) The message body of the vacation responder
                autoresponse.
-      start_date: string (optional) The start date of the vacation responder
-                  autoresponse
-      end_date: string (optional) The end date of the vacation responder
-                autoresponse
       contacts_only: Boolean (optional) Whether to only send autoresponses
                      to known contacts.
-      domain_only: Boolean (optional) Whether to only send autoresponses
-                     to users in the same primary domain .
       args: The other parameters to pass to gdata.entry.GDEntry constructor.
       kwargs: The other parameters to pass to gdata.entry.GDEntry constructor.
     """
@@ -990,14 +905,8 @@ class EmailSettingsVacationResponder(EmailSettingsEntry):
       self.subject = subject
     if message:
       self.message = message
-    if start_date:
-      self.start_date = start_date
-    if end_date:
-      self.end_date = end_date
     if contacts_only is not None:
       self.contacts_only = str(contacts_only)
-    if domain_only is not None:
-      self.domain_only = str(domain_only)
 
 
 class EmailSettingsSignature(EmailSettingsEntry):
@@ -1219,39 +1128,3 @@ class EmailSettingsGeneral(EmailSettingsEntry):
       self.snippets = str(snippets)
     if use_unicode is not None:
       self.use_unicode = str(use_unicode)
-
-
-class EmailSettingsDelegation(EmailSettingsEntry):
-  """Represents an Email Settings delegation entry in object form."""
-
-  def GetAddress(self):
-    """Get the email address of the delegated user.
-
-    Returns:
-      The email address of the delegated user as a string or None.
-    """
-    return self._GetProperty(DELEGATION_ADDRESS)
-
-  def SetAddress(self, value):
-    """Set the email address of of the delegated user.
-
-    Args:
-      value: string The email address of another user on the same domain
-    """
-    self._SetProperty(DELEGATION_ADDRESS, value)
-
-  address = pyproperty(GetAddress, SetAddress)
-
-  def __init__(self, uri=None, address=None, *args, **kwargs):
-    """Constructs a new EmailSettingsDelegation object with the given
-       arguments.
-
-    Args:
-      uri: string (optional) The uri of of this object for HTTP requests.
-      address: string The email address of the delegated user.
-    """
-    super(EmailSettingsDelegation, self).__init__(*args, **kwargs)
-    if uri:
-      self.uri = uri
-    if address:
-      self.address = address

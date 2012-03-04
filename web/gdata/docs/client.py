@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright 2011 Google Inc. All Rights Reserved.
+# Copyright 2009 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,13 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""DocsClient simplifies interactions with the Documents List API."""
+"""DocsClient extends gdata.client.GDClient to streamline DocList API calls."""
 
-__author__ = 'vicfryzel@google.com (Vic Fryzel)'
 
-import copy
+__author__ = 'e.bidelman (Eric Bidelman)'
+
 import mimetypes
-import re
 import urllib
 import atom.data
 import atom.http_core
@@ -29,402 +28,41 @@ import gdata.docs.data
 import gdata.gauth
 
 
-# Feed URIs that are given by the API, but cannot be obtained without
-# making a mostly unnecessary HTTP request.
-RESOURCE_FEED_URI = '/feeds/default/private/full'
-RESOURCE_SELF_LINK_TEMPLATE = RESOURCE_FEED_URI + '/%s'
-RESOURCE_UPLOAD_URI = '/feeds/upload/create-session/default/private/full'
-ARCHIVE_FEED_URI = '/feeds/default/private/archive'
-METADATA_URI = '/feeds/metadata/default'
-CHANGE_FEED_URI = '/feeds/default/private/changes'
+# Feed URI templates
+DOCLIST_FEED_URI = '/feeds/default/private/full/'
+FOLDERS_FEED_TEMPLATE = DOCLIST_FEED_URI + '%s/contents'
+ACL_FEED_TEMPLATE = DOCLIST_FEED_URI + '%s/acl'
+REVISIONS_FEED_TEMPLATE = DOCLIST_FEED_URI + '%s/revisions'
 
 
 class DocsClient(gdata.client.GDClient):
-  """Client for all features of the Google Documents List API."""
+  """Client extension for the Google Documents List API."""
 
-  host = 'docs.google.com'
-  api_version = '3.0'
+  host = 'docs.google.com'  # default server for the API
+  api_version = '3.0'  # default major version for the service.
   auth_service = 'writely'
-  alt_auth_service = 'wise'
-  alt_auth_token = None
   auth_scopes = gdata.gauth.AUTH_SCOPES['writely']
   ssl = True
 
-  def request(self, method=None, uri=None, **kwargs):
-    """Add support for imitating other users via 2-Legged OAuth.
+  def __init__(self, auth_token=None, **kwargs):
+    """Constructs a new client for the DocList API.
 
     Args:
-      uri: (optional) URI of the request in which to replace default with
-          self.xoauth_requestor_id.
-    Returns:
-      Result of super(DocsClient, self).request().
+      auth_token: (optional) gdata.gauth.ClientLoginToken, AuthSubToken, or
+          OAuthToken which authorizes this client to edit the user's data.
+      kwargs: The other parameters to pass to gdata.client.GDClient constructor.
     """
-    if self.xoauth_requestor_id is not None and uri is not None:
-      if isinstance(uri, (str, unicode)):
-        uri = atom.http_core.Uri.parse_uri(uri)
-      uri.path.replace('/default', '/%s' % self.xoauth_requestor_id)
-    return super(DocsClient, self).request(method=method, uri=uri, **kwargs)
+    gdata.client.GDClient.__init__(self, auth_token=auth_token, **kwargs)
 
-  Request = request
-
-  def get_metadata(self, **kwargs):
-    """Retrieves the metadata of a user account.
-
-    Args:
-      kwargs: Other parameters to pass to self.get_entry().
-
-    Returns:
-      gdata.docs.data.Metadata representing metadata of user's account.
-    """
-    return self.get_entry(
-        METADATA_URI, desired_class=gdata.docs.data.Metadata, **kwargs)
-
-  GetMetadata = get_metadata
-
-  def get_changes(self, changestamp=None, max_results=None, show_root=None,
-                  **kwargs):
-    """Retrieves changes to a user's documents list.
-
-    Args:
-      changestamp: (optional) String changestamp value to query since.
-          If provided, returned changes will have a changestamp larger than
-          the given one.
-      max_results: (optional) Number of results to fetch.  API will limit
-          this number to 100 at most.
-      show_root: (optional) True to include indications if a resource is in
-          the root collection.
-      kwargs: Other parameters to pass to self.get_feed().
-
-    Returns:
-      gdata.docs.data.ChangeFeed.
-    """
-    uri = atom.http_core.Uri.parse_uri(CHANGE_FEED_URI)
-
-    if changestamp is not None:
-      uri.query['start-index'] = changestamp
-    if max_results is not None:
-      uri.query['max-results'] = max_results
-    if show_root is not None:
-      uri.query['showroot'] = str(show_root).lower()
-
-    return self.get_feed(
-        uri, desired_class=gdata.docs.data.ChangeFeed, **kwargs)
-
-  GetChanges = get_changes
-
-  def get_resources(self, uri=None, limit=None, show_root=None, **kwargs):
-    """Retrieves the resources in a user's docslist, or the given URI.
-
-    Args:
-      uri: (optional) URI to query for resources.  If None, then
-          gdata.docs.client.DocsClient.RESOURCE_FEED_URI is used, which will
-          query for all non-collections.
-      limit: int (optional) A maximum cap for the number of results to
-          return in the feed. By default, the API returns a maximum of 100
-          per page. Thus, if you set limit=5000, you will get <= 5000
-          documents (guarenteed no more than 5000), and will need to follow the
-          feed's next links (feed.GetNextLink()) to the rest. See
-          get_everything(). Similarly, if you set limit=50, only <= 50
-          documents are returned. Note: if the max-results parameter is set in
-          the uri parameter, it is chosen over a value set for limit.
-      show_root: (optional) True to include indications if a resource is in
-          the root collection.
-      kwargs: Other parameters to pass to self.get_feed().
-
-    Returns:
-      gdata.docs.data.ResourceFeed feed.
-    """
-    if uri is None:
-      uri = RESOURCE_FEED_URI
-
-    if isinstance(uri, basestring):
-      uri = atom.http_core.Uri.parse_uri(uri)
-
-    # Add max-results param if it wasn't included in the uri.
-    if limit is not None and not 'max-results' in uri.query:
-      uri.query['max-results'] = limit
-    if show_root is not None:
-      uri.query['showroot'] = str(show_root).lower()
-
-
-    return self.get_feed(uri, desired_class=gdata.docs.data.ResourceFeed,
-                         **kwargs)
-
-  GetResources = get_resources
-
-  def get_all_resources(self, uri=None, show_root=None, **kwargs):
-    """Retrieves all of a user's non-collections or everything at the given URI.
-
-    Folders are not included in this by default.  Pass in a custom URI to
-    include collections in your query.  The DocsQuery class is an easy way to
-    generate such a URI.
-
-    This method makes multiple HTTP requests (by following the feed's next
-    links) in order to fetch the user's entire document list.
-
-    Args:
-      uri: (optional) URI to query the doclist feed with. If None, then use
-          DocsClient.RESOURCE_FEED_URI, which will retrieve all
-          non-collections.
-      show_root: (optional) True to include indications if a resource is in
-          the root collection.
-      kwargs: Other parameters to pass to self.GetResources().
-
-    Returns:
-      List of gdata.docs.data.Resource objects representing the retrieved
-      entries.
-    """
-    if uri is None:
-      uri = RESOURCE_FEED_URI
-
-    if isinstance(uri, basestring):
-      uri = atom.http_core.Uri.parse_uri(uri)
-
-    if show_root is not None:
-      uri.query['showroot'] = str(show_root).lower()
-
-    feed = self.GetResources(uri=uri, **kwargs)
-    entries = feed.entry
-
-    while feed.GetNextLink() is not None:
-      feed = self.GetResources(feed.GetNextLink().href, **kwargs)
-      entries.extend(feed.entry)
-
-    return entries
-
-  GetAllResources = get_all_resources
-
-  def get_resource(self, entry, **kwargs):
-    """Retrieves a resource again given its entry.
-
-    Args:
-      entry: gdata.docs.data.Resource to fetch and return.
-      kwargs: Other args to pass to GetResourceBySelfLink().
-    Returns:
-      gdata.docs.data.Resource representing retrieved resource.
-    """
-    return self.GetResourceBySelfLink(entry.GetSelfLink().href, **kwargs)
-
-  GetResource = get_resource
-
-  def get_resource_by_id(self, resource_id, **kwargs):
-    """Retrieves a resource again given its resource ID.
-
-    Args:
-      resource_id: Typed or untyped resource ID of a resource.
-      kwargs: Other args to pass to GetResourceBySelfLink().
-    Returns:
-      gdata.docs.data.Resource representing retrieved resource.
-    """
-    return self.GetResourceBySelfLink(
-        RESOURCE_SELF_LINK_TEMPLATE % resource_id, **kwargs)
-
-  GetResourceById = get_resource_by_id
-
-  def get_resource_by_self_link(self, uri, etag=None, show_root=None,
-                                **kwargs):
-    """Retrieves a particular resource by its self link.
-
-    Args:
-      uri: str URI at which to query for given resource.  This can be found
-          using entry.GetSelfLink().
-      etag: str (optional) The document/item's etag value to be used in a
-          conditional GET. See http://code.google.com/apis/documents/docs/3.0/
-          developers_guide_protocol.html#RetrievingCached.
-      show_root: (optional) True to include indications if a resource is in
-          the root collection.
-      kwargs: Other parameters to pass to self.get_entry().
-
-    Returns:
-      gdata.docs.data.Resource representing the retrieved resource.
-    """
-    if isinstance(uri, basestring):
-      uri = atom.http_core.Uri.parse_uri(uri)
-    if show_root is not None:
-      uri.query['showroot'] = str(show_root).lower()
-    return self.get_entry(
-        uri , etag=etag, desired_class=gdata.docs.data.Resource, **kwargs)
-
-  GetResourceBySelfLink = get_resource_by_self_link
-
-  def get_resource_acl(self, entry, **kwargs):
-    """Retrieves the ACL sharing permissions for the given entry.
-
-    Args:
-      entry: gdata.docs.data.Resource for which to get ACL.
-      kwargs: Other parameters to pass to self.get_feed().
-
-    Returns:
-      gdata.docs.data.AclFeed representing the resource's ACL.
-    """
-    self._check_entry_is_resource(entry)
-    return self.get_feed(entry.GetAclFeedLink().href,
-                         desired_class=gdata.docs.data.AclFeed, **kwargs)
-
-  GetResourceAcl = get_resource_acl
-
-  def create_resource(self, entry, media=None, collection=None,
-                      create_uri=None, **kwargs):
-    """Creates new entries in Google Docs, and uploads their contents.
-
-    Args:
-      entry: gdata.docs.data.Resource representing initial version
-          of entry being created. If media is also provided, the entry will
-          first be created with the given metadata and content.
-      media: (optional) gdata.data.MediaSource containing the file to be
-          uploaded.
-      collection: (optional) gdata.docs.data.Resource representing a collection 
-          in which this new entry should be created. If provided along
-          with create_uri, create_uri will win (e.g. entry will be created at
-          create_uri, not necessarily in given collection).
-      create_uri: (optional) String URI at which to create the given entry. If
-          collection, media and create_uri are None, use
-          gdata.docs.client.RESOURCE_FEED_URI.  If collection and create_uri are
-          None, use gdata.docs.client.RESOURCE_UPLOAD_URI.  If collection and
-          media are not None,
-          collection.GetResumableCreateMediaLink() is used,
-          with the collection's resource ID substituted in.
-      kwargs: Other parameters to pass to self.post() and self.update().
-
-    Returns:
-      gdata.docs.data.Resource containing information about new entry.
-    """
-    if media is not None:
-      if create_uri is None and collection is not None:
-        create_uri = collection.GetResumableCreateMediaLink().href
-      elif create_uri is None:
-        create_uri = RESOURCE_UPLOAD_URI
-      uploader = gdata.client.ResumableUploader(
-          self, media.file_handle, media.content_type, media.content_length,
-          desired_class=gdata.docs.data.Resource)
-      return uploader.upload_file(create_uri, entry, **kwargs)
-    else:
-      if create_uri is None and collection is not None:
-        create_uri = collection.content.src
-      elif create_uri is None:
-        create_uri = RESOURCE_FEED_URI
-      return self.post(
-          entry, create_uri, desired_class=gdata.docs.data.Resource, **kwargs)
-
-  CreateResource = create_resource
-
-  def update_resource(self, entry, media=None, update_metadata=True,
-                      new_revision=False, **kwargs):
-    """Updates an entry in Google Docs with new metadata and/or new data.
-
-    Args:
-      entry: Entry to update. Make any metadata changes to this entry.
-      media: (optional) gdata.data.MediaSource object containing the file with
-          which to replace the entry's data.
-      update_metadata: (optional) True to update the metadata from the entry
-          itself.  You might set this to False to only update an entry's
-          file content, and not its metadata.
-      new_revision: (optional) True to create a new revision with this update,
-          False otherwise.
-      kwargs: Other parameters to pass to self.post().
-
-    Returns:
-      gdata.docs.data.Resource representing the updated entry.
-    """
-
-    uri_params = {}
-    if new_revision:
-      uri_params['new-revision'] = 'true'
-
-    if update_metadata and media is None:
-      uri = atom.http_core.parse_uri(entry.GetEditLink().href)
-      uri.query.update(uri_params)
-      return super(DocsClient, self).update(entry, **kwargs)
-    else:
-      uploader = gdata.client.ResumableUploader(
-          self, media.file_handle, media.content_type, media.content_length,
-          desired_class=gdata.docs.data.Resource)
-      return uploader.UpdateFile(entry_or_resumable_edit_link=entry,
-                                 update_metadata=update_metadata,
-                                 uri_params=uri_params, **kwargs)
-
-  UpdateResource = update_resource
-
-  def download_resource(self, entry, file_path, extra_params=None, **kwargs):
-    """Downloads the contents of the given entry to disk.
-
-    Note: to download a file in memory, use the DownloadResourceToMemory()
-    method.
-
-    Args:
-      entry: gdata.docs.data.Resource whose contents to fetch.
-      file_path: str Full path to which to save file.
-      extra_params: dict (optional) A map of any further parameters to control
-          how the document is downloaded/exported. For example, exporting a
-          spreadsheet as a .csv: extra_params={'gid': 0, 'exportFormat': 'csv'}
-      kwargs: Other parameters to pass to self._download_file().
-
-    Raises:
-      gdata.client.RequestError if the download URL is malformed or the server's
-      response was not successful.
-    """
-    self._check_entry_is_not_collection(entry)
-    uri = self._get_download_uri(entry.content.src, extra_params)
-    self._download_file(uri, file_path, **kwargs)
-
-  DownloadResource = download_resource
-
-  def download_resource_to_memory(self, entry, extra_params=None, **kwargs):
-    """Returns the contents of the given entry.
-
-    Args:
-      entry: gdata.docs.data.Resource whose contents to fetch.
-      extra_params: dict (optional) A map of any further parameters to control
-          how the document is downloaded/exported. For example, exporting a
-          spreadsheet as a .csv: extra_params={'gid': 0, 'exportFormat': 'csv'}
-      kwargs: Other parameters to pass to self._get_content().
-
-    Returns:
-      Content of given resource after being downloaded.
-
-    Raises:
-      gdata.client.RequestError if the download URL is malformed or the server's
-      response was not successful.
-    """
-    self._check_entry_is_not_collection(entry)
-    uri = self._get_download_uri(entry.content.src, extra_params)
-    return self._get_content(uri, **kwargs)
-
-  DownloadResourceToMemory = download_resource_to_memory
-
-  def _get_download_uri(self, base_uri, extra_params=None):
-    uri = base_uri.replace('&amp;', '&')
-    if extra_params is not None:
-      if 'exportFormat' in extra_params and '/Export?' not in uri:
-        raise gdata.client.Error, ('This entry type cannot be exported '
-                                   'as a different format.')
-
-      if 'gid' in extra_params and uri.find('spreadsheets') == -1:
-        raise gdata.client.Error, 'gid param is not valid for this resource type.'
-
-      uri += '&' + urllib.urlencode(extra_params)
-    return uri
-
-  def _get_content(self, uri, extra_params=None, auth_token=None, **kwargs):
-    """Fetches the given resource's content.
+  def get_file_content(self, uri, auth_token=None, **kwargs):
+    """Fetches the file content from the specified uri.
 
     This method is useful for downloading/exporting a file within enviornments
-    like Google App Engine, where the user may not have the ability to write
+    like Google App Engine, where the user does not have the ability to write
     the file to a local disk.
 
-    Be warned, this method will use as much memory as needed to store the
-    fetched content.  This could cause issues in your environment or app. This
-    is only different from Download() in that you will probably retain an
-    open reference to the data returned from this method, where as the data
-    from Download() will be immediately written to disk and the memory
-    freed.  This client library currently doesn't support reading server
-    responses into a buffer or yielding an open file pointer to responses.
-
     Args:
-      entry: Resource to fetch.
-      extra_params: dict (optional) A map of any further parameters to control
-          how the document is downloaded/exported. For example, exporting a
-          spreadsheet as a .csv: extra_params={'gid': 0, 'exportFormat': 'csv'}
+      uri: str The full URL to fetch the file contents from.
       auth_token: (optional) gdata.gauth.ClientLoginToken, AuthSubToken, or
           OAuthToken which authorizes this client to edit the user's data.
       kwargs: Other parameters to pass to self.request().
@@ -435,35 +73,33 @@ class DocsClient(gdata.client.GDClient):
     Raises:
       gdata.client.RequestError: on error response from server.
     """
-    server_response = None
-    token = auth_token
-    if 'spreadsheets' in uri and token is None \
-        and self.alt_auth_token is not None:
-      token = self.alt_auth_token
-    server_response = self.request(
-        'GET', uri, auth_token=token, **kwargs)
+    server_response = self.request('GET', uri, auth_token=auth_token, **kwargs)
     if server_response.status != 200:
-      raise gdata.client.RequestError, {'status': server_response.status,
-                                        'reason': server_response.reason,
-                                        'body': server_response.read()}
+      raise  gdata.client.RequestError, {'status': server_response.status,
+                                         'reason': server_response.reason,
+                                         'body': server_response.read()}
     return server_response.read()
 
-  def _download_file(self, uri, file_path, **kwargs):
+  GetFileContent = get_file_content
+
+  def _download_file(self, uri, file_path, auth_token=None, **kwargs):
     """Downloads a file to disk from the specified URI.
 
-    Note: to download a file in memory, use the GetContent() method.
+    Note: to download a file in memory, use the GetFileContent() method.
 
     Args:
       uri: str The full URL to download the file from.
       file_path: str The full path to save the file to.
-      kwargs: Other parameters to pass to self.get_content().
+      auth_token: (optional) gdata.gauth.ClientLoginToken, AuthSubToken, or
+          OAuthToken which authorizes this client to edit the user's data.
+      kwargs: Other parameters to pass to self.get_file_content().
 
     Raises:
       gdata.client.RequestError: on error response from server.
     """
     f = open(file_path, 'wb')
     try:
-      f.write(self._get_content(uri, **kwargs))
+      f.write(self.get_file_content(uri, auth_token=auth_token, **kwargs))
     except gdata.client.RequestError, e:
       f.close()
       raise e
@@ -472,562 +108,498 @@ class DocsClient(gdata.client.GDClient):
 
   _DownloadFile = _download_file
 
-  def copy_resource(self, entry, title, **kwargs):
-    """Copies the given entry to a new entry with the given title.
-
-    Note: Files do not support this feature.
+  def get_doclist(self, uri=None, limit=None, auth_token=None, **kwargs):
+    """Retrieves the main doclist feed containing the user's items.
 
     Args:
-      entry: gdata.docs.data.Resource to copy.
-      title: String title for the new entry.
-      kwargs: Other parameters to pass to self.post().
-
-    Returns:
-      gdata.docs.data.Resource representing duplicated resource.
-    """
-    self._check_entry_is_resource(entry)
-    new_entry = gdata.docs.data.Resource(
-        title=atom.data.Title(text=title),
-        id=atom.data.Id(text=entry.GetSelfLink().href))
-    return self.post(new_entry, RESOURCE_FEED_URI, **kwargs)
-
-  CopyResource = copy_resource
-
-  def move_resource(self, entry, collection=None, keep_in_collections=False,
-                    **kwargs):
-    """Moves an item into a different collection (or out of all collections).
-
-    Args:
-      entry: gdata.docs.data.Resource to move.
-      collection: gdata.docs.data.Resource (optional) An object representing
-          the destination collection. If None, set keep_in_collections to
-          False to remove the item from all collections.
-      keep_in_collections: boolean (optional) If True, the given entry
-          is not removed from any existing collections it is already in.
-      kwargs: Other parameters to pass to self.post().
-
-    Returns:
-      gdata.docs.data.Resource of the moved entry.
-    """
-    self._check_entry_is_resource(entry)
-
-    # Remove the item from any collections it is already in.
-    if not keep_in_collections:
-      for current_collection in entry.InCollections():
-        uri = '%s/contents/%s' % (
-            current_collection.href,
-            urllib.quote(entry.resource_id.text))
-        self.delete(uri, force=True)
-
-    if collection is not None:
-      self._check_entry_is_collection(collection)
-      entry = self.post(entry, collection.content.src, **kwargs)
-    return entry
-
-  MoveResource = move_resource
-
-  def delete_resource(self, entry, permanent=False, **kwargs):
-    """Trashes or deletes the given entry.
-    
-    Args:
-      entry: gdata.docs.data.Resource to trash or delete.
-      permanent: True to skip the trash and delete the entry forever.
-      kwargs: Other args to pass to gdata.client.GDClient.Delete()
-    
-    Returns:
-      Result of delete request.
-    """
-    uri = entry.GetEditLink().href
-    if permanent:
-      uri += '?delete=true'
-    return super(DocsClient, self).delete(uri, **kwargs)
-
-  DeleteResource = delete_resource
-
-  def _check_entry_is_resource(self, entry):
-    """Ensures given entry is a gdata.docs.data.Resource.
-
-    Args:
-      entry: Entry to test.
-    Raises:
-      ValueError: If given entry is not a resource.
-    """
-    if not isinstance(entry, gdata.docs.data.Resource):
-      raise ValueError('%s is not a gdata.docs.data.Resource' % str(entry))
-
-  def _check_entry_is_collection(self, entry):
-    """Ensures given entry is a collection.
-
-    Args:
-      entry: Entry to test.
-    Raises:
-      ValueError: If given entry is a collection.
-    """
-    self._check_entry_is_resource(entry)
-    if entry.get_resource_type() != gdata.docs.data.COLLECTION_LABEL:
-      raise ValueError('%s is not a collection' % str(entry))
-
-  def _check_entry_is_not_collection(self, entry):
-    """Ensures given entry is not a collection.
-
-    Args:
-      entry: Entry to test.
-    Raises:
-      ValueError: If given entry is a collection.
-    """
-    try:
-      self._check_entry_is_resource(entry)
-    except ValueError:
-      return
-    if entry.get_resource_type() == gdata.docs.data.COLLECTION_LABEL:
-      raise ValueError(
-          '%s is a collection, which is not valid in this method' % str(entry))
-
-  def get_acl(self, entry, **kwargs):
-    """Retrieves an AclFeed for the given resource.
-
-    Args:
-      entry: gdata.docs.data.Resource to fetch AclFeed for.
-      kwargs: Other args to pass to GetFeed().
-    Returns:
-      gdata.docs.data.AclFeed representing retrieved entries.
-    """
-    self._check_entry_is_resource(entry)
-    return self.get_feed(
-        entry.GetAclFeedLink().href,
-        desired_class=gdata.docs.data.AclFeed, **kwargs)
-
-  GetAcl = get_acl
-
-  def get_acl_entry(self, entry, **kwargs):
-    """Retrieves an AclEntry again.
-
-    This is useful if you need to poll for an ACL changing.
-
-    Args:
-      entry: gdata.docs.data.AclEntry to fetch and return.
-      kwargs: Other args to pass to GetAclEntryBySelfLink().
-    Returns:
-      gdata.docs.data.AclEntry representing retrieved entry.
-    """
-
-    return self.GetAclEntryBySelfLink(entry.GetSelfLink().href, **kwargs)
-
-  GetAclEntry = get_acl_entry
-
-  def get_acl_entry_by_self_link(self, self_link, **kwargs):
-    """Retrieves a particular AclEntry by its self link.
-
-    Args:
-      self_link: URI at which to query for given ACL entry.  This can be found
-          using entry.GetSelfLink().
-      kwargs: Other parameters to pass to self.get_entry().
-
-    Returns:
-      gdata.docs.data.AclEntry representing the retrieved entry.
-    """
-    if isinstance(self_link, atom.data.Link):
-      self_link = self_link.href
-
-    return self.get_entry(self_link, desired_class=gdata.docs.data.AclEntry,
-                          **kwargs)
-
-  GetAclEntryBySelfLink = get_acl_entry_by_self_link
-
-  def add_acl_entry(self, resource, acl_entry, send_notifications=None,
-                    **kwargs):
-    """Adds the given AclEntry to the given Resource.
-
-    Args:
-      resource: gdata.docs.data.Resource to which to add AclEntry.
-      acl_entry: gdata.docs.data.AclEntry representing ACL entry to add.
-      send_notifications: True if users should be notified by email when
-          this AclEntry is added.
-      kwargs: Other parameters to pass to self.post().
-
-    Returns:
-      gdata.docs.data.AclEntry containing information about new entry.
-    Raises:
-      ValueError: If given resource has no ACL link.
-    """
-    uri = resource.GetAclLink().href
-    if uri is None:
-      raise ValueError(('Given resource has no ACL link.  Did you fetch this'
-                        'resource from the API?'))
-    if send_notifications is not None:
-      if not send_notifications:
-        uri += '?send-notification-emails=false'
-
-    return self.post(acl_entry, uri, desired_class=gdata.docs.data.AclEntry,
-                     **kwargs)
-
-  AddAclEntry = add_acl_entry
-
-  def update_acl_entry(self, entry, send_notifications=None, **kwargs):
-    """Updates the given AclEntry with new metadata.
-
-    Args:
-      entry: AclEntry to update. Make any metadata changes to this entry.
-      send_notifications: True if users should be notified by email when
-          this AclEntry is updated.
-      kwargs: Other parameters to pass to super(DocsClient, self).update().
-
-    Returns:
-      gdata.docs.data.AclEntry representing the updated ACL entry.
-    """
-    uri = entry.GetEditLink().href
-    if not send_notifications:
-      uri += '?send-notification-emails=false'
-    return super(DocsClient, self).update(entry, uri=uri, **kwargs)
-
-  UpdateAclEntry = update_acl_entry
-
-  def delete_acl_entry(self, entry, **kwargs):
-    """Deletes the given AclEntry.
-    
-    Args:
-      entry: gdata.docs.data.AclEntry to delete.
-      kwargs: Other args to pass to gdata.client.GDClient.Delete()
-    
-    Returns:
-      Result of delete request.
-    """
-    return super(DocsClient, self).delete(entry.GetEditLink().href,
-                                          **kwargs)
-
-  DeleteAclEntry = delete_acl_entry
-
-  def batch_process_acl_entries(self, resource, entries, **kwargs):
-    """Applies the specified operation of each entry in a single request.
-
-    To use this, simply set acl_entry.batch_operation to one of
-    ['query', 'insert', 'update', 'delete'], and optionally set
-    acl_entry.batch_id to a string of your choice.
-
-    Then, put all of your modified AclEntry objects into a list and pass
-    that list as the entries parameter.
-    
-    Args:
-      resource: gdata.docs.data.Resource to which the given entries belong.
-      entries: [gdata.docs.data.AclEntry] to modify in some way.
-      kwargs: Other args to pass to gdata.client.GDClient.post()
-    
-    Returns:
-      Resulting gdata.docs.data.AclFeed of changes.
-    """
-    feed = gdata.docs.data.AclFeed()
-    feed.entry = entries
-    return super(DocsClient, self).post(
-        feed, uri=resource.GetAclLink().href + '/acl/batch', **kwargs)
-
-  BatchProcessAclEntries = batch_process_acl_entries
-
-  def get_revisions(self, entry, **kwargs):
-    """Retrieves the revision history for a resource.
-
-    Args:
-      entry: gdata.docs.data.Resource for which to get revisions.
+      uri: str (optional) A URI to query the doclist feed.
+      limit: int (optional) A maximum cap for the number of results to
+          return in the feed. By default, the API returns a maximum of 100
+          per page. Thus, if you set limit=5000, you will get <= 5000
+          documents (guarenteed no more than 5000), and will need to follow the
+          feed's next links (feed.GetNextLink()) to the rest. See
+          get_everything(). Similarly, if you set limit=50, only <= 50
+          documents are returned. Note: if the max-results parameter is set in
+          the uri parameter, it is chosen over a value set for limit.
+      auth_token: (optional) gdata.gauth.ClientLoginToken, AuthSubToken, or
+          OAuthToken which authorizes this client to edit the user's data.
       kwargs: Other parameters to pass to self.get_feed().
 
     Returns:
-      gdata.docs.data.RevisionFeed representing the resource's revisions.
+      gdata.docs.data.DocList feed.
     """
-    self._check_entry_is_resource(entry)
-    return self.get_feed(
-        entry.GetRevisionsFeedLink().href,
-        desired_class=gdata.docs.data.RevisionFeed, **kwargs)
+    if uri is None:
+      uri = DOCLIST_FEED_URI
 
-  GetRevisions = get_revisions
+    if isinstance(uri, (str, unicode)):
+      uri = atom.http_core.Uri.parse_uri(uri)    
 
-  def get_revision(self, entry, **kwargs):
-    """Retrieves a revision again given its entry.
-    
-    Args:
-      entry: gdata.docs.data.Revision to fetch and return.
-      kwargs: Other args to pass to GetRevisionBySelfLink().
-    Returns:
-      gdata.docs.data.Revision representing retrieved revision.
-    """
-    return self.GetRevisionBySelfLink(entry.GetSelfLink().href, **kwargs)
+    # Add max-results param if it wasn't included in the uri.
+    if limit is not None and not 'max-results' in uri.query:
+      uri.query['max-results'] = limit
 
-  GetRevision = get_revision
+    return self.get_feed(uri, desired_class=gdata.docs.data.DocList,
+                         auth_token=auth_token, **kwargs)
 
-  def get_revision_by_self_link(self, self_link, **kwargs):
-    """Retrieves a particular reivision by its self link.
+  GetDocList = get_doclist
+
+  def get_doc(self, resource_id, etag=None, auth_token=None, uri=None,
+              **kwargs):
+    """Retrieves a particular document given by its resource id.
 
     Args:
-      self_link: URI at which to query for given revision.  This can be found
-          using entry.GetSelfLink().
+      resource_id: str The document/item's resource id. Example spreadsheet:
+          'spreadsheet%3A0A1234567890'.
+      etag: str (optional) The document/item's etag value to be used in a
+          conditional GET. See http://code.google.com/apis/documents/docs/3.0/
+          developers_guide_protocol.html#RetrievingCached.
+      auth_token: (optional) gdata.gauth.ClientLoginToken, AuthSubToken, or
+          OAuthToken which authorizes this client to edit the user's data.
+      uri: (optional) URI to use for this request.  Translates to uri +
+          resource_id.
       kwargs: Other parameters to pass to self.get_entry().
 
     Returns:
-      gdata.docs.data.Revision representing the retrieved revision.
+      A gdata.docs.data.DocsEntry object representing the retrieved entry.
+
+    Raises:
+      ValueError if the resource_id is not a valid format.
     """
-    if isinstance(self_link, atom.data.Link):
-      self_link = self_link.href
+    match = gdata.docs.data.RESOURCE_ID_PATTERN.match(resource_id)
+    if match is None:
+      raise ValueError, 'Invalid resource id: %s' % resource_id
+    if uri is None:
+      uri = DOCLIST_FEED_URI
+    return self.get_entry(
+        uri + resource_id, etag=etag,
+        desired_class=gdata.docs.data.DocsEntry,
+        auth_token=auth_token, **kwargs)
 
-    return self.get_entry(self_link, desired_class=gdata.docs.data.Revision,
-                          **kwargs)
+  GetDoc = get_doc
 
-  GetRevisionBySelfLink = get_revision_by_self_link
+  def get_everything(self, uri=None, auth_token=None, **kwargs):
+    """Retrieves the user's entire doc list.
 
-  def download_revision(self, entry, file_path, extra_params=None, **kwargs):
-    """Downloads the contents of the given revision to disk.
-
-    Note: to download a revision in memory, use the DownloadRevisionToMemory()
-    method.
+    The method makes multiple HTTP requests (by following the feed's next links)
+    in order to fetch the user's entire document list.
 
     Args:
-      entry: gdata.docs.data.Revision whose contents to fetch.
-      file_path: str Full path to which to save file.
+      uri: str (optional) A URI to query the doclist feed with.
+      auth_token: (optional) gdata.gauth.ClientLoginToken, AuthSubToken, or
+          OAuthToken which authorizes this client to edit the user's data.
+      kwargs: Other parameters to pass to self.GetDocList().
+
+    Returns:
+      A list of gdata.docs.data.DocsEntry objects representing the retrieved
+      entries.
+    """
+    if uri is None:
+      uri = DOCLIST_FEED_URI
+
+    feed = self.GetDocList(uri=uri, auth_token=auth_token, **kwargs)
+    entries = feed.entry
+
+    while feed.GetNextLink() is not None:
+      feed = self.GetDocList(
+          feed.GetNextLink().href, auth_token=auth_token, **kwargs)
+      entries.extend(feed.entry)
+
+    return entries
+
+  GetEverything = get_everything
+
+  def get_acl_permissions(self, resource_id, auth_token=None, uri=None,
+                          **kwargs):
+    """Retrieves a the ACL sharing permissions for a document.
+
+    Args:
+      resource_id: str The document/item's resource id. Example for pdf:
+          'pdf%3A0A1234567890'.
+      auth_token: (optional) gdata.gauth.ClientLoginToken, AuthSubToken, or
+          OAuthToken which authorizes this client to edit the user's data.
+      uri: (optional) URI to use when making this request.  Must be a template,
+          with a %s for where to put the resource_id.
+      kwargs: Other parameters to pass to self.get_feed().
+
+    Returns:
+      A gdata.docs.data.AclFeed object representing the document's ACL entries.
+
+    Raises:
+      ValueError if the resource_id is not a valid format.
+    """
+    match = gdata.docs.data.RESOURCE_ID_PATTERN.match(resource_id)
+    if match is None:
+      raise ValueError, 'Invalid resource id: %s' % resource_id
+    if uri is None:
+      uri = ACL_FEED_TEMPLATE
+
+    return self.get_feed(
+        uri % resource_id, desired_class=gdata.docs.data.AclFeed,
+        auth_token=auth_token, **kwargs)
+
+  GetAclPermissions = get_acl_permissions
+
+  def get_revisions(self, resource_id, auth_token=None, uri=None, **kwargs):
+    """Retrieves the revision history for a document.
+
+    Args:
+      resource_id: str The document/item's resource id. Example for pdf:
+          'pdf%3A0A1234567890'.
+      auth_token: (optional) gdata.gauth.ClientLoginToken, AuthSubToken, or
+          OAuthToken which authorizes this client to edit the user's data.
+      uri: (optional) URI to use when making this request.  Must be a template,
+          with a %s for where to put the resource_id.
+      kwargs: Other parameters to pass to self.get_feed().
+
+    Returns:
+      A gdata.docs.data.RevisionFeed representing the document's revisions.
+
+    Raises:
+      ValueError if the resource_id is not a valid format.
+    """
+    match = gdata.docs.data.RESOURCE_ID_PATTERN.match(resource_id)
+    if match is None:
+      raise ValueError, 'Invalid resource id: %s' % resource_id
+    if uri is None:
+      uri = REVISIONS_FEED_TEMPLATE
+
+    return self.get_feed(
+        uri % resource_id,
+        desired_class=gdata.docs.data.RevisionFeed, auth_token=auth_token,
+        **kwargs)
+
+  GetRevisions = get_revisions
+
+  def create(self, doc_type, title, folder_or_id=None, writers_can_invite=None,
+             auth_token=None, uri=None, **kwargs):
+    """Creates a new item in the user's doclist.
+
+    Args:
+      doc_type: str The type of object to create. For example: 'document',
+          'spreadsheet', 'folder', 'presentation'.
+      title: str A title for the document.
+      folder_or_id: gdata.docs.data.DocsEntry or str (optional) Folder entry or
+          the resouce id of a folder to create the object under. Note: A valid
+          resource id for a folder is of the form: folder%3Afolder_id.
+      writers_can_invite: bool (optional) False prevents collaborators from
+          being able to invite others to edit or view the document.
+      auth_token: (optional) gdata.gauth.ClientLoginToken, AuthSubToken, or
+          OAuthToken which authorizes this client to edit the user's data.
+      uri: (optional) URI to use when making this request.  Must be a template,
+          with a %s for where to put the resource_id.
+      kwargs: Other parameters to pass to self.post().
+
+    Returns:
+      gdata.docs.data.DocsEntry containing information newly created item.
+    """
+    entry = gdata.docs.data.DocsEntry(title=atom.data.Title(text=title))
+    entry.category.append(gdata.docs.data.make_kind_category(doc_type))
+
+    if isinstance(writers_can_invite, gdata.docs.data.WritersCanInvite):
+      entry.writers_can_invite = writers_can_invite
+    elif isinstance(writers_can_invite, bool):
+      entry.writers_can_invite = gdata.docs.data.WritersCanInvite(
+          value=str(writers_can_invite).lower())
+
+    if uri is None:
+      uri = DOCLIST_FEED_URI
+
+    if folder_or_id is not None:
+      if isinstance(folder_or_id, gdata.docs.data.DocsEntry):
+        # Verify that we're uploading the resource into to a folder.
+        if folder_or_id.get_document_type() == gdata.docs.data.FOLDER_LABEL:
+          uri = folder_or_id.content.src
+        else:
+          raise gdata.client.Error, 'Trying to upload item to a non-folder.'
+      else:
+        uri = FOLDERS_FEED_TEMPLATE % folder_or_id
+
+    return self.post(entry, uri, auth_token=auth_token, **kwargs)
+
+  Create = create
+
+  def copy(self, source_entry, title, auth_token=None, uri=None, **kwargs):
+    """Copies a native Google document, spreadsheet, or presentation.
+
+    Note: arbitrary file types and PDFs do not support this feature.
+
+    Args:
+      source_entry: gdata.docs.data.DocsEntry An object representing the source
+          document/folder.
+      title: str A title for the new document.
+      auth_token: (optional) gdata.gauth.ClientLoginToken, AuthSubToken, or
+          OAuthToken which authorizes this client to edit the user's data.
+      uri: (optional) URI to use when making this request.  Must be a template,
+          with a %s for where to put the resource_id.
+      kwargs: Other parameters to pass to self.post().
+
+    Returns:
+      A gdata.docs.data.DocsEntry of the duplicated document.
+    """
+    entry = gdata.docs.data.DocsEntry(
+        title=atom.data.Title(text=title),
+        id=atom.data.Id(text=source_entry.GetSelfLink().href))
+    if uri is None:
+      uri = DOCLIST_FEED_URI
+    return self.post(entry, uri, auth_token=auth_token, **kwargs)
+
+  Copy = copy
+
+  def move(self, source_entry, folder_entry=None,
+           keep_in_folders=False, auth_token=None, delete_folder_uri=None,
+           folder_uri=None, **kwargs):
+    """Moves an item into a different folder (or to the root document list).
+
+    Args:
+      source_entry: gdata.docs.data.DocsEntry An object representing the source
+          document/folder.
+      folder_entry: gdata.docs.data.DocsEntry (optional) An object representing
+          the destination folder. If None, set keep_in_folders to
+          True to remove the item from all parent folders.
+      keep_in_folders: boolean (optional) If True, the source entry
+          is not removed from any existing parent folders it is in.
+      auth_token: (optional) gdata.gauth.ClientLoginToken, AuthSubToken, or
+          OAuthToken which authorizes this client to edit the user's data.
+      delete_folder_uri: (optional) URI to use when making this request.  Must
+          be a template, with a %s for where to put the resource_id.
+      folder_uri: (optional) URI to use when making this request.  Must be a
+          template, with a %s for where to put the resource_id.
+      kwargs: Other parameters to pass to self.post().
+
+    Returns:
+      A gdata.docs.data.DocsEntry of the moved entry or True if just moving the
+      item out of all folders (e.g. Move(source_entry)).
+    """
+    entry = gdata.docs.data.DocsEntry(id=source_entry.id)
+
+    # Remove the item from any folders it is already in.
+    if not keep_in_folders:
+      construct_uri = False
+      if delete_folder_uri is None:
+        construct_uri = True
+      for folder in source_entry.InFolders():
+        if construct_uri:
+          uri = '%s/contents/%s' % (
+              folder.href,
+              urllib.quote(source_entry.resource_id.text))
+        else:
+          uri = delete_folder_uri % urllib.quote(source_entry.resource_id.text)
+
+        self.delete(uri, force=True)
+
+    # If we're moving the resource into a folder, verify it is a folder entry.
+    if folder_entry is not None:
+      if folder_entry.get_document_type() == gdata.docs.data.FOLDER_LABEL:
+        if folder_uri is None:
+          folder_uri = folder_entry.content.src
+        return self.post(entry, folder_uri, auth_token=auth_token, **kwargs)
+      else:
+        raise gdata.client.Error, 'Trying to move item into a non-folder.'
+
+    return True
+
+  Move = move
+
+  def upload(self, media, title, folder_or_uri=None, content_type=None,
+             auth_token=None, **kwargs):
+    """Uploads a file to Google Docs.
+
+    Args:
+      media: A gdata.data.MediaSource object containing the file to be
+          uploaded or a string of the filepath.
+      title: str The title of the document on the server after being
+          uploaded.
+      folder_or_uri: gdata.docs.data.DocsEntry or str (optional) An object with
+          a link to the folder or the uri to upload the file to.
+          Note: A valid uri for a folder is of the form:
+                /feeds/default/private/full/folder%3Afolder_id/contents
+      content_type: str (optional) The file's mimetype. If not provided, the
+          one in the media source object is used or the mimetype is inferred
+          from the filename (if media is a string). When media is a filename,
+          it is always recommended to pass in a content type.
+      auth_token: (optional) gdata.gauth.ClientLoginToken, AuthSubToken, or
+          OAuthToken which authorizes this client to edit the user's data.
+      kwargs: Other parameters to pass to self.post().
+
+    Returns:
+      A gdata.docs.data.DocsEntry containing information about uploaded doc.
+    """
+    uri = None
+    if folder_or_uri is not None:
+      if isinstance(folder_or_uri, gdata.docs.data.DocsEntry):
+        # Verify that we're uploading the resource into to a folder.
+        if folder_or_uri.get_document_type() == gdata.docs.data.FOLDER_LABEL:
+          uri = folder_or_uri.content.src
+        else:
+          raise gdata.client.Error, 'Trying to upload item to a non-folder.'
+      else:
+        uri = folder_or_uri
+    else:
+      uri = DOCLIST_FEED_URI
+
+    # Create media source if media is a filepath.
+    if isinstance(media, (str, unicode)):
+      mimetype = mimetypes.guess_type(media)[0]
+      if mimetype is None and content_type is None:
+        raise ValueError, ("Unknown mimetype. Please pass in the file's "
+                           "content_type")
+      else:
+        media = gdata.data.MediaSource(file_path=media,
+                                       content_type=content_type)
+
+    entry = gdata.docs.data.DocsEntry(title=atom.data.Title(text=title))
+
+    return self.post(entry, uri, media_source=media,
+                     desired_class=gdata.docs.data.DocsEntry,
+                     auth_token=auth_token, **kwargs)
+
+  Upload = upload
+
+  def download(self, entry_or_id_or_url, file_path, extra_params=None,
+               auth_token=None, **kwargs):
+    """Downloads a file from the Document List to local disk.
+
+    Note: to download a file in memory, use the GetFileContent() method.
+
+    Args:
+      entry_or_id_or_url: gdata.docs.data.DocsEntry or string representing a
+          resource id or URL to download the document from (such as the content
+          src link).
+      file_path: str The full path to save the file to.
       extra_params: dict (optional) A map of any further parameters to control
-          how the document is downloaded.
+          how the document is downloaded/exported. For example, exporting a
+          spreadsheet as a .csv: extra_params={'gid': 0, 'exportFormat': 'csv'}
+      auth_token: (optional) gdata.gauth.ClientLoginToken, AuthSubToken, or
+          OAuthToken which authorizes this client to edit the user's data.
       kwargs: Other parameters to pass to self._download_file().
 
     Raises:
       gdata.client.RequestError if the download URL is malformed or the server's
       response was not successful.
+      ValueError if entry_or_id_or_url was a resource id for a filetype
+      in which the download link cannot be manually constructed (e.g. pdf).
     """
-    uri = self._get_download_uri(entry.content.src, extra_params)
-    self._download_file(uri, file_path, **kwargs)
+    if isinstance(entry_or_id_or_url, gdata.docs.data.DocsEntry):
+      url = entry_or_id_or_url.content.src
+    else:
+      if gdata.docs.data.RESOURCE_ID_PATTERN.match(entry_or_id_or_url):
+        url = gdata.docs.data.make_content_link_from_resource_id(
+            entry_or_id_or_url)
+      else:
+        url = entry_or_id_or_url
 
-  DownloadRevision = download_revision
+    if extra_params is not None:
+      if 'exportFormat' in extra_params and url.find('/Export?') == -1:
+        raise gdata.client.Error, ('This entry type cannot be exported '
+                                   'as a different format.')
 
-  def download_revision_to_memory(self, entry, extra_params=None, **kwargs):
-    """Returns the contents of the given revision.
+      if 'gid' in extra_params and url.find('spreadsheets') == -1:
+        raise gdata.client.Error, 'gid param is not valid for this doc type.'
+
+      url += '&' + urllib.urlencode(extra_params)
+
+    self._download_file(url, file_path, auth_token=auth_token, **kwargs)
+
+  Download = download
+
+  def export(self, entry_or_id_or_url, file_path, gid=None, auth_token=None,
+             **kwargs):
+    """Exports a document from the Document List in a different format.
 
     Args:
-      entry: gdata.docs.data.Revision whose contents to fetch.
-      extra_params: dict (optional) A map of any further parameters to control
-          how the document is downloaded/exported.
-      kwargs: Other parameters to pass to self._get_content().
-
-    Returns:
-      Content of given revision after being downloaded.
+      entry_or_id_or_url: gdata.docs.data.DocsEntry or string representing a
+          resource id or URL to download the document from (such as the content
+          src link).
+      file_path: str The full path to save the file to.  The export
+          format is inferred from the the file extension.
+      gid: str (optional) grid id for downloading a single grid of a
+          spreadsheet. The param should only be used for .csv and .tsv
+          spreadsheet exports.
+      auth_token: (optional) gdata.gauth.ClientLoginToken, AuthSubToken, or
+          OAuthToken which authorizes this client to edit the user's data.
+      kwargs: Other parameters to pass to self.download().
 
     Raises:
       gdata.client.RequestError if the download URL is malformed or the server's
       response was not successful.
     """
-    self._check_entry_is_not_collection(entry)
-    uri = self._get_download_uri(entry.content.src, extra_params)
-    return self._get_content(uri, **kwargs)
+    extra_params = {}
 
-  DownloadRevisionToMemory = download_revision_to_memory
+    match = gdata.docs.data.FILE_EXT_PATTERN.match(file_path)
+    if match:
+      extra_params['exportFormat'] = match.group(1)
 
-  def publish_revision(self, entry, publish_auto=None,
-                       publish_outside_domain=False, **kwargs):
-    """Publishes the given revision.
+    if gid is not None:
+      extra_params['gid'] = gid
 
-    This method can only be used for document revisions.
+    self.download(entry_or_id_or_url, file_path, extra_params,
+                  auth_token=auth_token, **kwargs)
 
-    Args:
-      entry: Revision to update.
-      publish_auto: True to automatically publish future revisions of the
-          document.  False to not automatically publish future revisions.
-          None to take no action and use the default value.
-      publish_outside_domain: True to make the published revision available
-          outside of a Google Apps domain.  False to not publish outside
-          the domain.  None to use the default value.
-      kwargs: Other parameters to pass to super(DocsClient, self).update().
-
-    Returns:
-      gdata.docs.data.Revision representing the updated revision.
-    """
-    entry.publish = gdata.docs.data.Publish(value='true')
-    if publish_auto == True:
-      entry.publish_auto = gdata.docs.data.PublishAuto(value='true')
-    elif publish_auto == False:
-      entry.publish_auto = gdata.docs.data.PublishAuto(value='false')
-    if publish_outside_domain == True:
-      entry.publish_outside_domain = \
-          gdata.docs.data.PublishOutsideDomain(value='true')
-    elif publish_outside_domain == False:
-      entry.publish_outside_domain = \
-          gdata.docs.data.PublishOutsideDomain(value='false')
-    return super(DocsClient, self).update(entry, force=True, **kwargs)
-
-  PublishRevision = publish_revision
-
-  def unpublish_revision(self, entry, **kwargs):
-    """Unpublishes the given revision.
-
-    This method can only be used for document revisions.
-
-    Args:
-      entry: Revision to update.
-      kwargs: Other parameters to pass to super(DocsClient, self).update().
-
-    Returns:
-      gdata.docs.data.Revision representing the updated revision.
-    """
-    entry.publish = gdata.docs.data.Publish(value='false')
-    return super(DocsClient, self).update(entry, force=True, **kwargs)
-
-  UnpublishRevision = unpublish_revision
-
-  def delete_revision(self, entry, **kwargs):
-    """Deletes the given Revision.
-    
-    Args:
-      entry: gdata.docs.data.Revision to delete.
-      kwargs: Other args to pass to gdata.client.GDClient.Delete()
-    
-    Returns:
-      Result of delete request.
-    """
-    return super(DocsClient, self).delete(entry, force=True, **kwargs)
-
-  DeleteRevision = delete_revision
-
-  def get_archive(self, entry, **kwargs):
-    """Retrieves an archive again given its entry.
-    
-    This is useful if you need to poll for an archive completing.
-    
-    Args:
-      entry: gdata.docs.data.Archive to fetch and return.
-      kwargs: Other args to pass to GetArchiveBySelfLink().
-    Returns:
-      gdata.docs.data.Archive representing retrieved archive.
-    """
-
-    return self.GetArchiveBySelfLink(entry.GetSelfLink().href, **kwargs)
-
-  GetArchive = get_archive
-
-  def get_archive_by_self_link(self, self_link, **kwargs):
-    """Retrieves a particular archive by its self link.
-
-    Args:
-      self_link: URI at which to query for given archive.  This can be found
-          using entry.GetSelfLink().
-      kwargs: Other parameters to pass to self.get_entry().
-
-    Returns:
-      gdata.docs.data.Archive representing the retrieved archive.
-    """
-    if isinstance(self_link, atom.data.Link):
-      self_link = self_link.href
-
-    return self.get_entry(self_link, desired_class=gdata.docs.data.Archive,
-                          **kwargs)
-
-  GetArchiveBySelfLink = get_archive_by_self_link
-
-  def create_archive(self, entry, **kwargs):
-    """Creates a new archive of resources.
-
-    Args:
-      entry: gdata.docs.data.Archive representing metadata of archive to
-          create.
-      kwargs: Other parameters to pass to self.post().
-
-    Returns:
-      gdata.docs.data.Archive containing information about new archive.
-    """
-    return self.post(entry, ARCHIVE_FEED_URI,
-                     desired_class=gdata.docs.data.Archive, **kwargs)
-
-  CreateArchive = create_archive
-
-  def update_archive(self, entry, **kwargs):
-    """Updates the given Archive with new metadata.
-
-    This method is really only useful for updating the notification email
-    address of an archive that is being processed.
-
-    Args:
-      entry: Archive to update. Make any metadata changes to this entry.
-      kwargs: Other parameters to pass to super(DocsClient, self).update().
-
-    Returns:
-      gdata.docs.data.Archive representing the updated archive.
-    """
-    return super(DocsClient, self).update(entry, **kwargs)
-
-  UpdateArchive = update_archive
-
-  download_archive = DownloadResource
-  DownloadArchive = download_archive
-  download_archive_to_memory = DownloadResourceToMemory
-  DownloadArchiveToMemory = download_archive_to_memory
-
-  def delete_archive(self, entry, **kwargs):
-    """Aborts the given Archive operation, or deletes the Archive.
-    
-    Args:
-      entry: gdata.docs.data.Archive to delete.
-      kwargs: Other args to pass to gdata.client.GDClient.Delete()
-    
-    Returns:
-      Result of delete request.
-    """
-    return super(DocsClient, self).delete(entry, force=True, **kwargs)
-
-  DeleteArchive = delete_archive
+  Export = export
 
 
 class DocsQuery(gdata.client.Query):
 
   def __init__(self, title=None, title_exact=None, opened_min=None,
                opened_max=None, edited_min=None, edited_max=None, owner=None,
-               writer=None, reader=None, show_collections=None, show_root=None,
+               writer=None, reader=None, show_folders=None,
                show_deleted=None, ocr=None, target_language=None,
-               source_language=None, convert=None, query=None, **kwargs):
-    """Constructs a query URL for the Google Documents List API.
+               source_language=None, convert=None, **kwargs):
+    """Constructs a query URL for the Google Documents List  API.
 
     Args:
       title: str (optional) Specifies the search terms for the title of a
-          document. This parameter used without title_exact will only
-          submit partial queries, not exact queries.
+             document. This parameter used without title_exact will only
+             submit partial queries, not exact queries.
       title_exact: str (optional) Meaningless without title. Possible values
-          are 'true' and 'false'. Note: Matches are case-insensitive.
+                   are 'true' and 'false'. Note: Matches are case-insensitive.
       opened_min: str (optional) Lower bound on the last time a document was
-          opened by the current user. Use the RFC 3339 timestamp
-          format. For example: opened_min='2005-08-09T09:57:00-08:00'.
+                  opened by the current user. Use the RFC 3339 timestamp
+                  format. For example: opened_min='2005-08-09T09:57:00-08:00'.
       opened_max: str (optional) Upper bound on the last time a document was
-          opened by the current user. (See also opened_min.)
+                  opened by the current user. (See also opened_min.)
       edited_min: str (optional) Lower bound on the last time a document was
-          edited by the current user. This value corresponds to the edited.text
-          value in the doc's entry object, which represents changes to the
-          document's content or metadata.  Use the RFC 3339 timestamp format.
-          For example: edited_min='2005-08-09T09:57:00-08:00'
+                  edited by the current user. This value corresponds to the
+                  edited.text value in the doc's entry object, which
+                  represents changes to the document's content or metadata.
+                  Use the RFC 3339 timestamp format. For example:
+                  edited_min='2005-08-09T09:57:00-08:00'
       edited_max: str (optional) Upper bound on the last time a document was
-          edited by the user. (See also edited_min.)
+                  edited by the user. (See also edited_min.)
       owner: str (optional) Searches for documents with a specific owner. Use
-          the email address of the owner. For example: owner='user@gmail.com'
+             the email address of the owner. For example:
+             owner='user@gmail.com'
       writer: str (optional) Searches for documents which can be written to
-          by specific users. Use a single email address or a comma separated list
-          of email addresses. For example: writer='user1@gmail.com,user@example.com'
+              by specific users. Use a single email address or a comma
+              separated list of email addresses. For example:
+              writer='user1@gmail.com,user@example.com'
       reader: str (optional) Searches for documents which can be read by
-          specific users. (See also writer.)
-      show_collections: str (optional) Specifies whether the query should return
-          collections as well as documents and files. Possible values are 'true'
-          and 'false'. Default is 'false'.
-      show_root: (optional) 'true' to specify when an item is in the root
-          collection. Default is 'false'
+              specific users. (See also writer.)
+      show_folders: str (optional) Specifies whether the query should return
+                    folders as well as documents. Possible values are 'true'
+                    and 'false'. Default is false.
       show_deleted: str (optional) Specifies whether the query should return
-          documents which are in the trash as well as other documents.
-          Possible values are 'true' and 'false'. Default is false.
+                    documents which are in the trash as well as other
+                    documents. Possible values are 'true' and 'false'.
+                    Default is false.
       ocr: str (optional) Specifies whether to attempt OCR on a .jpg, .png, or
-          .gif upload. Possible values are 'true' and 'false'. Default is
-          false. See OCR in the Protocol Guide: 
-          http://code.google.com/apis/documents/docs/3.0/developers_guide_protocol.html#OCR
+           .gif upload. Possible values are 'true' and 'false'. Default is
+           false. See OCR in the Protocol Guide: 
+           http://code.google.com/apis/documents/docs/3.0/developers_guide_protocol.html#OCR
       target_language: str (optional) Specifies the language to translate a
-          document into. See Document Translation in the Protocol Guide for a
-          table of possible values:
-            http://code.google.com/apis/documents/docs/3.0/developers_guide_protocol.html#DocumentTranslation
+                       document into. See Document Translation in the Protocol
+                       Guide for a table of possible values:
+                       http://code.google.com/apis/documents/docs/3.0/developers_guide_protocol.html#DocumentTranslation
       source_language: str (optional) Specifies the source language of the
-          original document. Optional when using the translation service.
-          If not provided, Google will attempt to auto-detect the source
-          language. See Document Translation in the Protocol Guide for a table of
-          possible values (link in target_language).
-      convert: str (optional) Used when uploading files specify if document uploads
-          should convert to a native Google Docs format.
-          Possible values are 'true' and 'false'. The default is 'true'.
-      query: str (optional) Full-text query to use.  See the 'q' parameter in
-          the documentation.
+                       original document. Optional when using the translation
+                       service. If not provided, Google will attempt to
+                       auto-detect the source language. See Document
+                       Translation in the Protocol Guide for a table of
+                       possible values (link in target_language).
+      convert: str (optional) Used when uploading arbitrary file types to
+               specity if document-type uploads should convert to a native
+               Google Docs format. Possible values are 'true' and 'false'.
+               The default is 'true'.
     """
     gdata.client.Query.__init__(self, **kwargs)
     self.convert = convert
@@ -1040,13 +612,11 @@ class DocsQuery(gdata.client.Query):
     self.owner = owner
     self.writer = writer
     self.reader = reader
-    self.show_collections = show_collections
-    self.show_root = show_root
+    self.show_folders = show_folders
     self.show_deleted = show_deleted
     self.ocr = ocr
     self.target_language = target_language
     self.source_language = source_language
-    self.query = query
 
   def modify_request(self, http_request):
     gdata.client._add_query_param('convert', self.convert, http_request)
@@ -1060,10 +630,8 @@ class DocsQuery(gdata.client.Query):
     gdata.client._add_query_param('owner', self.owner, http_request)
     gdata.client._add_query_param('writer', self.writer, http_request)
     gdata.client._add_query_param('reader', self.reader, http_request)
-    gdata.client._add_query_param('query', self.query, http_request)
-    gdata.client._add_query_param('showfolders', self.show_collections,
+    gdata.client._add_query_param('showfolders', self.show_folders,
                                   http_request)
-    gdata.client._add_query_param('showroot', self.show_root, http_request)
     gdata.client._add_query_param('showdeleted', self.show_deleted,
                                   http_request)
     gdata.client._add_query_param('ocr', self.ocr, http_request)

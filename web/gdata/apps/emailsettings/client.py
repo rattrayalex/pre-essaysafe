@@ -19,16 +19,12 @@
 EmailSettingsClient extends gdata.client.GDClient to ease interaction with
 the Google Apps Email Settings API.  These interactions include the ability
 to create labels, filters, aliases, and update web-clip, forwarding, POP,
-IMAP, vacation-responder, signature, language, and general settings, and
-retrieve labels, send-as, forwarding, pop, imap, vacation and signature
-settings.
+IMAP, vacation-responder, signature, language, and general settings.
 """
 
 
 __author__ = 'Claudio Cherubino <ccherubino@google.com>'
 
-
-import urllib
 
 import gdata.apps.emailsettings.data
 import gdata.client
@@ -62,8 +58,6 @@ SETTING_ID_SIGNATURE = 'signature'
 SETTING_ID_LANGUAGE = 'language'
 # The settingID value for the general requests
 SETTING_ID_GENERAL = 'general'
-# The settingID value for the delegation requests
-SETTING_ID_DELEGATION = 'delegation'
 
 # The KEEP action for the email settings
 ACTION_KEEP = 'KEEP'
@@ -120,16 +114,12 @@ class EmailSettingsClient(gdata.client.GDClient):
       A string giving the URI for Email Settings API calls for this client's
       Google Apps domain.
     """
-    if '@' in username:
-      username, domain = username.split('@', 1)
-    else:
-      domain = self.domain
-    uri = EMAIL_SETTINGS_URI_TEMPLATE % (self.api_version, domain,
-                                   username, setting_id)
+    uri = EMAIL_SETTINGS_URI_TEMPLATE % (self.api_version, self.domain,
+                                         username, setting_id)
     return uri
 
   MakeEmailSettingsUri = make_email_settings_uri
-  
+
   def create_label(self, username, name, **kwargs):
     """Creates a label with the given properties.
 
@@ -148,38 +138,6 @@ class EmailSettingsClient(gdata.client.GDClient):
     return self.post(new_label, uri, **kwargs)
 
   CreateLabel = create_label
-
-  def retrieve_labels(self, username, **kwargs):
-    """Retrieves email labels for the specified username
-    
-    Args:
-      username: string The name of the user to get the labels for
-    
-    Returns:
-      A gdata.data.GDFeed of the user's email labels
-    """
-    uri = self.MakeEmailSettingsUri(username=username,
-                                    setting_id=SETTING_ID_LABEL)
-    return self.GetFeed(uri, auth_token=None, query=None, **kwargs)
-  
-  RetrieveLabels = retrieve_labels
-
-  def delete_label(self, username, label, **kwargs):
-    """Delete a label from the specified account.
-
-    Args:
-      username: string Name of the user
-      label: string Name of the label to be deleted
-
-    Returns:
-      An atom.http_core.HttpResponse() with the result of the request
-    """
-    uri = self.MakeEmailSettingsUri(username=username,
-                                    setting_id=SETTING_ID_LABEL)
-    uri = '/'.join([uri, urllib.quote_plus(label)])
-    return self.delete(uri, **kwargs)
-  
-  DeleteLabel = delete_label
 
   def create_filter(self, username, from_address=None,
                     to_address=None, subject=None, has_the_word=None,
@@ -223,9 +181,9 @@ class EmailSettingsClient(gdata.client.GDClient):
     return self.post(new_filter, uri, **kwargs)
 
   CreateFilter = create_filter
-  
+
   def create_send_as(self, username, name, address, reply_to=None,
-                     make_default=None, **kwargs):
+                    make_default=None, **kwargs):
     """Creates a send-as alias with the given properties.
 
     Args:
@@ -252,21 +210,6 @@ class EmailSettingsClient(gdata.client.GDClient):
 
   CreateSendAs = create_send_as
 
-  def retrieve_send_as(self, username, **kwargs):
-    """Retrieves send-as aliases for the specified username
-    
-    Args:
-      username: string The name of the user to get the send-as for
-    
-    Returns:
-      A gdata.data.GDFeed of the user's send-as alias settings
-    """
-    uri = self.MakeEmailSettingsUri(username=username,
-                                    setting_id=SETTING_ID_SENDAS)
-    return self.GetFeed(uri, auth_token=None, query=None, **kwargs)
-  
-  RetrieveSendAs = retrieve_send_as
-
   def update_webclip(self, username, enable, **kwargs):
     """Enable/Disable Google Mail web clip.
 
@@ -286,7 +229,7 @@ class EmailSettingsClient(gdata.client.GDClient):
     return self.update(new_webclip, **kwargs)
 
   UpdateWebclip = update_webclip
-  
+
   def update_forwarding(self, username, enable, forward_to=None,
                         action=None, **kwargs):
     """Update Google Mail Forwarding settings.
@@ -310,22 +253,7 @@ class EmailSettingsClient(gdata.client.GDClient):
     return self.update(new_forwarding, **kwargs)
 
   UpdateForwarding = update_forwarding
-  
-  def retrieve_forwarding(self, username, **kwargs):
-    """Retrieves forwarding settings for the specified username
-    
-    Args:
-      username: string The name of the user to get the forwarding settings for
-    
-    Returns:
-      A gdata.data.GDEntry of the user's email forwarding settings
-    """
-    uri = self.MakeEmailSettingsUri(username=username,
-                                    setting_id=SETTING_ID_FORWARDING)
-    return self.GetEntry(uri, auth_token=None, query=None, **kwargs)
-  
-  RetrieveForwarding = retrieve_forwarding
-
+ 
   def update_pop(self, username, enable, enable_for=None, action=None,
                  **kwargs):
     """Update Google Mail POP settings.
@@ -353,21 +281,6 @@ class EmailSettingsClient(gdata.client.GDClient):
 
   UpdatePop = update_pop
 
-  def retrieve_pop(self, username, **kwargs):
-    """Retrieves POP settings for the specified username
-    
-    Args:
-      username: string The name of the user to get the POP settings for
-    
-    Returns:
-      A gdata.data.GDEntry of the user's POP settings
-    """
-    uri = self.MakeEmailSettingsUri(username=username,
-                                    setting_id=SETTING_ID_POP)
-    return self.GetEntry(uri, auth_token=None, query=None, **kwargs)
-  
-  RetrievePop = retrieve_pop
-
   def update_imap(self, username, enable, **kwargs):
     """Update Google Mail IMAP settings.
  
@@ -387,24 +300,8 @@ class EmailSettingsClient(gdata.client.GDClient):
 
   UpdateImap = update_imap
 
-  def retrieve_imap(self, username, **kwargs):
-    """Retrieves imap settings for the specified username
-    
-    Args:
-      username: string The name of the user to get the imap settings for
-    
-    Returns:
-      A gdata.data.GDEntry of the user's IMAP settings
-    """
-    uri = self.MakeEmailSettingsUri(username=username,
-                                    setting_id=SETTING_ID_IMAP)
-    return self.GetEntry(uri, auth_token=None, query=None, **kwargs)
-  
-  RetrieveImap = retrieve_imap
-
   def update_vacation(self, username, enable, subject=None, message=None,
-                      start_date=None, end_date=None, contacts_only=None,
-                      domain_only=None, **kwargs):
+                      contacts_only=None, **kwargs):
     """Update Google Mail vacation-responder settings.
 
     Args:
@@ -414,14 +311,8 @@ class EmailSettingsClient(gdata.client.GDClient):
           autoresponse.
       message: string (optional) The message body of the vacation responder
           autoresponse.
-      startDate: string (optional) The start date of the vacation responder
-          autoresponse.
-      endDate: string (optional) The end date of the vacation responder
-          autoresponse.
       contacts_only: Boolean (optional) Whether to only send autoresponses
           to known contacts.
-      domain_only: Boolean (optional) Whether to only send autoresponses
-          to users in the primary domain.
       kwargs: The other parameters to pass to the update method.
 
     Returns:
@@ -432,26 +323,10 @@ class EmailSettingsClient(gdata.client.GDClient):
                                     setting_id=SETTING_ID_VACATION_RESPONDER)
     new_vacation = gdata.apps.emailsettings.data.EmailSettingsVacationResponder(
         uri=uri, enable=enable, subject=subject,
-        message=message, start_date=start_date, end_date=end_date,
-        contacts_only=contacts_only, domain_only=domain_only)
+        message=message, contacts_only=contacts_only)
     return self.update(new_vacation, **kwargs)
 
   UpdateVacation = update_vacation
-
-  def retrieve_vacation(self, username, **kwargs):
-    """Retrieves vacation settings for the specified username
-    
-    Args:
-      username: string The name of the user to get the vacation settings for
-    
-    Returns:
-      A gdata.data.GDEntry of the user's vacation auto-responder settings
-    """
-    uri = self.MakeEmailSettingsUri(username=username,
-                                    setting_id=SETTING_ID_VACATION_RESPONDER)
-    return self.GetEntry(uri, auth_token=None, query=None, **kwargs)
-  
-  RetrieveVacation = retrieve_vacation
 
   def update_signature(self, username, signature, **kwargs):
     """Update Google Mail signature.
@@ -472,21 +347,6 @@ class EmailSettingsClient(gdata.client.GDClient):
     return self.update(new_signature, **kwargs)
 
   UpdateSignature = update_signature
-
-  def retrieve_signature(self, username, **kwargs):
-    """Retrieves signature settings for the specified username
-    
-    Args:
-      username: string The name of the user to get the signature settings for
-    
-    Returns:
-      A gdata.data.GDEntry of the user's signature settings
-    """
-    uri = self.MakeEmailSettingsUri(username=username,
-                                    setting_id=SETTING_ID_SIGNATURE)
-    return self.GetEntry(uri, auth_token=None, query=None, **kwargs)
-  
-  RetrieveSignature = retrieve_signature
 
   def update_language(self, username, language, **kwargs):
     """Update Google Mail language settings.
@@ -538,47 +398,3 @@ class EmailSettingsClient(gdata.client.GDClient):
     return self.update(new_general, **kwargs)
 
   UpdateGeneralSettings = update_general_settings
-
-  def add_email_delegate(self, username, address, **kwargs):
-    """Add an email delegate to the mail account
-    
-    Args:
-      username: string The name of the user
-      address: string The email address of the delegated account
-    """
-    uri = self.MakeEmailSettingsUri(username=username,
-                                    setting_id=SETTING_ID_DELEGATION)
-    new_delegation = gdata.apps.emailsettings.data.EmailSettingsDelegation(
-        uri=uri, address=address)
-    return self.post(new_delegation, uri, **kwargs)
-  
-  AddEmailDelegate = add_email_delegate
-  
-  def retrieve_email_delegates(self, username, **kwargs):
-    """Retrieve a feed of the email delegates for the specified username
-    
-    Args:
-      username: string The name of the user to get the email delegates for
-    
-    Returns:
-      A gdata.data.GDFeed of the user's email delegates    
-    """
-    uri = self.MakeEmailSettingsUri(username=username,
-                                    setting_id=SETTING_ID_DELEGATION)
-    return self.GetFeed(uri, auth_token=None, query=None, **kwargs)
-  
-  RetrieveEmailDelegates = retrieve_email_delegates
-  
-  def delete_email_delegate(self, username, address, **kwargs):
-    """Delete an email delegate from the specified account
-    
-    Args:
-      username: string The name of the user
-      address: string The email address of the delegated account
-    """
-    uri = self.MakeEmailSettingsUri(username=username,
-                                    setting_id=SETTING_ID_DELEGATION)
-    uri = uri + '/' + address
-    return self.delete(uri, **kwargs)
-  
-  DeleteEmailDelegate = delete_email_delegate

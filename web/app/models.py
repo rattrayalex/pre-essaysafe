@@ -38,4 +38,4 @@ class Essay(models.Model):
 
 class Doc(models.Model):
   doc_name = models.CharField(max_length=80)
-  resource_id_text = models.CharField(max_length=80)
+  resource_id = models.CharField(max_length=80)

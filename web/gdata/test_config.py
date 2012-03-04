@@ -146,19 +146,9 @@ options.register(
                  ' modify the users data, be sure to use a test account.'),
     default='true')
 options.register(
-    'host',
-    'Run the live tests against the given host',
-    description='Examples: docs.google.com, spreadsheets.google.com, etc.',
-    default='')
-options.register(
     'ssl',
     'Run the live tests over SSL (enter true or false)',
     description='If set to true, all tests will be performed over HTTPS (SSL)',
-    default='false')
-options.register(
-    'clean',
-    'Clean ALL data first before and after each test (enter true or false)',
-    description='If set to true, all tests will remove all data (DANGEROUS)',
     default='false')
 options.register(
     'appsusername',
@@ -276,23 +266,15 @@ def configure_client(client, case_name, service_name, use_apps_auth=False):
     else:
       username = options.get_value('appsusername')
       password = options.get_value('appspassword')
-    auth_token = client.client_login(username, password, case_name,
-                                     service=service_name)
+    auth_token = client.request_client_login_token(username, password,
+        case_name, service=service_name)
     options.values[auth_token_key] = gdata.gauth.token_to_blob(auth_token)
-    if client.alt_auth_service is not None:
-      options.values[client.alt_auth_service] = gdata.gauth.token_to_blob(
-          client.alt_auth_token)
     client.http_client.close_session()
   # Allow a config auth_token of False to prevent the client's auth header
   # from being modified.
   if auth_token_key in options.values:
     client.auth_token = gdata.gauth.token_from_blob(
         options.values[auth_token_key])
-  if client.alt_auth_service is not None:
-    client.alt_auth_token = gdata.gauth.token_from_blob(
-        options.values[client.alt_auth_service])
-  if options.get_value('host'):
-    client.host = options.get_value('host')
 
 
 def configure_cache(client, test_name):
@@ -419,8 +401,6 @@ def check_data_classes(test, classes):
                   and issubclass(value[0], atom.core.XmlElement))
               or type(value) == property # Allow properties.
               or inspect.ismethod(value) # Allow methods. 
-              or inspect.ismethoddescriptor(value) # Allow method descriptors.
-                                                   # staticmethod et al.
               or issubclass(value, atom.core.XmlElement)):
             test.fail(
                 'XmlElement member should have an attribute, XML class,'

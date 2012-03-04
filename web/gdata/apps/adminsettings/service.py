@@ -245,9 +245,9 @@ class AdminSettingsService(gdata.apps.service.PropertyService):
 
     Returns: A dict containing the result of the put operation"""
 
-    from base64 import b64encode
+    from base64 import base64encode
     uri = self._serviceUrl('appearance/customLogo')
-    properties = {'logoImage': b64encode(logoImage)}
+    properties = {'logoImage': base64encode(logoImage)}
     return self._PutProperties(uri, properties)
 
   def GetCNAMEVerificationStatus(self):

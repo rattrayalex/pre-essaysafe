@@ -36,7 +36,7 @@ def make(request):
       )
     logging.warning(client)
     feed = client.GetDocList()
-    doclist = map (lambda entry: Doc(doc_name=entry.title.text.encode('UTF-8'), resource_id_text=entry.resource_id.text), feed)
+    doclist = map (lambda entry: Doc(doc_name=entry.title.text.encode('UTF-8'), resource_id=entry.resource_id.text), feed.entry)
     return  render_to_response('make.html', {
       'doclist': doclist,
       })

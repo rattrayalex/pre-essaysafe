@@ -30,7 +30,7 @@ import gdata.opensearch.data
 
 
 GCAL_NAMESPACE = 'http://schemas.google.com/gCal/2005'
-GCAL_TEMPLATE = '{%s}%%s' % GCAL_NAMESPACE
+GCAL_TEMPLATE = '{http://schemas.google.com/gCal/2005/}%s'
 WEB_CONTENT_LINK_REL = '%s/%s' % (GCAL_NAMESPACE, 'webContent')
 
 

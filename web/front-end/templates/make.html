@@ -4,9 +4,12 @@
 {% endblock styles %}
 
 {% block content %}
-  {% for doc in doclist %}
-    {{ doc }}
-  {% endfor %]
+   <select data-placeholder="Choose a Country" class="chzn-select" style="width:350px;" id="country-select" tabindex="2">
+      <option value=""></option> 
+      {% for doc in doclist %}
+      <option value="{{doc.resource_id}}">{{doc.doc_name}}</option> 
+      {% endfor %}
+  </select>
 {% endblock content %}
 
 {% block scripts %}
