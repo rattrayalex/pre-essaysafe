@@ -106,11 +106,11 @@ def createSubFolder(FID, name):
 def listFoldersIn(FID):
 # returns a dictionary of Folder Names in the folder with
 # id = FID, as key with id as value
-  response = getBox('get_account_tree',{'folder_id': [prefix+FID], 'params': ['onelevel', 'nozip','simple']})
+  response = getBox('get_account_tree',{'folder_id': [FID], 'params': ['onelevel', 'nozip','simple']})
   rep = chkHTTPstatus(response, 'listing_ok')
   folderDict = {}
   folders = rep.getElementsByTagName("tree")[0].firstChild.getElementsByTagName("folders")
-  for folder in folders: 
+  for folder in folders:
     nextseg = (folder.toxml().partition('</folders>')[0]).partition('<folders><fold')[2]
     while (nextseg != ""):
       segs = nextseg.partition('<fold')
@@ -120,6 +120,8 @@ def listFoldersIn(FID):
       name = getAttribute(folderseg, 'name')
       folderDict[name] = fid
   return folderDict
+
+print listFoldersIn("0")
 
 def createSubFolder(FID, name):
 # creates a Folder inside FID with name "name"
@@ -132,7 +134,7 @@ def listProfFolders():
 # returns a dictionary of Professor Folder Names as key with id as value
   return listFoldersIn(0)
 
-def listFilesIn(FID,ftype):
+def listFilesIn(FID,ftype='all'):
 # lists files in folder with id FID. values for ftype:
 # format is a dict, with keys file_names and values ids
 #    'all' - list all files
@@ -218,7 +220,6 @@ def uploadEditedDocP(prof, name):
 def renameDoc(ID, name):
 # changes a document with id ID to name "name"
   return 0
-
 
 
 #print getBox('get_account_tree',{'folder_id': [23610430], 'params': ['onelevel', 'nozip']})
