@@ -81,9 +81,7 @@ def transfer(request, folder_name):
   feed = client.GetDocList(uri=folder.content.src)
   for doc in feed.entry:
     content = client.GetFileContent(uri=doc.content.src)
-    str_obj = StringIO()
-    str_obj.write(content)
-    uploadFile(str_obj)
+    uploadFile(content)
     #file_path = 'remote:http://localhost:8080/filehandler'
     #client.Export(doc, file_path)
 
