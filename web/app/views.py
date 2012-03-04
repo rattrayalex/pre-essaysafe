@@ -16,6 +16,11 @@ import gdata.docs.service
 from gdata.acl.data import AclScope, AclRole
 from app.forms import LogInForm, SignUpForm
 from StringIO import StringIO
+from google.appengine.api import mail
+
+import gdata.docs.service
+
+import simplejson
 
 import simplejson
 
@@ -26,13 +31,15 @@ from models import *
 from django.contrib import auth
 
 from settings import ES_TOKEN, ES_TOKEN_SECRET, APP_NAME
-from box import listFoldersIn, uploadFile, listFilesIn
+from box import listFoldersIn, uploadFile, listFilesIn, createSubFolder, getBox
 
 from google_oauth.views import oauth_start, get_client, clear_google_oauth_session, oauth_get_access_token
 from google_oauth.views import GOOGLE_OAUTH_REQ_TOKEN, GOOGLE_OAUTH_TOKEN
 
 from app.models import *
 import os, sys, datetime, copy, logging, settings, json
+
+import gdata.docs.service
 
 STEP2_URI = 'https://beta.essaysafe.org/oauth2callback'
 
@@ -42,21 +49,54 @@ STEP2_URI = 'https://beta.essaysafe.org/oauth2callback'
 CLIENT_ID = '1075895061839-air2l59at4t8gsng9ml8a3j0qspfp8i8.apps.googleusercontent.com'
 CLIENT_SECRET = '6savVHl6blxgIwodzBRKXPMc'
 
+def oauth_required(view_func):
+    """
+    Decorator for views to ensure that the user is sending an OAuth signed request.
+    """
+    def _checklogin(request, *args, **kwargs):
+      if request.session.get(GOOGLE_OAUTH_TOKEN, False):
+        return view_func(request, *args, **kwargs)
+      elif request.session.get(GOOGLE_OAUTH_REQ_TOKEN, False):
+        oauth_get_access_token(request)
+        return HttpResponseRedirect("http://" + request.get_host() + request.path)
+      else:
+        return oauth_start(request)
+    return wraps(view_func)(_checklogin)
 
-def transfer(request, folder_name):
-  client = gdata.docs.client.DocsClient()
-  auth_token = client.ClientLogin('essay.safe.hack@gmail.com','angelhack', APP_NAME)
+@oauth_required
+def submit_file(request, resource_id, student_email, student_name):
+  client = get_client(
+    request.session[GOOGLE_OAUTH_TOKEN].token,
+    request.session[GOOGLE_OAUTH_TOKEN].token_secret,
+    )
   #feed = client.GetDocList(uri='/feeds/default/private/full/-/folder?title'+folder_name+'&title-exact=true&max-results=5')
-  feed = client.GetDocList(uri='/feeds/default/private/full/-/folder')
-  if len(feed.entry) > 1:
-    logging.warning("folder name is matching with multiple files")
-  folder = feed.entry[0]
-  feed = client.GetDocList(uri=folder.content.src)
+  #essay = Essay.objects.get(id=essay_id)
+  
+  doc = client.GetDoc(essay.resource_id)
+  content = client.GetFileContent(uri=doc.content.src)
+  email = essay.exam.box_email
+  email_a_file(email, essay.exam.name+'_'+essay.student_name, content)
+  return HttpResponseRedirect('/done')
+
+@oauth_required
+def submit_exam(request, exam_name):
+  client = get_client(
+    request.session[GOOGLE_OAUTH_TOKEN].token,
+    request.session[GOOGLE_OAUTH_TOKEN].token_secret,
+    )
+  #feed = client.GetDocList(uri='/feeds/default/private/full/-/folder?title'+folder_name+'&title-exact=true&max-results=5')
+  #exam = Exam.objects.get(name=exam_name)
+  feed = client.GetDocList(uri='/feeds/default/private/full/-/document')
+
+  #if len(exam) > 1:
+  #  logging.warning("exam name is matching with multiple exams")
+  #essays = Essay.objects.select_related('exam')
+  #for essay in essays:
   for doc in feed.entry:
     content = client.GetFileContent(uri=doc.content.src)
-    uploadFile(content)
-    #file_path = 'remote:http://localhost:8080/filehandler'
-    #client.Export(doc, file_path)
+    email_a_file('upload.prof_pa.x9z8elbe7u@u.box.com', doc.title.text, content)
+  
+    return HttpResponseRedirect('/done')  
 
 class ExamForm(BootstrapModelForm):
   class Meta:
@@ -66,6 +106,11 @@ class ExamForm(BootstrapModelForm):
 @login_required
 def make(request):
   """Test callback view"""
+  client = gdata.docs.service.DocsService()
+  client.ClientLogin('essay.safe.hack@gmail.com', 'angelhack')
+  documents_feed = client.GetDocumentListFeed()
+  for document_entry in documents_feed.entry:
+      logging.warning(document_entry.title.text)
   message = ''
   if request.method == 'POST':
     exams = Exam.objects.filter(name=request.POST.get('exam_name'))
@@ -81,6 +126,7 @@ def make(request):
   context = {
     'form': form,
     'message': message,
+    'user': request.user,
   }
   return render_to_response('make.html', RequestContext(request, context))
 
@@ -102,21 +148,20 @@ def info_submit(request):
       start_time = post.get('start_time')
     logging.warning(end_time)
     datetime_format = date_format+'-'+time_format
-    start = post.get('start_date')+'-'+start_time
-    logging.warning(start)
+    start = post.get('start_date')+'-'+post.get('start_time')
     start_datetime = start_datetime = datetime.datetime(
-            int(start[0:4]),
-            int(start[5:7]),
-            int(start[8:10]),
+            int(start[6:10]),
+            int(start[0:2]),
+            int(start[3:5]),
             int(start[11:13]),
             int(start[14:16])
             )
     logging.warning(start_datetime)
-    end = post.get('end_date')+'-'+end_time
+    end = post.get('end_date')+'-'+post.get('end_time')
     end_datetime = end_datetime = datetime.datetime(
-            int(end[0:4]),
-            int(end[5:7]),
-            int(end[8:10]),
+            int(end[6:10]),
+            int(end[0:2]),
+            int(end[3:5]),
             int(end[11:13]),
             int(end[14:16])
             )
@@ -132,8 +177,11 @@ def info_submit(request):
     logging.warning('done the times')
     exam.resource_id = new_doc.resource_id.text
     exam.folder_id = new_folder.resource_id.text
-    exam.box_fid = createSubFolder(prof.box_id, exam_name)
-    element = getBox('toggle_folder_email', {'folder_id':folder_id, 'enable':'1'})
+    try: 
+      exam.box_fid = createSubFolder(prof.box_id, exam_name)
+    except: 
+      exam.box_fid = createSubFolder(prof.box_id, exam_name+'')
+    element = getBox('toggle_folder_email', {'folder_id':exam.folder_id, 'enable':'1'})
     exam.box_email = getText(element, 'upload_email')
     exam.save()
     logging.warning('saved')
@@ -150,28 +198,30 @@ def index(request):
     }
   return render_to_response('index.html', context)
 
-def send_an_email(receiver, subject, body):
-  s = smtplib.SMTP('smtp.gmail.com', 587)
-  myGmail = 'essay.safe.hack@gmail.com'
-  myGMPasswd = 'angelhack'
-  s.ehlo()
-  s.starttls()
-  s.login(myGmail, myGMPasswd)
-  msg = ("From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n%s" 
-  %(myGmail, receiver, subject, body))
-  s.sendmail(myGmail, [receiver], msg)
-  s.quit()
+def send_app_email(receiver, subject, body, attachments=None):
+  logging.warning("in send_app_email")
+  logging.warning(attachments)
+  if attachments:
+    logging.warning('there are attachments')
+    mail.send_mail(sender='intouch.registrator@gmail.com',
+                   to=receiver,
+                   subject=subject,
+                   body=body,
+                   attachments=attachments)
+  else:
+    mail.send_mail(sender='intouch.registrator@gmail.com',
+                   to=receiver,
+                   subject=subject,
+                   body=body)
+  return "sent"
 
-def email_a_file(filename, stream):
+def email_a_file(add_email, filename, stream):
   logging.warning('in email_file')
-  msg = "You have received a file from UploadToMail.appspot.com"
+  msg = "You have received a file from essaysafe.appspot.com"
   subject = 'New File from UploadToMail'
   attachments = [(filename, stream)]
-  ##  msg = MIMEMultipart()
-  ##  msg.attach(MIMEImage(photo.read()))
-  ##  send_an_email('rattray.alex@gmail.com', 'sup, an image', msg)
-  send_app_email(('mapp.webmaster@gmail.com','midatlantic_7ndu@sendtodropbox.com'), subject, msg, attachments)
-  photo.close()
+  send_app_email((add_email,), subject, msg, attachments)
+  logging.warning("sent"+str(attachments))
   return 1
 
 def take(request, exam_name, student_name, student_email):
@@ -190,7 +240,8 @@ def take(request, exam_name, student_name, student_email):
   acl_entry = gdata.docs.data.Acl(scope=scope, role=role)
   new_acl = client.Post(acl_entry, new_student_doc.GetAclFeedLink().href)
   context = {
-    'doc': str(student_doc.resource_id.text).split(':')[1]
+    'doc': str(student_doc.resource_id.text).split(':')[1],
+    'exam': exam
   }
   return render_to_response('take.html', RequestContext(request, context))
   

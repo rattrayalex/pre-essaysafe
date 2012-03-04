@@ -1,0 +1,45 @@
+<html>
+   <head>
+      <title>Get location</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+      <script type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
+      <script type="text/javascript">
+      var map = null;
+            
+      function getMap()
+      {
+        // Set the map options
+  var mapOptions = {credentials:"Aubgo-5lrrTvLm2gEofNcTIQY4GJoK5weU9J86TQTZKPmCqA83aWPBilPXQF4zI3"};
+
+        // create map
+        map = new Microsoft.Maps.Map(document.getElementById('myMap'), mapOptions);
+
+      }
+      
+      function getCurrentLocation()
+      {
+        var geoLocationProvider = new Microsoft.Maps.GeoLocationProvider(map);  
+        geoLocationProvider.getCurrentPosition({ successCallback: successCallback }); 
+        //alert('Current location set, based on your browser support for geo location API');
+          //console.log(geoLocationProvider);
+      }
+
+      function successCallback(object) {
+         var lati = object.position.coords.latitude;
+         var longi = object.position.coords.longitude;
+         var accuracy = object.position.coords.accuracy;
+         var times = object.position.timestamp;
+         alert('lati:' + lati + 'logi: ' + longi + 'accuracy: ' + accuracy + 'time: ' + times);
+      }
+
+
+     </script>
+   </head>
+   <body onload="getMap();">
+      <div id='myMap' style="position:relative; width:400px; height:400px;"></div>
+      <div>
+         <input type="button" value="GetCurrentLocation" onclick="getCurrentLocation();" />
+      </div>
+      <div id='output'> </div> 
+   </body>
+</html>

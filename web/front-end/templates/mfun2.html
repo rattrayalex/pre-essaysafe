@@ -1,0 +1,64 @@
+
+<html>
+   <head>
+      <title>Add default pushpin</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+      <script type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
+      <script type="text/javascript">
+      
+	  var map = null;
+	  	  
+	  function userloc() {
+		this.lati = null;
+		this.longi = null;
+		this.user = null;
+	  }
+	  
+	  var userlocs = new Array();
+	  
+	 // for ('i=0,i<=2,i++'){
+	 //   userlocs[i] = new userloc();
+	 // }
+	  
+      var lati = 51;
+      var longi = -1;
+      var user = 'John';
+      //var times = 
+	  
+	  var collectionInfoBox = null;
+	  
+      function getMap()
+      {
+        map = new Microsoft.Maps.Map(document.getElementById('myMap'), {credentials: 'Aubgo-5lrrTvLm2gEofNcTIQY4GJoK5weU9J86TQTZKPmCqA83aWPBilPXQF4zI3'});
+        collectionInfoBox = new Microsoft.Maps.EntityCollection;
+		map.entities.push(collectionInfoBox);
+		addDefaultPushpin();
+	  }
+      
+      function addDefaultPushpin()
+      {
+          for (i=0;i <= userlocs.length;
+          var pushpin= new Microsoft.Maps.Pushpin(new Microsoft.Maps.Location(lati,longi)); 
+          pushpinMouseOver = Microsoft.Maps.Events.addHandler(pushpin, 'mouseover', showInfoBox);
+		  //pushpinMouseOff = Microsoft.Maps.Events.addHandler(pushpin, 'mouseout', hideInfoBox);
+		  Microsoft.Maps.Pushpin.prototype.name = null;
+		  pushpin.name = user;
+		  map.entities.push(pushpin);
+		 // }
+      }
+	  
+	  function showInfoBox(e) {
+	    if (e.targetType = 'pushpin'){
+		  var InfoOptions = {title: e.target.name, height: 40, width: 100};
+		  var defaultInfoBox = new Microsoft.Maps.Infobox(e.target.getLocation(), InfoOptions);
+		  collectionInfoBox.push(defaultInfoBox);
+		  setTimeOut('collectionInfoBox.clear()', 1000);   //[*]
+		}
+	  }
+	  
+      </script>
+   </head>
+   <body onload="getMap();">
+      <div id='myMap' style="position:relative; width:400px; height:400px;"></div>
+   </body>
+</html>
