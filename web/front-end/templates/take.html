@@ -24,10 +24,8 @@
 function onBlur() {
 	document.body.className = 'blurred';
   document.title = 'blurred';
-  $('#done').click(function() {
-    window.href=href;
-    window.close();
-  });
+  window.location = href;
+  //window.close();
 };
 function onFocus(){
 	document.body.className = 'focused';
