@@ -1,6 +1,28 @@
 {% extends "general.html" %}
 
 {% block styles %}
+<style type="text/css">
+.slabtexted .slabtext
+        {
+        display:-moz-inline-box;
+        display:inline-block
+        white-space:nowrap;
+        }
+.slabtextinactive .slabtext
+        {
+        display:inline;
+        white-space:normal;
+        font-size:1em !important;
+        letter-spacing:inherit !important;
+        word-spacing:inherit !important;
+        *letter-spacing:0 !important;
+        *word-spacing:0 !important;
+        }
+.slabtextdone .slabtext
+        {
+        display:block
+        }
+</style>
 {% endblock styles %}
 
 {% block scripts %}
@@ -9,30 +31,25 @@
 {% block content %}
 <div id="content">
   <div class="row">
-    <div class="span4">
-      <img src="media/img/photo3.jpg" style="height:250px"/>
-    </div>
-    <div class="span8">
-      <h1 style="font-size:100px;">Shred the</h1>
-      <h1 style="font-size:100px;">&nbsp;</h1>
-      <h1 style="font-size:100px;">BlueBook</h1>
-    </div>
-  </div>
-  <div class="row graybg">
-    <div class="span3">&nbsp;</div>
     <div class="span6">
-      <div class="row">
-        <div class="span3">
-          <h1>I'm a Professor</h1>
-          <a href="/dashboard/" class="btn btn-large btn-primary">Make an Exam</a>
-        </div>
-        <div class="span3">
-          <h1>I'm a Student</h1>
-          <a href="" class="btn btn-large btn-primary">Download EssaySafe</a>
-        </div>
-      </div>
+    <iframe width="560" height="315" src="http://www.youtube.com/embed/-EB7f3jxluc" frameborder="0" allowfullscreen></iframe>
     </div>
-    <div class="span3">&nbsp;</div>
+    <div class="span6">
+      <h1>Ditch Handwritten Essays.</h1>
+      <hr>
+      <h2>EssaySafe allows you to take exams in the cloud.</h2>
+      <h2>In class. Without switching windows.</h2>
+      <p>We <strong>disable Alt-Tab</strong> and any other method of switching out of the exam with a chrome extension and a desktop app. </p>
+      <p>Our main application is built in <strong>Django running on Google App Engine</strong></p>
+      <p>We use the Google Docs API to let students and professors edit and track documents</p>
+      <p><strong>The Box API</strong> is used as well to allow download of .doc versions. Professors can track their classes in Google Docs and/or Box. </p>
+      <p><strong>The Bing Maps API</strong> allows professors to track where their students are during the exam and ensure everybody is in the room during the test. </p>
+      <hr>
+      <center>
+      <h3>Are you a professor?</h3>
+      <a href="/make/" class="btn btn-large btn-primary">Make an Exam</a> 
+      </center
+    </div>
   </div>
 </div>
 {% endblock content %}
