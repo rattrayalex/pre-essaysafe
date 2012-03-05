@@ -103,9 +103,9 @@ def make(request):
   """Test callback view"""
   client = gdata.docs.client.DocsClient()
   auth_token = client.ClientLogin('essay.safe.hack@gmail.com', 'angelhack', APP_NAME)
-  documents_feed = client.GetDocumentListFeed()
-  for document_entry in documents_feed.entry:
-      logging.warning(document_entry.title.text)
+  #documents_feed = client.GetDocumentListFeed()
+  #for document_entry in documents_feed.entry:
+  #    logging.warning(document_entry.title.text)
   message = ''
   if request.method == 'POST':
     exams = Exam.objects.filter(name=request.POST.get('exam_name'))
