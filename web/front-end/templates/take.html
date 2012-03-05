@@ -27,7 +27,7 @@
        if (navigator.geolocation) {
 	      navigator.geolocation.getCurrentPosition(success, failure);
 		  } else {
-		  alert('not supported');
+//		  alert('not supported');
 		  }
        
 	   function success(object) {
@@ -35,7 +35,7 @@
          var longi = object.coords.longitude;
          var accuracy = object.coords.accuracy;
          var times = object.timestamp;
-		 alert('lati:' + lati + 'logi: ' + longi + 'accuracy: ' + accuracy + 'time: ' + times);
+	//	 alert('lati:' + lati + 'logi: ' + longi + 'accuracy: ' + accuracy + 'time: ' + times);
 		  }
 		  
 	   function failure(object) {
