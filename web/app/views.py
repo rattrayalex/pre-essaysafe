@@ -63,12 +63,10 @@ def oauth_required(view_func):
         return oauth_start(request)
     return wraps(view_func)(_checklogin)
 
-@oauth_required
+
 def submit_file(request, essay_id):
-  client = get_client(
-    request.session[GOOGLE_OAUTH_TOKEN].token,
-    request.session[GOOGLE_OAUTH_TOKEN].token_secret,
-    )
+  client = gdata.docs.client.DocsClient()
+  auth_token = client.ClientLogin('essay.safe.hack@gmail.com', 'angelhack', APP_NAME)
   #feed = client.GetDocList(uri='/feeds/default/private/full/-/folder?title'+folder_name+'&title-exact=true&max-results=5')
   essay = Essay.objects.get(id=essay_id)
   
@@ -78,12 +76,9 @@ def submit_file(request, essay_id):
   email_a_file(email, essay.exam.name+'_'+essay.student_name, content)
   return HttpResponseRedirect('/done')
 
-@oauth_required
 def submit_exam(request, exam_name):
-  client = get_client(
-    request.session[GOOGLE_OAUTH_TOKEN].token,
-    request.session[GOOGLE_OAUTH_TOKEN].token_secret,
-    )
+  client = gdata.docs.client.DocsClient()
+  auth_token = client.ClientLogin('essay.safe.hack@gmail.com', 'angelhack', APP_NAME)
   #feed = client.GetDocList(uri='/feeds/default/private/full/-/folder?title'+folder_name+'&title-exact=true&max-results=5')
   #exam = Exam.objects.get(name=exam_name)
   feed = client.GetDocList(uri='/feeds/default/private/full/-/document')
@@ -106,11 +101,11 @@ class ExamForm(BootstrapModelForm):
 @login_required
 def make(request):
   """Test callback view"""
-  client = gdata.docs.service.DocsService()
-  client.ClientLogin('essay.safe.hack@gmail.com', 'angelhack')
-  documents_feed = client.GetDocumentListFeed()
-  for document_entry in documents_feed.entry:
-      logging.warning(document_entry.title.text)
+  client = gdata.docs.client.DocsClient()
+  auth_token = client.ClientLogin('essay.safe.hack@gmail.com', 'angelhack', APP_NAME)
+  #documents_feed = client.GetDocumentListFeed()
+  #for document_entry in documents_feed.entry:
+  #    logging.warning(document_entry.title.text)
   message = ''
   if request.method == 'POST':
     exams = Exam.objects.filter(name=request.POST.get('exam_name'))
@@ -221,7 +216,7 @@ def email_a_file(add_email, filename, stream):
   msg = "You have received a file from essaysafe.appspot.com"
   subject = 'New File from UploadToMail'
   attachments = [(filename, stream)]
-  send_app_email((add_email,), subject, msg, attachments)
+  send_app_email(add_email, subject, msg, attachments)
   logging.warning("sent"+str(attachments))
   return 1
 
@@ -362,7 +357,6 @@ def signup(request):
       user = auth.authenticate(username=request.POST['email'], 
         password=request.POST['password'])
       client = gdata.docs.client.DocsClient()
-      auth_token = client.ClientLogin('essay.safe.hack@gmail.com','angelhack', APP_NAME)
       auth_token = client.ClientLogin('essay.safe.hack@gmail.com','angelhack', APP_NAME)
       main_folder = client.Create(gdata.docs.data.FOLDER_LABEL, 'EssaySafe | '+request.POST['email'])
       prof.folder_id = main_folder.resource_id.text
