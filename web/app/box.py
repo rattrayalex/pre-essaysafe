@@ -90,7 +90,7 @@ def getBox(action, inparams):
 # action is the action, inparams is a dictionary where
 # format would amount to &key=value for input params
 # and each value is a list, even if it is a one item list
-  url = '/api/1.0/rest?action=%s&api_key=%s&auth_token=%s' % (action, box_api_key, box_auth)
+  url = 'http://upload.box.net/api/1.0/rest?action=%s&api_key=%s&auth_token=%s' % (action, box_api_key, box_auth)
   for param in inparams.keys():
     if len(inparams[param]) == 1:
       url = '%s&%s=%s' % (url, param, inparams[param][0])
