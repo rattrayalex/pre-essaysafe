@@ -30,7 +30,7 @@ from box import *
 from models import *
 from django.contrib import auth
 
-from settings import ES_TOKEN, ES_TOKEN_SECRET, APP_NAME, APP_PASS, APP_EMAIL
+from settings import APP_NAME, APP_PASS, APP_EMAIL
 from box import listFoldersIn, uploadFile, listFilesIn, createSubFolder, getBox
 
 from google_oauth.views import oauth_start, get_client, clear_google_oauth_session, oauth_get_access_token
