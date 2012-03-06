@@ -223,7 +223,8 @@ def take(request, exam_name, student_name, student_email):
     'essay': essay,
   }
   return render_to_response('take.html', RequestContext(request, context))
-  
+
+@login_required
 def dashboard(request):
   prof = Professor.objects.get(user=request.user)
   box_id = prof.box_id(name, id)
@@ -334,9 +335,6 @@ def signup(request):
       client = docAuth()
       main_folder = client.Create(gdata.docs.data.FOLDER_LABEL, 'EssaySafe | '+request.POST['email'])
       prof.folder_id = main_folder.resource_id.text
-      #prof.token = request.session[GOOGLE_OAUTH_TOKEN].token
-      #prof.token_secret = request.session[GOOGLE_OAUTH_TOKEN].token_secret
-      #prof.auth_token = client.auth_token
       prof.save()
       if user is not None:
         auth.login(request, user)
