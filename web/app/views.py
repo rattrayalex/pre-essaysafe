@@ -194,7 +194,10 @@ def take(request, prof_email, exam_name, student_name, student_email):
 def dashboard(request):
   prof = Professor.objects.get(user=request.user)
   folder_id = prof.folder_id
-  exams = get_files(folder_id)
+  exams = get_exams(folder_id)
+  # exam_count = dict()
+  # for e in exams:
+  #   exam_count[e.resource_id.text] = [e.title.text, len(get_files(e.resource_id.text))]
   # exam_count = dict()
   # ids = []
   # for e in exams:
@@ -204,7 +207,6 @@ def dashboard(request):
     # 'ids': ids,
     'count': len(exams),
     # 'box_id': box_id,
-    'exam_count': dict()
   }
   return render_to_response('dashboard.html', context)
 

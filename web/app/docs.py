@@ -38,6 +38,22 @@ def create_exam(prof_folder_id, exam_name):
 def get_files(folder_id):
   uri = 'https://docs.google.com/feeds/default/private/full/%s/contents' % folder_id
   feed = client.GetDocList(uri=uri)
-  return [f.title.text for f in feed.entry]
+  files = dict()
+  for f in feed.entry:
+    files[f.resource_id.text] = f.title.text
+  return files
+
+def num_files(folder_id):
+  uri = 'https://docs.google.com/feeds/default/private/full/%s/contents' % folder_id
+  feed = client.GetDocList(uri=uri)
+  return len(feed.entry)
+
+def get_exams(folder_id):
+  uri = 'https://docs.google.com/feeds/default/private/full/%s/contents' % folder_id
+  feed = client.GetDocList(uri=uri)
+  exams = dict()
+  for f in feed.entry:
+    exams[f.resource_id.text] = [f.title.text, num_files(f.resource_id.text)]
+  return exams
 
 client = glogin()
