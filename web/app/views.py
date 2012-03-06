@@ -69,15 +69,13 @@ class ExamForm(BootstrapModelForm):
 def make(request):
   '''Prof makes essay. Includes both 'pages' of the process'''
   client = docAuth()
-
   message = ''
   if request.method == 'POST':
     exams = Exam.objects.filter(name=request.POST.get('exam_name'))
     if len(exams) == 0:
       return info_submit(request)
     else: 
-      message = 'Sorry, there is already an exam named "'+request.POST.get('exam_name')+'". Please choose another name.' 
-  client = docAuth()
+      message = 'Sorry, there is already an exam named "%s." Please choose another name.' % (request.POST.get('exam_name'))
   context = {
     'message': message,
     'user': request.user,
@@ -217,10 +215,10 @@ def dashboard(request):
     exam_count[e] = [len(listFilesIn(exams[e])), exams[e]]
   context = {
     'exams': exams, 
-	'ids': ids,
-	'count': len(exams),
-	'box_id': box_id,
-	'exam_count':exam_count
+    'ids': ids,
+    'count': len(exams),
+    'box_id': box_id,
+    'exam_count':exam_count
   }
   return render_to_response('dashboard.html', context)
 
@@ -264,7 +262,7 @@ def create_doc(request, client, prof, exam_name):
     prof.folder_id = main_folder.resource_id.text
     prof.save()
   try:
-    folder = client.GetDocList(uri='/feeds/default/private/full/-/folder/?title='+exam_name+'&title-exact=true&max-results=1').entry[0]
+    folder = client.GetDocList(uri='/feeds/default/private/full/-/folder/?title=%s&title-exact=true&max-results=1' % (exam_name)).entry[0]
   except:
     pre_folder = client.Create(gdata.docs.data.FOLDER_LABEL, exam_name)
     folder = client.Move(pre_folder, main_folder)
@@ -316,6 +314,8 @@ def signup(request):
         password=request.POST['password'])
       client = docAuth()
       main_folder = client.Create(gdata.docs.data.FOLDER_LABEL, 'EssaySafe | '+request.POST['email'])
+      prompts_folder = client.Create(gdata.docs.data.FOLDER_LABEL, 'Prompts')
+      client.Move(prompts_folder, main_folder)
       prof.folder_id = main_folder.resource_id.text
       prof.save()
       if user is not None:
