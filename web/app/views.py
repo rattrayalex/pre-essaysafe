@@ -225,8 +225,10 @@ def dashboard(request):
 
 def distribute(request, exam_id):
   exam = Exam.objects.get(id=exam_id)
+  doc = str(exam.resource_id).split(':')[1]
   context = {
-    'exam': exam
+    'exam': exam, 
+    'doc': doc,
   }
   return render_to_response('distribute.html', context)
 
@@ -332,6 +334,6 @@ def signup(request):
 def done(request, essay_id):
   essay = get_object_or_404(Essay, id=essay_id)
   exam = essay.exam
-  doc = essay.resource_id
+  doc = str(essay.resource_id).split(':')[1]
   context = {'doc':doc, 'essay': essay, 'exam':exam, }
   return render_to_response('done.html', context)
