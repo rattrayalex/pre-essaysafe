@@ -15,6 +15,7 @@ from gdata.acl.data import AclScope, AclRole
 from app.forms import LogInForm, SignUpForm
 from StringIO import StringIO
 from google.appengine.api import mail
+from django.db.models import Q
 
 import gdata.docs.service
 
@@ -62,7 +63,7 @@ def make(request):
   client = glogin()
   message = ''
   if request.method == 'POST':
-    exams = Exam.objects.filter(name=request.POST.get('exam_name'))
+    exams = Exam.objects.filter(professor=request.user.professor).filter(name=request.POST.get('exam_name'))
     if len(exams) == 0:
       return create_exam(client, request)
     else: 
@@ -147,17 +148,13 @@ def create_doc(client, request, prof, exam_name):
     prof.folder_id = main_folder.resource_id.text
     prof.save()
   try:
-    folder = client.GetDocList(uri='/feeds/default/private/full/-/folder/?title=%s&title-exact=true&max-results=1' % (exam_name)).entry[0]
+    folder = client.GetDocList(uri='/feeds/default/private/full/%s/contents/folder/?title=%s&title-exact=true&max-results=1' % (main_folder.resource_id.text, exam_name)).entry[0]
   except:
     pre_folder = client.Create(gdata.docs.data.FOLDER_LABEL, exam_name)
     folder = client.Move(pre_folder, main_folder)
   template = client.GetDoc('document:1OB40c2l26fL6BdRim1cKuQhG0Kyt8X6brsAvlVMQ1sE') # new prompt template
   new_doc = client.Copy(template, doc_name)
   newer_doc = client.Move(new_doc, folder)
-  #scope = AclScope(value=prof.email, type='user')
-  #role = AclRole(value='owner')
-  #acl_entry = gdata.docs.data.Acl(scope=scope, role=role)
-  #new_acl = client.Post(acl_entry, newer_doc.GetAclFeedLink().href)
   return newer_doc, folder
     
 def index(request):
@@ -191,9 +188,11 @@ def email_a_file(add_email, filename, stream):
   logging.warning("sent"+str(attachments))
   return 1
 
-def take(request, exam_name, student_name, student_email):
+
+def take(request, prof_email, exam_name, student_name, student_email):
   client = glogin()
-  exam = get_object_or_404(Exam, name=exam_name)
+  prof = get_object_or_404(Professor, email = prof_email)
+  exam = get_object_or_404(Exam, Q(professor = prof) & Q(name=exam_name))
   prof = exam.professor
   prompt_doc_id = str(exam.resource_id)
   prompt_doc = client.GetDoc(prompt_doc_id)
