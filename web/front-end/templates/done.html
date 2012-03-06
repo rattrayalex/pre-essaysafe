@@ -1,0 +1,102 @@
+{% extends "general.html" %}
+
+{% block styles %}
+{% endblock styles %}
+
+{% block scripts %}
+{% endblock scripts %}
+
+{% block topright %}
+{% endblock %}
+
+{% block content %}
+  <div class="content">
+    {% if new_doc %}
+      
+      <center><a href="../distribute/{{exam.id}}" class="btn btn-large">I'm Done <i class="icon-chevron-right"></i></a></center>
+    {% else %}
+    <center>
+      <h1>Congrats!</h1>
+      <h2>You've submitted your essay. Now just sit back and cross your fingers!</h2>
+      <h3>Your submission is below. </h3>
+    </center>
+    <hr>
+    <iframe src="https://docs.google.com/document/d/{{doc}}/view" class="iframe" scrolling="no" allowTransparency="true">
+      <p>Your browser does not support iframes.</p>
+    </iframe>
+    {% endif %}
+  </div>
+  <script>
+  function success(data, status, xhr) {
+          if (data['form_valid'] == true) {
+            var iframe = '<iframe src="https://docs.google.com/document/d/'+data['new_doc']+'/edit" width="960" height="3000" scrolling="no">'+
+              '<p>Your browser does not support iframes.</p></iframe>';
+            $('#info-form').html(iframe);
+          } else if (data['form_valid'] == false) {
+            $('#info-form').html(data['new_form']);
+            console.log('replaced shit');
+          } else {
+            alert('alex is dumb');
+          }
+        };
+  $('').click(function() {
+      $.ajaxSetup({ 
+        beforeSend: function(xhr, settings) {
+          function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie != '') {
+              var cookies = document.cookie.split(';');
+              for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+                }
+              }
+            }
+            return cookieValue;
+          }
+          if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+            // Only send the token to relative URLs i.e. locally.
+            xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+          }
+        } 
+      });
+      console.log('prepared to send');
+      var formData = $('#info-form').serialize();
+      $.ajax ({
+        url: '.', 
+        type: 'POST',
+        //timeout: 5000,
+        data: formData,
+        dataType: 'text',
+        /*statusCode: {
+          404: function() {
+            alert('404');
+          },
+          200: function(data, status, xhr) {success(data, status, xhr)}
+        },*/
+         success: function success(data, status, xhr) {
+          if (data['form_valid'] == true) {
+            var iframe = '<iframe src="https://docs.google.com/document/d/'+data['new_doc']+'/edit" width="960" height="3000" scrolling="no">'+
+              '<p>Your browser does not support iframes.</p></iframe>';
+            $('#info-form').html(iframe);
+          } else if (data['form_valid'] == false) {
+            $('#info-form').html(data['new_form']);
+            console.log('replaced shit');
+          } else {
+            alert('alex is dumb');
+          }
+        },
+        error: function(xhr, status, exception) {
+          alert('whoops! something went wrong');
+          console.log(xhr);
+          console.log(status);
+          console.log(exception);
+        },
+       
+      });
+    });
+  </script>
+{% endblock content %}

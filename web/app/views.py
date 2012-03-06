@@ -42,10 +42,14 @@ def submit_file(request, essay_id):
   
   doc_code = doc.resource_id.text
   acl_entry = client.GetAclPermissions(doc_code).entry
-  acl = acl_entry[1]
-  scope = acl.scope
-  acl.role.value = 'reader'
-  new_acl = client.Update(acl, force=True)
+  for acl in acl_entry:
+    scope_email = acl.scope.value
+    logging.warning('scope value: %s'% scope_email)
+    if scope_email == student_email:
+      the_acl = acl
+  #logging.warning('scope: %s'%scope)
+  the_acl.role.value = 'reader'
+  new_acl = client.Update(the_acl, force=True)
   
   #content = client.GetFileContent(uri=doc.content.src)
   #email = essay.x_email
