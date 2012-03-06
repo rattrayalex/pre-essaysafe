@@ -16,11 +16,17 @@
 	  <!-- <p><h1>Your folder_id is {{ box_id }}</h1></p> -->
     </div>
   {% else %}
-	{% for item in exam_count.items %}
+    {% for e in exams %}
+      <div id="{{ e }}" class='exam'>
+        <p><h1>{{ e }}</h1></p>
+      </div>
+      <hr>
+    {% endfor %}
+    {% for item in exam_count.items %}
       <div id="{{ item.1.1 }}" class='exam'>
         <p><h1>{{ item.0 }}</h1><h2 id='submissions'>There are {{ item.1.0 }} submissions.</h2></p>
       </div>
-	  <hr>
+      <hr>
     {% endfor %}
   {% endif %}
 </div>

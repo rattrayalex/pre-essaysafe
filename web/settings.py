@@ -139,9 +139,6 @@ INSTALLED_APPS = (
 
 GDATA_CONSUMER_KEY = '1075895061839-air2l59at4t8gsng9ml8a3j0qspfp8i8.apps.googleusercontent.com'
 GDATA_CONSUMER_SECRET = '6savVHl6blxgIwodzBRKXPMc'
-APP_NAME = 'essaysafe-essaysafe-v0.1'
-APP_EMAIL = 'essay.safe.hack@gmail.com'
-APP_PASS = 'angelhack'
 
 
 TEMPLATE_CONTEXT_PROCESSORS = (

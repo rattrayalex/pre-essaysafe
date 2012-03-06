@@ -60,12 +60,13 @@ class ExamForm(BootstrapModelForm):
 @login_required
 def make(request):
   '''Prof makes essay. Includes both 'pages' of the process'''
-  client = glogin()
+  # client = glogin()
   message = ''
   if request.method == 'POST':
-    exams = Exam.objects.filter(professor=request.user.professor).filter(name=request.POST.get('exam_name'))
+    exam_name = request.POST.get('exam_name')
+    exams = Exam.objects.filter(professor=request.user.professor).filter(name=exam_name)
     if len(exams) == 0:
-      return create_exam(client, request)
+      return make_exam(request)
     else: 
       message = 'Sorry, there is already an exam named "%s." Please choose another name.' % (request.POST.get('exam_name'))
   context = {
@@ -74,13 +75,27 @@ def make(request):
     }
   return render_to_response('make.html', RequestContext(request, context))
 
-def create_exam(client, request):
+def make_exam(request):
   '''Creates the Essay given a name and start/end time'''
-  if request.method == 'POST':
-    post = request.POST
+  post = request.POST
     
-    date_format = '%m/%d%/%Y'
-    time_format = '%I:%M%p'
+  date_format = '%m/%d%/%Y'
+  time_format = '%I:%M%p'
+  prof = Professor.objects.get(user=request.user)
+  exam_name = post.get('exam_name')
+  exam = Exam()
+  exam.professor = prof
+  exam.name = exam_name
+  exam.start_time = datetime.datetime.now()
+  exam.end_time = datetime.datetime.now()
+  exam.resource_id, exam.folder_id = create_exam(prof.folder_id, exam_name)
+  exam.save()
+  reply = { 'success': True,
+	    'form_valid': True,
+	    'exam': exam,
+	    'new_doc': str(exam.resource_id).split(':')[1]}
+  return render_to_response('make.html',RequestContext(request,reply))
+    
     #if len(post.get('start_time')) == 6:
     #  start_time = '0'+post.get('start_time')
     #else:
@@ -109,53 +124,6 @@ def create_exam(client, request):
     #        int(end[11:13]),
     #        int(end[14:16])
     #        )
-    prof = Professor.objects.get(user=request.user)
-    exam_name = post.get('exam_name')
-    exam = Exam()
-    exam.professor = prof
-    exam.name = exam_name
-    
-    #exam.start_time = start_datetime
-    exam.start_time = datetime.datetime.now()
-    exam.end_time = datetime.datetime.now()
-    new_doc, new_folder = create_doc(client, request, prof, exam_name)
-    exam.resource_id = new_doc.resource_id.text
-    exam.folder_id = new_folder.resource_id.text
-    #try: 
-    #  exam.box_fid = createSubFolder(prof.box_id, exam_name)
-    #except: 
-    #  exam.box_fid = createSubFolder(prof.box_id, exam_name+'1')
-    #element = getBox('toggle_folder_email', {'folder_id':exam.folder_id, 'enable':'1'})
-    #sexam.box_email = getText(element, 'upload_email')
-    exam.save()
-    reply = {'success': True,
-           'form_valid': True,
-           'exam': exam,
-           'new_doc': str(new_doc.resource_id.text).split(':')[1]}
-    return render_to_response('make.html',RequestContext(request,reply))
-
-def create_doc(client, request, prof, exam_name): 
-  """
-  Create New Google Docs.
-  """
-  doc_name = 'Prompt | %s' % (exam_name)
-  main_folder_id = prof.folder_id
-  try:
-    main_folder = client.GetDoc(main_folder_id)
-    first_item = [d for d in client.GetDocList(main_folder.content.src).entry][0]
-  except:
-    main_folder = client.Create(gdata.docs.data.FOLDER_LABEL, 'EssaySafe')
-    prof.folder_id = main_folder.resource_id.text
-    prof.save()
-  try:
-    folder = client.GetDocList(uri='/feeds/default/private/full/%s/contents/folder/?title=%s&title-exact=true&max-results=1' % (main_folder.resource_id.text, exam_name)).entry[0]
-  except:
-    pre_folder = client.Create(gdata.docs.data.FOLDER_LABEL, exam_name)
-    folder = client.Move(pre_folder, main_folder)
-  template = client.GetDoc('document:1OB40c2l26fL6BdRim1cKuQhG0Kyt8X6brsAvlVMQ1sE') # new prompt template
-  new_doc = client.Copy(template, doc_name)
-  newer_doc = client.Move(new_doc, folder)
-  return newer_doc, folder
     
 def index(request):
   context = {
@@ -221,18 +189,18 @@ def take(request, prof_email, exam_name, student_name, student_email):
 @login_required
 def dashboard(request):
   prof = Professor.objects.get(user=request.user)
-  box_id = prof.box_id(name, id)
-  exams = listFoldersIn(box_id)
-  exam_count = dict()
-  ids = []
-  for e in exams:
-    exam_count[e] = [len(listFilesIn(exams[e])), exams[e]]
+  folder_id = prof.folder_id
+  exams = get_files(folder_id)
+  # exam_count = dict()
+  # ids = []
+  # for e in exams:
+  #   exam_count[e] = [len(listFilesIn(exams[e])), exams[e]]
   context = {
     'exams': exams, 
-    'ids': ids,
+    # 'ids': ids,
     'count': len(exams),
-    'box_id': box_id,
-    'exam_count':exam_count
+    # 'box_id': box_id,
+    'exam_count': dict()
   }
   return render_to_response('dashboard.html', context)
 
@@ -298,7 +266,9 @@ def signup(request):
       prof = form.save()
       user = auth.authenticate(username=request.POST['email'], 
         password=request.POST['password'])
-      prof.folder_id = create_prof_folder(request.POST['email'])
+      id = create_prof_folder(request.POST['email'])
+      logging.warning(id)
+      prof.folder_id = id
       if user is not None:
         auth.login(request, user)
       return HttpResponseRedirect(next)
