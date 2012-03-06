@@ -299,16 +299,7 @@ def signup(request):
       prof = form.save()
       user = auth.authenticate(username=request.POST['email'], 
         password=request.POST['password'])
-      client = glogin()
-      main_folder = client.Create(gdata.docs.data.FOLDER_LABEL, 'EssaySafe | '+request.POST['email'])
-      scope = AclScope(value=prof.email, type='user')
-      role = AclRole(value='owner')
-      acl_entry = gdata.docs.data.Acl(scope=scope, role=role)
-      new_acl = client.Post(acl_entry, main_folder.GetAclFeedLink().href)
-      prompts_folder = client.Create(gdata.docs.data.FOLDER_LABEL, 'Prompts')
-      client.Move(prompts_folder, main_folder)
-      prof.folder_id = main_folder.resource_id.text
-      prof.save()
+      prof.folder_id = create_prof_folder(request.POST['email'])
       if user is not None:
         auth.login(request, user)
       return HttpResponseRedirect(next)
