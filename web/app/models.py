@@ -10,33 +10,30 @@ from django.template.defaultfilters import slugify
 
 
 class Professor(models.Model):
-  """ 
-  Professor model.
-  """
+  '''Professor model.'''
   email = models.CharField(max_length=80, unique=True)
-  box_id = models.CharField()
-  gdocs_id = models.CharField()
-  user = models.OneToOneField(User, unique=True)
-  name = models.CharField()
+  #box_id = models.CharField(max_length=100, blank=True)
+  gdocs_id = models.CharField(max_length=100)
+  user = models.OneToOneField(User, unique=True, related_name='professor')
+  name = models.CharField(max_length=100, blank=True)
   folder_id = models.CharField(max_length=80, blank=True)
-  token = models.CharField(max_length=100, blank=True)
-  token_secret = models.CharField(max_length=100, blank=True)
-  ##auth_token = models.CharField(max_length=100, blank=True)
   
   def __unicode__(self):
     return self.name
   
 class Exam(models.Model):
-  """ Exam model.
-  """
-  professor = models.ForeignKey(Professor, null=True)
-  name = models.CharField(max_length=80, unique=True)
-  start_time = models.DateTimeField(blank=True)
-  end_time = models.DateTimeField(blank=True)
+  ''' Exam model.'''
+  professor = models.ForeignKey(Professor)
+  name = models.CharField(max_length=80)
+  start_time = models.DateTimeField()
+  end_time = models.DateTimeField()
   resource_id = models.CharField(max_length=80)
   folder_id = models.CharField(max_length=80)
   #box_fid = models.CharField(max_length=100)
   #box_email = models.CharField(max_length=100)
+  
+  class Meta: 
+    unique_together = (('professor','name'),)
   
   def __unicode__(self):
     return self.name

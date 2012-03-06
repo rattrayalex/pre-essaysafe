@@ -68,7 +68,7 @@ def make(request):
   client = docAuth()
   message = ''
   if request.method == 'POST':
-    exams = Exam.objects.filter(name=request.POST.get('exam_name'))
+    exams = Exam.objects.filter(professor=request.user.professor).filter(name=request.POST.get('exam_name'))
     if len(exams) == 0:
       return create_exam(client, request)
     else: 
@@ -153,17 +153,13 @@ def create_doc(client, request, prof, exam_name):
     prof.folder_id = main_folder.resource_id.text
     prof.save()
   try:
-    folder = client.GetDocList(uri='/feeds/default/private/full/-/folder/?title=%s&title-exact=true&max-results=1' % (exam_name)).entry[0]
+    folder = client.GetDocList(uri='/feeds/default/private/full/%s/contents/folder/?title=%s&title-exact=true&max-results=1' % (main_folder.resource_id.text, exam_name)).entry[0]
   except:
     pre_folder = client.Create(gdata.docs.data.FOLDER_LABEL, exam_name)
     folder = client.Move(pre_folder, main_folder)
   template = client.GetDoc('document:1OB40c2l26fL6BdRim1cKuQhG0Kyt8X6brsAvlVMQ1sE') # new prompt template
   new_doc = client.Copy(template, doc_name)
   newer_doc = client.Move(new_doc, folder)
-  #scope = AclScope(value=prof.email, type='user')
-  #role = AclRole(value='owner')
-  #acl_entry = gdata.docs.data.Acl(scope=scope, role=role)
-  #new_acl = client.Post(acl_entry, newer_doc.GetAclFeedLink().href)
   return newer_doc, folder
     
 def index(request):
