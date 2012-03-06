@@ -17,7 +17,7 @@ $(function() {
 	$.get(url, params, function(data) {
 	  console.log(data);
 	  $.each(data, function(k) {
-	    ref = 'https://docs.google.com/View?format=doc&id=' + k;
+	    ref = 'https://docs.google.com/document/d/'+k.split(':')[1]+'/edit'
 	    $this.append("<div><h3 id='sub'><a href='"+ref+"'>" + data[k] + "</a></h3></div>");
 	  });
 	  //for (var k in data) {
