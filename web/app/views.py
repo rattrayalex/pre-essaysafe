@@ -47,11 +47,8 @@ def submit_file(request, essay_id):
   
   doc_code = doc.resource_id.text
   acl_entry = client.GetAclPermissions(doc_code).entry
-  logging.warning(acl_entry)
   acl = acl_entry[1]
-  logging.warning(acl)
   scope = acl.scope
-  logging.warning(scope)
   acl.role.value = 'reader'
   new_acl = client.Update(acl, force=True)
   
@@ -73,7 +70,7 @@ def make(request):
   if request.method == 'POST':
     exams = Exam.objects.filter(name=request.POST.get('exam_name'))
     if len(exams) == 0:
-      return info_submit(request)
+      return create_exam(client, request)
     else: 
       message = 'Sorry, there is already an exam named "%s." Please choose another name.' % (request.POST.get('exam_name'))
   context = {
@@ -82,11 +79,10 @@ def make(request):
     }
   return render_to_response('make.html', RequestContext(request, context))
 
-def info_submit(request):
+def create_exam(client, request):
   '''Creates the Essay given a name and start/end time'''
   if request.method == 'POST':
     post = request.POST
-    client = docAuth()
     
     date_format = '%m/%d%/%Y'
     time_format = '%I:%M%p'
@@ -127,7 +123,7 @@ def info_submit(request):
     #exam.start_time = start_datetime
     exam.start_time = datetime.datetime.now()
     exam.end_time = datetime.datetime.now()
-    new_doc, new_folder = create_doc(request, client, prof, exam_name)
+    new_doc, new_folder = create_doc(client, request, prof, exam_name)
     exam.resource_id = new_doc.resource_id.text
     exam.folder_id = new_folder.resource_id.text
     #try: 
@@ -137,14 +133,38 @@ def info_submit(request):
     #element = getBox('toggle_folder_email', {'folder_id':exam.folder_id, 'enable':'1'})
     #sexam.box_email = getText(element, 'upload_email')
     exam.save()
-    logging.warning('saved')
-    logging.warning('created'+ str(new_doc.resource_id.text))
-    logging.warning('created'+ str(new_doc.resource_id.text).split(':')[1])
     reply = {'success': True,
            'form_valid': True,
            'exam': exam,
            'new_doc': str(new_doc.resource_id.text).split(':')[1]}
     return render_to_response('make.html',RequestContext(request,reply))
+
+def create_doc(client, request, prof, exam_name): 
+  """
+  Create New Google Docs.
+  """
+  doc_name = 'Prompt | %s' % (exam_name)
+  main_folder_id = prof.folder_id
+  try:
+    main_folder = client.GetDoc(main_folder_id)
+    first_item = [d for d in client.GetDocList(main_folder.content.src).entry][0]
+  except:
+    main_folder = client.Create(gdata.docs.data.FOLDER_LABEL, 'EssaySafe')
+    prof.folder_id = main_folder.resource_id.text
+    prof.save()
+  try:
+    folder = client.GetDocList(uri='/feeds/default/private/full/-/folder/?title=%s&title-exact=true&max-results=1' % (exam_name)).entry[0]
+  except:
+    pre_folder = client.Create(gdata.docs.data.FOLDER_LABEL, exam_name)
+    folder = client.Move(pre_folder, main_folder)
+  template = client.GetDoc('document:1OB40c2l26fL6BdRim1cKuQhG0Kyt8X6brsAvlVMQ1sE') # new prompt template
+  new_doc = client.Copy(template, doc_name)
+  newer_doc = client.Move(new_doc, folder)
+  scope = AclScope(value=prof.email, type='user')
+  role = AclRole(value='owner')
+  acl_entry = gdata.docs.data.Acl(scope=scope, role=role)
+  new_acl = client.Post(acl_entry, newer_doc.GetAclFeedLink().href)
+  return newer_doc, folder
     
 def index(request):
   context = {
@@ -235,12 +255,10 @@ def distribute(request, exam_id):
 def getfiles(request):  
   if request.GET:
     f_id = request.GET['folder_id']
-    logging.warning(str(f_id))
     files = listFilesIn(f_id)
     links = dict()
     for f in files:
       links[f] = url(str(files[f]))
-    logging.info(links)
     return HttpResponse(simplejson.dumps(links), content_type='application/json')
 
 def url(ID):
@@ -250,34 +268,6 @@ def about(request):
   context = {
     }
   return render_to_response('about.html', context)
-
-def create_doc(request, client, prof, exam_name): 
-  """
-  Create New Google Docs.
-  """
-  doc_name = exam_name + ' | Prompt'
-  main_folder_id = prof.folder_id
-  try:
-    main_folder = client.GetDoc(main_folder_id)
-    first_item = [d for d in client.GetDocList(main_folder.content.src).entry][0]
-  except:
-    main_folder = client.Create(gdata.docs.data.FOLDER_LABEL, 'EssaySafe')
-    prof.folder_id = main_folder.resource_id.text
-    prof.save()
-  try:
-    folder = client.GetDocList(uri='/feeds/default/private/full/-/folder/?title=%s&title-exact=true&max-results=1' % (exam_name)).entry[0]
-  except:
-    pre_folder = client.Create(gdata.docs.data.FOLDER_LABEL, exam_name)
-    folder = client.Move(pre_folder, main_folder)
-  logging.warning(folder)
-  template = client.GetDoc('document:1OB40c2l26fL6BdRim1cKuQhG0Kyt8X6brsAvlVMQ1sE')
-  new_doc = client.Copy(template, doc_name)
-  newer_doc = client.Move(new_doc, folder)
-  scope = AclScope(value=prof.email, type='user')
-  role = AclRole(value='owner')
-  acl_entry = gdata.docs.data.Acl(scope=scope, role=role)
-  new_acl = client.Post(acl_entry, newer_doc.GetAclFeedLink().href)
-  return newer_doc, folder
 
 def index(request):
   context = {
