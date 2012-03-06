@@ -55,6 +55,7 @@
 
 {% block topright %}
   <p>hello, {{user.email}}</p>
+  <p><a href='/dashboard/'>View your dashboard</a></p>
   {% if new_doc %}
     <a href="../distribute/{{exam.id}}" class="btn btn-large">I'm Done <i class="icon-chevron-right"></i></a>
   {% endif %}
