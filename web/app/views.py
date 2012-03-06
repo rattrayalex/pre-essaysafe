@@ -63,10 +63,13 @@ def submit_file(request, essay_id):
   doc = client.GetDoc(essay.resource_id)
   student_email = essay.student_email
   
-  scope = AclScope(value=student_email, type='user')
-  role = AclRole(value='viewer')
-  acl_entry = gdata.docs.data.Acl(scope=scope, role=role)
-  new_acl = client.Post(acl_entry, doc.GetAclFeedLink().href)
+  doc_code = doc.resource_id.text
+  acl_entry = client.GetAclPermissions(doc_code).entry
+  logging.warning(acl_entry)
+  acl = acl_entry[0]
+  logging.warning(acl_entry)
+  acl_entry.role.value = 'reader'
+  new_acl = client.Update(acl_entry)
   
   content = client.GetFileContent(uri=doc.content.src)
   email = essay.exam.box_email
