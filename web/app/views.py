@@ -222,11 +222,11 @@ def distribute(request, exam_id):
 def getfiles(request):  
   if request.GET:
     f_id = request.GET['folder_id']
-    files = listFilesIn(f_id)
-    links = dict()
-    for f in files:
-      links[f] = url(str(files[f]))
-    return HttpResponse(simplejson.dumps(links), content_type='application/json')
+    files = get_files(f_id)
+    # links = dict()
+    # for f in files:
+    #   links[f] = url(str(files[f]))
+    return HttpResponse(simplejson.dumps(files), content_type='application/json')
 
 def url(ID):
   return 'https://www.box.net/api/1.0/download/%s/%s' % ('8kf9roqysu8jmqskys9vg0hovkmyqtv3', ID)

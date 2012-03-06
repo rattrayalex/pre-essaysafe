@@ -17,7 +17,7 @@ $(function() {
 	$.get(url, params, function(data) {
 	  console.log(data);
 	  $.each(data, function(k) {
-	    $this.append("<div><h3 id='sub'><a href='"+data[k]+"'>" + k + "</a></h3></div>");
+	    $this.append("<div><h3 id='sub'><a href='"+k+"'>" + data[k] + "</a></h3></div>");
 	  });
 	  //for (var k in data) {
 		//$this.append("<div><h3 id='sub'><a href='https://www.box.net/api/1.0/download/8kf9roqysu8jmqskys9vg0hovkmyqtv3/'"+data[k]+">" + k + "</a></h3></div>");
