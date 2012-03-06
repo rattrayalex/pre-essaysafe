@@ -160,10 +160,10 @@ def create_doc(client, request, prof, exam_name):
   template = client.GetDoc('document:1OB40c2l26fL6BdRim1cKuQhG0Kyt8X6brsAvlVMQ1sE') # new prompt template
   new_doc = client.Copy(template, doc_name)
   newer_doc = client.Move(new_doc, folder)
-  scope = AclScope(value=prof.email, type='user')
-  role = AclRole(value='owner')
-  acl_entry = gdata.docs.data.Acl(scope=scope, role=role)
-  new_acl = client.Post(acl_entry, newer_doc.GetAclFeedLink().href)
+  #scope = AclScope(value=prof.email, type='user')
+  #role = AclRole(value='owner')
+  #acl_entry = gdata.docs.data.Acl(scope=scope, role=role)
+  #new_acl = client.Post(acl_entry, newer_doc.GetAclFeedLink().href)
   return newer_doc, folder
     
 def index(request):
@@ -307,6 +307,10 @@ def signup(request):
         password=request.POST['password'])
       client = docAuth()
       main_folder = client.Create(gdata.docs.data.FOLDER_LABEL, 'EssaySafe | '+request.POST['email'])
+      scope = AclScope(value=prof.email, type='user')
+      role = AclRole(value='owner')
+      acl_entry = gdata.docs.data.Acl(scope=scope, role=role)
+      new_acl = client.Post(acl_entry, main_folder.GetAclFeedLink().href)
       prompts_folder = client.Create(gdata.docs.data.FOLDER_LABEL, 'Prompts')
       client.Move(prompts_folder, main_folder)
       prof.folder_id = main_folder.resource_id.text
