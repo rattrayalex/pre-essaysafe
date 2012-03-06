@@ -66,14 +66,16 @@ def submit_file(request, essay_id):
   doc_code = doc.resource_id.text
   acl_entry = client.GetAclPermissions(doc_code).entry
   logging.warning(acl_entry)
-  acl = acl_entry[0]
-  logging.warning(acl_entry)
-  acl_entry.role.value = 'reader'
-  new_acl = client.Update(acl_entry)
+  acl = acl_entry[1]
+  logging.warning(acl)
+  scope = acl.scope
+  logging.warning(scope)
+  acl.role.value = 'reader'
+  new_acl = client.Update(acl, force=True)
   
-  content = client.GetFileContent(uri=doc.content.src)
-  email = essay.exam.box_email
-  email_a_file(email, essay.exam.name+'_'+essay.student_name, content)
+  #content = client.GetFileContent(uri=doc.content.src)
+  #email = essay.x_email
+  #email_a_file(email, essay.exam.name+'_'+essay.student_name, content)
   return HttpResponseRedirect('../../../../done/')
 
 class ExamForm(BootstrapModelForm):
@@ -148,12 +150,12 @@ def info_submit(request):
     new_doc, new_folder = create_doc(request, client, prof, exam_name)
     exam.resource_id = new_doc.resource_id.text
     exam.folder_id = new_folder.resource_id.text
-    try: 
-      exam.box_fid = createSubFolder(prof.box_id, exam_name)
-    except: 
-      exam.box_fid = createSubFolder(prof.box_id, exam_name+'')
-    element = getBox('toggle_folder_email', {'folder_id':exam.folder_id, 'enable':'1'})
-    exam.box_email = getText(element, 'upload_email')
+    #try: 
+    #  exam.box_fid = createSubFolder(prof.box_id, exam_name)
+    #except: 
+    #  exam.box_fid = createSubFolder(prof.box_id, exam_name+'1')
+    #element = getBox('toggle_folder_email', {'folder_id':exam.folder_id, 'enable':'1'})
+    #sexam.box_email = getText(element, 'upload_email')
     exam.save()
     logging.warning('saved')
     logging.warning('created'+ str(new_doc.resource_id.text))
@@ -225,8 +227,7 @@ def take(request, exam_name, student_name, student_email):
   
 def dashboard(request):
   prof = Professor.objects.get(user=request.user)
-  box_id = prof.box_id
-  # (name, id)
+  box_id = prof.box_id(name, id)
   exams = listFoldersIn(box_id)
   exam_count = dict()
   ids = []

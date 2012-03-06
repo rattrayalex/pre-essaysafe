@@ -35,8 +35,8 @@ class Exam(models.Model):
   end_time = models.DateTimeField(blank=True)
   resource_id = models.CharField(max_length=80)
   folder_id = models.CharField(max_length=80)
-  box_fid = models.CharField(max_length=100)
-  box_email = models.CharField(max_length=100)
+  #box_fid = models.CharField(max_length=100)
+  #box_email = models.CharField(max_length=100)
   
   def __unicode__(self):
     return self.name

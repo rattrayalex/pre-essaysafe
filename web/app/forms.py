@@ -29,7 +29,7 @@ class SignUpForm(ModelForm):
     email = self.cleaned_data['email']
     password = self.cleaned_data['password']
     logging.warning(u.email[0:u.email.find('@')])
-    u.box_id = int(createProfFolder(u.email[0:u.email.find('@')]))
+    #u.box_id = int(createProfFolder(u.email[0:u.email.find('@')]))
 	#gdocs id
     u.user = User.objects.create_user(email, email, password)
     if commit:
