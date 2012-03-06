@@ -195,6 +195,9 @@ def dashboard(request):
   prof = Professor.objects.get(user=request.user)
   folder_id = prof.folder_id
   exams = Exam.objects.filter(professor=prof)
+  essay_count = []
+  for exam in exams:
+    essay_count.append(len(Essay.objects.filter(exam=exam)))
   # exam_count = dict()
   # for e in exams:
   #   exam_count[e.resource_id.text] = [e.title.text, len(get_files(e.resource_id.text))]
@@ -206,6 +209,7 @@ def dashboard(request):
     'exams': exams, 
     # 'ids': ids,
     'count': len(exams),
+    'essay_count':essay_count
     # 'box_id': box_id,
   }
   return render_to_response('dashboard.html', context)
