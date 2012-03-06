@@ -25,5 +25,5 @@ urlpatterns = patterns('',
     (r'logout/$', logout),
     (r'signup/$', signup),
     (r'getfiles/$', getfiles),
-    (r'^done/(?P<essay_id>\w+)$', done),
+    (r'^done/(?P<essay_id>\w+)/$', done),
  )

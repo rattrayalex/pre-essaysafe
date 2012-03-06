@@ -1,10 +1,8 @@
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseRedirect
-from google.appengine.ext import db
 from bootstrap.forms import BootstrapModelForm, Fieldset
 from django.template import RequestContext
-from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
@@ -20,39 +18,23 @@ from google.appengine.api import mail
 
 import gdata.docs.service
 
-import simplejson
-
-import simplejson
-
 try: from functools import wraps
 except ImportError: from django.utils.functional import wraps # Python 2.4 fallback.
-from box import *
 from models import *
 from django.contrib import auth
 
-from settings import ES_TOKEN, ES_TOKEN_SECRET, APP_NAME
+from settings import APP_NAME, APP_PASS, APP_EMAIL
 from box import listFoldersIn, uploadFile, listFilesIn, createSubFolder, getBox
 
-from google_oauth.views import oauth_start, get_client, clear_google_oauth_session, oauth_get_access_token
-from google_oauth.views import GOOGLE_OAUTH_REQ_TOKEN, GOOGLE_OAUTH_TOKEN
-
 from app.models import *
-import os, sys, datetime, copy, logging, settings, json
+import os, sys, datetime, copy, logging, settings, json, simplejson
 
 import gdata.docs.service
-
-STEP2_URI = 'https://beta.essaysafe.org/oauth2callback'
-
-# Change everything in this class! Makes things pretty fast and easy
-# so the basic info about the site is ubiquitous. 
-
-CLIENT_ID = '1075895061839-air2l59at4t8gsng9ml8a3j0qspfp8i8.apps.googleusercontent.com'
-CLIENT_SECRET = '6savVHl6blxgIwodzBRKXPMc'
 
 def docAuth():
   '''Authenticates with Google Docs'''
   client = gdata.docs.client.DocsClient()
-  auth_token = client.ClientLogin('essay.safe.hack@gmail.com', 'angelhack', APP_NAME)
+  auth_token = client.ClientLogin(APP_EMAIL, APP_PASS, APP_NAME)
   return client
 
 def submit_file(request, essay_id):
@@ -87,15 +69,13 @@ class ExamForm(BootstrapModelForm):
 def make(request):
   '''Prof makes essay. Includes both 'pages' of the process'''
   client = docAuth()
-
   message = ''
   if request.method == 'POST':
     exams = Exam.objects.filter(name=request.POST.get('exam_name'))
     if len(exams) == 0:
       return info_submit(request)
     else: 
-      message = 'Sorry, there is already an exam named "'+request.POST.get('exam_name')+'". Please choose another name.' 
-  client = docAuth()
+      message = 'Sorry, there is already an exam named "%s." Please choose another name.' % (request.POST.get('exam_name'))
   context = {
     'message': message,
     'user': request.user,
@@ -224,7 +204,8 @@ def take(request, exam_name, student_name, student_email):
     'exam': exam,
   }
   return render_to_response('take.html', RequestContext(request, context))
-  
+
+@login_required
 def dashboard(request):
   prof = Professor.objects.get(user=request.user)
   box_id = prof.box_id(name, id)
@@ -234,11 +215,11 @@ def dashboard(request):
   for e in exams:
     exam_count[e] = [len(listFilesIn(exams[e])), exams[e]]
   context = {
-  'exams': exams, 
-	'ids': ids,
-	'count': len(exams),
-	'box_id': box_id,
-	'exam_count':exam_count
+    'exams': exams, 
+    'ids': ids,
+    'count': len(exams),
+    'box_id': box_id,
+    'exam_count':exam_count
   }
   return render_to_response('dashboard.html', context)
 
@@ -282,7 +263,7 @@ def create_doc(request, client, prof, exam_name):
     prof.folder_id = main_folder.resource_id.text
     prof.save()
   try:
-    folder = client.GetDocList(uri='/feeds/default/private/full/-/folder/?title='+exam_name+'&title-exact=true&max-results=1').entry[0]
+    folder = client.GetDocList(uri='/feeds/default/private/full/-/folder/?title=%s&title-exact=true&max-results=1' % (exam_name)).entry[0]
   except:
     pre_folder = client.Create(gdata.docs.data.FOLDER_LABEL, exam_name)
     folder = client.Move(pre_folder, main_folder)
@@ -334,10 +315,9 @@ def signup(request):
         password=request.POST['password'])
       client = docAuth()
       main_folder = client.Create(gdata.docs.data.FOLDER_LABEL, 'EssaySafe | '+request.POST['email'])
+      prompts_folder = client.Create(gdata.docs.data.FOLDER_LABEL, 'Prompts')
+      client.Move(prompts_folder, main_folder)
       prof.folder_id = main_folder.resource_id.text
-      #prof.token = request.session[GOOGLE_OAUTH_TOKEN].token
-      #prof.token_secret = request.session[GOOGLE_OAUTH_TOKEN].token_secret
-      #prof.auth_token = client.auth_token
       prof.save()
       if user is not None:
         auth.login(request, user)
