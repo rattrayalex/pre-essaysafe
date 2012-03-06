@@ -13,7 +13,7 @@ class Professor(models.Model):
   """ 
   Professor model.
   """
-  email = models.CharField(max_length=80)
+  email = models.CharField(max_length=80, unique=True)
   box_id = models.CharField()
   gdocs_id = models.CharField()
   user = models.OneToOneField(User, unique=True)

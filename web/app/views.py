@@ -154,10 +154,10 @@ def create_doc(client, request, prof, exam_name):
   template = client.GetDoc('document:1OB40c2l26fL6BdRim1cKuQhG0Kyt8X6brsAvlVMQ1sE') # new prompt template
   new_doc = client.Copy(template, doc_name)
   newer_doc = client.Move(new_doc, folder)
-  scope = AclScope(value=prof.email, type='user')
-  role = AclRole(value='owner')
-  acl_entry = gdata.docs.data.Acl(scope=scope, role=role)
-  new_acl = client.Post(acl_entry, newer_doc.GetAclFeedLink().href)
+  #scope = AclScope(value=prof.email, type='user')
+  #role = AclRole(value='owner')
+  #acl_entry = gdata.docs.data.Acl(scope=scope, role=role)
+  #new_acl = client.Post(acl_entry, newer_doc.GetAclFeedLink().href)
   return newer_doc, folder
     
 def index(request):
@@ -239,8 +239,10 @@ def dashboard(request):
 
 def distribute(request, exam_id):
   exam = Exam.objects.get(id=exam_id)
+  doc = str(exam.resource_id).split(':')[1]
   context = {
-    'exam': exam
+    'exam': exam, 
+    'doc': doc,
   }
   return render_to_response('distribute.html', context)
 
@@ -299,6 +301,10 @@ def signup(request):
         password=request.POST['password'])
       client = glogin()
       main_folder = client.Create(gdata.docs.data.FOLDER_LABEL, 'EssaySafe | '+request.POST['email'])
+      scope = AclScope(value=prof.email, type='user')
+      role = AclRole(value='owner')
+      acl_entry = gdata.docs.data.Acl(scope=scope, role=role)
+      new_acl = client.Post(acl_entry, main_folder.GetAclFeedLink().href)
       prompts_folder = client.Create(gdata.docs.data.FOLDER_LABEL, 'Prompts')
       client.Move(prompts_folder, main_folder)
       prof.folder_id = main_folder.resource_id.text
@@ -316,6 +322,6 @@ def signup(request):
 def done(request, essay_id):
   essay = get_object_or_404(Essay, id=essay_id)
   exam = essay.exam
-  doc = essay.resource_id
+  doc = str(essay.resource_id).split(':')[1]
   context = {'doc':doc, 'essay': essay, 'exam':exam, }
   return render_to_response('done.html', context)
