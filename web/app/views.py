@@ -23,23 +23,17 @@ except ImportError: from django.utils.functional import wraps # Python 2.4 fallb
 from models import *
 from django.contrib import auth
 
-from settings import APP_NAME, APP_PASS, APP_EMAIL
 from box import listFoldersIn, uploadFile, listFilesIn, createSubFolder, getBox
+from docs import *
 
 from app.models import *
 import os, sys, datetime, copy, logging, settings, json, simplejson
 
 import gdata.docs.service
 
-def docAuth():
-  '''Authenticates with Google Docs'''
-  client = gdata.docs.client.DocsClient()
-  auth_token = client.ClientLogin(APP_EMAIL, APP_PASS, APP_NAME)
-  return client
-
 def submit_file(request, essay_id):
   '''Once a student is done, submits their essay. '''
-  client = docAuth()
+  client = glogin()
   
   essay = Essay.objects.get(id=essay_id) 
   doc = client.GetDoc(essay.resource_id)
@@ -65,7 +59,7 @@ class ExamForm(BootstrapModelForm):
 @login_required
 def make(request):
   '''Prof makes essay. Includes both 'pages' of the process'''
-  client = docAuth()
+  client = glogin()
   message = ''
   if request.method == 'POST':
     exams = Exam.objects.filter(name=request.POST.get('exam_name'))
@@ -198,7 +192,7 @@ def email_a_file(add_email, filename, stream):
   return 1
 
 def take(request, exam_name, student_name, student_email):
-  client = docAuth()
+  client = glogin()
   exam = get_object_or_404(Exam, name=exam_name)
   prof = exam.professor
   prompt_doc_id = str(exam.resource_id)
@@ -303,7 +297,7 @@ def signup(request):
       prof = form.save()
       user = auth.authenticate(username=request.POST['email'], 
         password=request.POST['password'])
-      client = docAuth()
+      client = glogin()
       main_folder = client.Create(gdata.docs.data.FOLDER_LABEL, 'EssaySafe | '+request.POST['email'])
       prompts_folder = client.Create(gdata.docs.data.FOLDER_LABEL, 'Prompts')
       client.Move(prompts_folder, main_folder)
