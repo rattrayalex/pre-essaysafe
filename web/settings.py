@@ -3,7 +3,7 @@ from djangoappengine.settings_base import *
 import os.path
 import sys
 
-DEBUG = True
+DEBUG = os.environ['SERVER_SOFTWARE'].startswith('Development')
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (

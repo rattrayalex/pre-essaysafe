@@ -49,49 +49,29 @@ STEP2_URI = 'https://beta.essaysafe.org/oauth2callback'
 CLIENT_ID = '1075895061839-air2l59at4t8gsng9ml8a3j0qspfp8i8.apps.googleusercontent.com'
 CLIENT_SECRET = '6savVHl6blxgIwodzBRKXPMc'
 
-def oauth_required(view_func):
-    """
-    Decorator for views to ensure that the user is sending an OAuth signed request.
-    """
-    def _checklogin(request, *args, **kwargs):
-      if request.session.get(GOOGLE_OAUTH_TOKEN, False):
-        return view_func(request, *args, **kwargs)
-      elif request.session.get(GOOGLE_OAUTH_REQ_TOKEN, False):
-        oauth_get_access_token(request)
-        return HttpResponseRedirect("http://" + request.get_host() + request.path)
-      else:
-        return oauth_start(request)
-    return wraps(view_func)(_checklogin)
-
-
-def submit_file(request, essay_id):
+def docAuth():
+  '''Authenticates with Google Docs'''
   client = gdata.docs.client.DocsClient()
   auth_token = client.ClientLogin('essay.safe.hack@gmail.com', 'angelhack', APP_NAME)
-  #feed = client.GetDocList(uri='/feeds/default/private/full/-/folder?title'+folder_name+'&title-exact=true&max-results=5')
-  essay = Essay.objects.get(id=essay_id)
+  return client
+
+def submit_file(request, essay_id):
+  '''Once a student is done, submits their essay. '''
+  client = docAuth()
   
+  essay = Essay.objects.get(id=essay_id) 
   doc = client.GetDoc(essay.resource_id)
+  student_email = essay.student_email
+  
+  scope = AclScope(value=student_email, type='user')
+  role = AclRole(value='viewer')
+  acl_entry = gdata.docs.data.Acl(scope=scope, role=role)
+  new_acl = client.Post(acl_entry, doc.GetAclFeedLink().href)
+  
   content = client.GetFileContent(uri=doc.content.src)
   email = essay.exam.box_email
   email_a_file(email, essay.exam.name+'_'+essay.student_name, content)
-  return HttpResponseRedirect('/done')
-
-def submit_exam(request, exam_name):
-  client = gdata.docs.client.DocsClient()
-  auth_token = client.ClientLogin('essay.safe.hack@gmail.com', 'angelhack', APP_NAME)
-  #feed = client.GetDocList(uri='/feeds/default/private/full/-/folder?title'+folder_name+'&title-exact=true&max-results=5')
-  #exam = Exam.objects.get(name=exam_name)
-  feed = client.GetDocList(uri='/feeds/default/private/full/-/document')
-
-  #if len(exam) > 1:
-  #  logging.warning("exam name is matching with multiple exams")
-  #essays = Essay.objects.select_related('exam')
-  #for essay in essays:
-  for doc in feed.entry:
-    content = client.GetFileContent(uri=doc.content.src)
-    email_a_file('upload.prof_pa.x9z8elbe7u@u.box.com', doc.title.text, content)
-  
-    return HttpResponseRedirect('/done')  
+  return HttpResponseRedirect('../../../../done/')
 
 class ExamForm(BootstrapModelForm):
   class Meta:
@@ -100,12 +80,9 @@ class ExamForm(BootstrapModelForm):
 
 @login_required
 def make(request):
-  """Test callback view"""
-  client = gdata.docs.client.DocsClient()
-  auth_token = client.ClientLogin('essay.safe.hack@gmail.com', 'angelhack', APP_NAME)
-  #documents_feed = client.GetDocumentListFeed()
-  #for document_entry in documents_feed.entry:
-  #    logging.warning(document_entry.title.text)
+  '''Prof makes essay. Includes both 'pages' of the process'''
+  client = docAuth()
+
   message = ''
   if request.method == 'POST':
     exams = Exam.objects.filter(name=request.POST.get('exam_name'))
@@ -113,23 +90,19 @@ def make(request):
       return info_submit(request)
     else: 
       message = 'Sorry, there is already an exam named "'+request.POST.get('exam_name')+'". Please choose another name.' 
-  client = gdata.docs.client.DocsClient()
-  auth_token = client.ClientLogin('essay.safe.hack@gmail.com','angelhack', APP_NAME)
-  form = ExamForm()
-  ##feed = client.GetDocList(uri='/feeds/default/private/full/-/document') 
-  ##doclist = map (lambda entry: Doc(doc_name=entry.title.text.encode('UTF-8'), resource_id=entry.resource_id.text), feed.entry)
+  client = docAuth()
   context = {
-    'form': form,
     'message': message,
     'user': request.user,
-  }
+    }
   return render_to_response('make.html', RequestContext(request, context))
 
 def info_submit(request):
+  '''Creates the Essay given a name and start/end time'''
   if request.method == 'POST':
     post = request.POST
-    client = gdata.docs.client.DocsClient()
-    auth_token = client.ClientLogin('essay.safe.hack@gmail.com','angelhack', APP_NAME)
+    client = docAuth()
+    
     date_format = '%m/%d%/%Y'
     time_format = '%I:%M%p'
     #if len(post.get('start_time')) == 6:
@@ -165,12 +138,11 @@ def info_submit(request):
     exam = Exam()
     exam.professor = prof
     exam.name = exam_name
-    logging.warning('done the exam name: '+exam_name)
+    
     #exam.start_time = start_datetime
     exam.start_time = datetime.datetime.now()
     exam.end_time = datetime.datetime.now()
     new_doc, new_folder = create_doc(request, client, prof, exam_name)
-    logging.warning('done the times')
     exam.resource_id = new_doc.resource_id.text
     exam.folder_id = new_folder.resource_id.text
     try: 
@@ -221,7 +193,7 @@ def email_a_file(add_email, filename, stream):
   return 1
 
 def take(request, exam_name, student_name, student_email):
-  client = gdata.docs.client.DocsClient()
+  client = docAuth()
   auth_token = client.ClientLogin('essay.safe.hack@gmail.com','angelhack', APP_NAME)
   exam = get_object_or_404(Exam, name=exam_name)
   prof = exam.professor
@@ -356,7 +328,7 @@ def signup(request):
       prof = form.save()
       user = auth.authenticate(username=request.POST['email'], 
         password=request.POST['password'])
-      client = gdata.docs.client.DocsClient()
+      client = docAuth()
       auth_token = client.ClientLogin('essay.safe.hack@gmail.com','angelhack', APP_NAME)
       main_folder = client.Create(gdata.docs.data.FOLDER_LABEL, 'EssaySafe | '+request.POST['email'])
       prof.folder_id = main_folder.resource_id.text

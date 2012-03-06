@@ -3542,13 +3542,67 @@ html, body {
 .iframe {
   width: 100%;
   height: 500px;
-  margin-top: -219 x;
+  margin-top: -19 x;
   border: none;
   -webkit-box-sizing: border-box;
 }
 .bigcode {
   font-size: 32px;
   line-height: 32px;
+}
+/*==================Geoff's styles from essaysafe.css ========*/
+#top_right {
+  /* margin-top: 20px; */
+
+}
+#logo {
+  cursor: pointer;
+}
+#slogan, #top_right {
+  cursor: default;
+}
+#width {
+  width: 300px;
+}
+#footer {
+  text-align: center;
+  cursor: default;
+  /*width: 50%;*/
+
+}
+#footer a {
+  text-decoration: none;
+}
+#dashboard_wrapper {
+  cursor: default;
+  padding-top: 75px;
+  padding-bottom: 75px;
+}
+#dashboard_wrapper a:hover {
+  text-decoration: none;
+}
+.hilight {
+  background-color: #eeeeee;
+  cursor: pointer;
+}
+.exam {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 25px;
+  padding-right: 25px;
+}
+#submissions {
+  color: #999;
+}
+#sub a {
+  color: #777;
+  padding-left: 10px;
+}
+#sub a:before {
+  content: '- ';
+}
+#sub a:hover {
+  color: #000;
 }
 /*========= shit for date fields ==========*/
 .input-small,

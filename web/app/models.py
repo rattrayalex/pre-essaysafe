@@ -42,7 +42,7 @@ class Exam(models.Model):
     return self.name
 
 class Essay(models.Model):
-  exam = models.ForeignKey(Exam, blank=True, null=True)
+  exam = models.ForeignKey(Exam, blank=True, null=True, related_name='exam')
   student_name = models.CharField(max_length=80, blank=True)
   student_email = models.CharField(max_length=80, blank=True)
   start_date = models.DateTimeField('date finished', blank=True, null=True)
