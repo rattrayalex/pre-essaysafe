@@ -45,7 +45,11 @@ if (/*@cc_on!@*/false) { // check for Internet Explorer
        if (navigator.geolocation) {
 	      navigator.geolocation.getCurrentPosition(success, failure);
 		  } else {
+<<<<<<< HEAD
+//		  alert('not supported');
+=======
 		  //alert('not supported');
+>>>>>>> 1755e481dae0fdee065394f6736f464c53e0957f
 		  }
        
 	   function success(object) {
@@ -53,7 +57,11 @@ if (/*@cc_on!@*/false) { // check for Internet Explorer
          var longi = object.coords.longitude;
          var accuracy = object.coords.accuracy;
          var times = object.timestamp;
+<<<<<<< HEAD
+	//	 alert('lati:' + lati + 'logi: ' + longi + 'accuracy: ' + accuracy + 'time: ' + times);
+=======
 		 //alert('lati:' + lati + 'logi: ' + longi + 'accuracy: ' + accuracy + 'time: ' + times);
+>>>>>>> 1755e481dae0fdee065394f6736f464c53e0957f
 		  }
 		  
 	   function failure(object) {
