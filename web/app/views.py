@@ -199,7 +199,6 @@ def email_a_file(add_email, filename, stream):
 
 def take(request, exam_name, student_name, student_email):
   client = docAuth()
-  auth_token = client.ClientLogin('essay.safe.hack@gmail.com','angelhack', APP_NAME)
   exam = get_object_or_404(Exam, name=exam_name)
   prof = exam.professor
   prompt_doc_id = str(exam.resource_id)
