@@ -53,7 +53,8 @@ def get_exams(folder_id):
   feed = client.GetDocList(uri=uri)
   exams = dict()
   for f in feed.entry:
-    exams[f.resource_id.text] = [f.title.text, num_files(f.resource_id.text)]
+    exams[f.resource_id.text] = f.title.text
+    # exams[f.resource_id.text] = [f.title.text, num_files(f.resource_id.text)]
   return exams
 
 client = glogin()
