@@ -5,7 +5,7 @@
 
 {% block topright %}
 <p>exam due at {{exam.end_time}}</p>
-<a href="" class="btn btn-large" id="done">I'm Done</a>
+<a href="../../../../submit/{{essay.id}}/" class="btn btn-large" id="done">I'm Done</a>
 {% endblock topright %}
 
 {% block content %}
@@ -61,9 +61,9 @@ if (/*@cc_on!@*/false) { // check for Internet Explorer
 	   function failure(object) {
 	      //
 		  } 
-    var href="../../../../submit/{{essay.id}}/";
+/*    var href="../../../../submit/{{essay.id}}/";
   $('#done').click(function() {
     window.href=href;
-  });
+  });*/
 </script>
 {% endblock scripts %}

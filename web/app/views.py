@@ -76,7 +76,7 @@ def submit_file(request, essay_id):
   #content = client.GetFileContent(uri=doc.content.src)
   #email = essay.x_email
   #email_a_file(email, essay.exam.name+'_'+essay.student_name, content)
-  return HttpResponseRedirect('../../../../done/')
+  return HttpResponseRedirect('../../../../done/%s/' % (essay_id))
 
 class ExamForm(BootstrapModelForm):
   class Meta:
@@ -199,7 +199,6 @@ def email_a_file(add_email, filename, stream):
 
 def take(request, exam_name, student_name, student_email):
   client = docAuth()
-  auth_token = client.ClientLogin('essay.safe.hack@gmail.com','angelhack', APP_NAME)
   exam = get_object_or_404(Exam, name=exam_name)
   prof = exam.professor
   prompt_doc_id = str(exam.resource_id)
@@ -222,6 +221,7 @@ def take(request, exam_name, student_name, student_email):
   context = {
     'doc': str(student_doc.resource_id.text).split(':')[1],
     'essay': essay,
+    'exam': exam,
   }
   return render_to_response('take.html', RequestContext(request, context))
   
@@ -234,7 +234,7 @@ def dashboard(request):
   for e in exams:
     exam_count[e] = [len(listFilesIn(exams[e])), exams[e]]
   context = {
-    'exams': exams, 
+  'exams': exams, 
 	'ids': ids,
 	'count': len(exams),
 	'box_id': box_id,
@@ -333,7 +333,6 @@ def signup(request):
       user = auth.authenticate(username=request.POST['email'], 
         password=request.POST['password'])
       client = docAuth()
-      auth_token = client.ClientLogin('essay.safe.hack@gmail.com','angelhack', APP_NAME)
       main_folder = client.Create(gdata.docs.data.FOLDER_LABEL, 'EssaySafe | '+request.POST['email'])
       prof.folder_id = main_folder.resource_id.text
       #prof.token = request.session[GOOGLE_OAUTH_TOKEN].token
@@ -349,3 +348,10 @@ def signup(request):
     next = request.GET.get('next', '/')
   context = {'form':form, 'next': next,}
   return render_to_response('signup.html', context, context_instance=RequestContext(request))
+
+def done(request, essay_id):
+  essay = get_object_or_404(Essay, id=essay_id)
+  exam = essay.exam
+  doc = essay.resource_id
+  context = {'doc':doc, 'essay': essay, 'exam':exam, }
+  return render_to_response('done.html', context)
