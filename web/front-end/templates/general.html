@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block styles %}
+{% endblock styles %}
+
+{% block scripts %}
+{% endblock scripts %}
+
+{% block top %}
+  <div id="title">
+    <div class="row">
+      <div class="span8">
+        <h1 id='logo'>EssaySafe <span id='slogan'>No chickenscratch. No cheating. </span></h1>
+      </div>
+      <div class="span4" style="text-align:right;">
+      {% block topright %}
+        <h3><span id='top_right'>Students: </span><a class="btn btn-large" href="media/EssaySafeDesktopClient.exe">Download EssaySafe</a>
+        </h3>
+      {% endblock %}
+      </div>
+    </div>
+  </div>
+  <hr>
+{% endblock top %}
+
+{% block content %}
+{% endblock content %}
+
+{% block footer %}
+<hr>
+<footer id='footer'>
+  <p>&copy; EssaySafe 2012</p>
+  <p>A project by 
+    <a href='http://alexrattray.com'>Alex</a>,
+    <a href='http://github.com/gterrono'>Greg</a>,
+    <a href='http://twitter.com/yefim323'>Geoffrey</a>,
+    <a href='http://wikistory.com'>Aaron</a>, and
+    <a href='http://twitter.com/patryoon'>Patrick</a>
+  </p>
+  <p>Designed and Built in 30 hours at AngelHack Boston, March 3-4 2012</p>
+</footer>
+{% endblock footer %}
+

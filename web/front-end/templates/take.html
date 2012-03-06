@@ -1,0 +1,75 @@
+{% extends "general.html" %}
+
+{% block styles %}
+{% endblock styles %}
+
+{% block topright %}
+<p>exam due at {{exam.end_time}}</p>
+<a href="" class="btn btn-large" id="done">I'm Done</a>
+{% endblock topright %}
+
+{% block content %}
+  <iframe src='https://docs.google.com/document/d/{{doc}}/edit' class='iframe' scrolling='no' allowTransparency='true'>
+    
+  </iframe>{% csrf_token %}
+
+<!-- $(window).load(getMap()); -->
+<body onload = "getMap();">
+
+{% endblock content %}
+
+{% block scripts %}
+<script type="text/javascript">
+    var href="../../../../submit/{{essay.id}}/";
+function onBlur() {
+	document.body.className = 'blurred';
+  document.title = 'blurred';
+  window.location = href;
+  //window.close();
+};
+function onFocus(){
+	document.body.className = 'focused';
+  document.title = 'focused';
+};
+
+if (/*@cc_on!@*/false) { // check for Internet Explorer
+	document.onfocusin = onFocus;
+	document.onfocusout = onBlur;
+} else {
+	window.onfocus = onFocus;
+	window.onblur = onBlur;
+}
+</script>
+<script type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
+<script type="text/javascript">
+       if (navigator.geolocation) {
+	      navigator.geolocation.getCurrentPosition(success, failure);
+		  } else {
+<<<<<<< HEAD
+//		  alert('not supported');
+=======
+		  //alert('not supported');
+>>>>>>> 1755e481dae0fdee065394f6736f464c53e0957f
+		  }
+       
+	   function success(object) {
+        var lati = object.coords.latitude;
+         var longi = object.coords.longitude;
+         var accuracy = object.coords.accuracy;
+         var times = object.timestamp;
+<<<<<<< HEAD
+	//	 alert('lati:' + lati + 'logi: ' + longi + 'accuracy: ' + accuracy + 'time: ' + times);
+=======
+		 //alert('lati:' + lati + 'logi: ' + longi + 'accuracy: ' + accuracy + 'time: ' + times);
+>>>>>>> 1755e481dae0fdee065394f6736f464c53e0957f
+		  }
+		  
+	   function failure(object) {
+	      //
+		  } 
+    var href="../../../../submit/{{essay.id}}/";
+  $('#done').click(function() {
+    window.href=href;
+  });
+</script>
+{% endblock scripts %}
