@@ -15,6 +15,7 @@ from gdata.acl.data import AclScope, AclRole
 from app.forms import LogInForm, SignUpForm
 from StringIO import StringIO
 from google.appengine.api import mail
+from django.db.models import Q
 
 import gdata.docs.service
 
@@ -193,9 +194,10 @@ def email_a_file(add_email, filename, stream):
   logging.warning("sent"+str(attachments))
   return 1
 
-def take(request, exam_name, student_name, student_email):
+def take(request, prof_email, exam_name, student_name, student_email):
   client = docAuth()
-  exam = get_object_or_404(Exam, name=exam_name)
+  prof = get_object_or_404(Professor, email = prof_email)
+  exam = get_object_or_404(Exam, Q(professor = prof) & Q(name=exam_name))
   prof = exam.professor
   prompt_doc_id = str(exam.resource_id)
   prompt_doc = client.GetDoc(prompt_doc_id)
