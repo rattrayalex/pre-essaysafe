@@ -194,7 +194,7 @@ def take(request, prof_email, exam_name, student_name, student_email):
 def dashboard(request):
   prof = Professor.objects.get(user=request.user)
   folder_id = prof.folder_id
-  exams = get_exams(folder_id)
+  exams = Exam.objects.filter(professor=prof)
   # exam_count = dict()
   # for e in exams:
   #   exam_count[e.resource_id.text] = [e.title.text, len(get_files(e.resource_id.text))]
