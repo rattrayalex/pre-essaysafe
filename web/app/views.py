@@ -30,7 +30,7 @@ from box import *
 from models import *
 from django.contrib import auth
 
-from settings import ES_TOKEN, ES_TOKEN_SECRET, APP_NAME
+from settings import ES_TOKEN, ES_TOKEN_SECRET, APP_NAME, APP_PASS, APP_EMAIL
 from box import listFoldersIn, uploadFile, listFilesIn, createSubFolder, getBox
 
 from google_oauth.views import oauth_start, get_client, clear_google_oauth_session, oauth_get_access_token
@@ -52,7 +52,7 @@ CLIENT_SECRET = '6savVHl6blxgIwodzBRKXPMc'
 def docAuth():
   '''Authenticates with Google Docs'''
   client = gdata.docs.client.DocsClient()
-  auth_token = client.ClientLogin('essay.safe.hack@gmail.com', 'angelhack', APP_NAME)
+  auth_token = client.ClientLogin(APP_EMAIL, APP_PASS, APP_NAME)
   return client
 
 def submit_file(request, essay_id):
@@ -333,7 +333,6 @@ def signup(request):
       user = auth.authenticate(username=request.POST['email'], 
         password=request.POST['password'])
       client = docAuth()
-      auth_token = client.ClientLogin('essay.safe.hack@gmail.com','angelhack', APP_NAME)
       main_folder = client.Create(gdata.docs.data.FOLDER_LABEL, 'EssaySafe | '+request.POST['email'])
       prof.folder_id = main_folder.resource_id.text
       #prof.token = request.session[GOOGLE_OAUTH_TOKEN].token
