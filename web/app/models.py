@@ -12,7 +12,6 @@ from django.template.defaultfilters import slugify
 class Professor(models.Model):
   '''Professor model.'''
   email = models.CharField(max_length=80, unique=True)
-  #box_id = models.CharField(max_length=100, blank=True)
   gdocs_id = models.CharField(max_length=100)
   user = models.OneToOneField(User, unique=True, related_name='professor')
   name = models.CharField(max_length=100, blank=True)
@@ -29,8 +28,6 @@ class Exam(models.Model):
   end_time = models.DateTimeField()
   resource_id = models.CharField(max_length=80)
   folder_id = models.CharField(max_length=80)
-  #box_fid = models.CharField(max_length=100)
-  #box_email = models.CharField(max_length=100)
   
   class Meta: 
     unique_together = (('professor','name'),)
