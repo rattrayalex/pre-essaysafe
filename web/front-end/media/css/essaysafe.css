@@ -51,3 +51,6 @@
 #sub a:hover {
   color: #000;
 }
+.inline {
+  display: inline;
+}
