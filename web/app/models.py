@@ -12,10 +12,10 @@ from django.template.defaultfilters import slugify
 class Professor(models.Model):
   '''Professor model.'''
   email = models.CharField(max_length=80, unique=True)
-  gdocs_id = models.CharField(max_length=100)
+  # gdocs_id = models.CharField(max_length=100)
   user = models.OneToOneField(User, unique=True, related_name='professor')
   name = models.CharField(max_length=100, blank=True)
-  folder_id = models.CharField(max_length=80, blank=True)
+  folder_id = models.CharField(max_length=80)
   
   def __unicode__(self):
     return self.name

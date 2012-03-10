@@ -64,17 +64,13 @@ class ExamForm(BootstrapModelForm):
 @login_required
 def make(request):
   '''Prof makes essay. Includes both 'pages' of the process'''
-  # client = glogin()
-  message = ''
   if request.method == 'POST':
     exam_name = request.POST.get('exam_name')
     exams = Exam.objects.filter(professor=request.user.professor).filter(name=exam_name)
     if len(exams) == 0:
-      return make_exam(request)
-    else: 
-      message = 'Sorry, there is already an exam named "%s." Please choose another name.' % (request.POST.get('exam_name'))
+      return make_exam(request) 
   context = {
-    'message': message,
+    'message': 'Sorry, there is already an exam named "%s." Please choose another name.' % (request.POST.get('exam_name')),
     'user': request.user,
     }
   return render_to_response('make.html', RequestContext(request, context))
@@ -274,11 +270,10 @@ def signup(request):
     next = request.POST['next']
     if form.is_valid():
       prof = form.save()
+      prof.folder_id = create_prof_folder(request.POST['email'])
+      prof.save()
       user = auth.authenticate(username=request.POST['email'], 
         password=request.POST['password'])
-      id = create_prof_folder(request.POST['email'])
-      logging.warning(id)
-      prof.folder_id = id
       if user is not None:
         auth.login(request, user)
       return HttpResponseRedirect(next)
@@ -286,7 +281,7 @@ def signup(request):
     taken = False
     form = SignUpForm()
     next = request.GET.get('next', '/')
-  context = {'form':form, 'next': next,}
+  context = { 'form':form, 'next': next }
   return render_to_response('signup.html', context, context_instance=RequestContext(request))
 
 def done(request, essay_id):
