@@ -14,15 +14,7 @@
   <script src="/media/js/bootstrap-datepicker.js" type="text/javascript"></script>
   <script>
     $(function(){
-      //$('#slides').slides({
-        //generatePagination:false
-      //});
-    
       $(".chzn-select").chosen();
-      /*$("#doc-select").chosen().change(function () {
-          window.location.href = '/' + $(this).val()
-      });*/
-        
   });
   </script>
   <script>
@@ -54,10 +46,10 @@
 {% endblock scripts %}
 
 {% block topright %}
-  <p>hello, {{user.email}}</p>
+  <p>Hello, <strong>{{user.email}}</strong></p>
   <p><a href='/dashboard/'>View your dashboard</a></p>
   {% if new_doc %}
-    <a href="../distribute/{{exam.id}}" class="btn btn-large">I'm Done <i class="icon-chevron-right"></i></a>
+    <a href="../distribute/{{exam.id}}" class="btn btn-large">I'm Done <i class="icon-chevron-right"></i></a> 
   {% endif %}
 {% endblock %}
 

@@ -24,6 +24,9 @@ class Exam(models.Model):
   ''' Exam model.'''
   professor = models.ForeignKey(Professor)
   name = models.CharField(max_length=80)
+  day = models.IntegerField(blank=True)
+  start_hour = models.IntegerField(blank=True)
+  end_hour = models.IntegerField(blank=True)
   start_time = models.DateTimeField()
   end_time = models.DateTimeField()
   resource_id = models.CharField(max_length=80)
