@@ -57,3 +57,7 @@
 .inline {
   display: inline;
 }
+.errormessage {
+  color: red;
+  display: inline;
+}
