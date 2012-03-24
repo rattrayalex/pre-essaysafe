@@ -24,7 +24,6 @@ except ImportError: from django.utils.functional import wraps # Python 2.4 fallb
 from models import *
 from django.contrib import auth
 
-from box import listFoldersIn, uploadFile, listFilesIn, createSubFolder, getBox
 from docs import *
 
 from app.models import *
@@ -74,20 +73,17 @@ class ExamForm(BootstrapModelForm):
 @login_required
 def make(request):
   '''Prof makes essay. Includes both 'pages' of the process'''
-  # client = glogin()
-  message = ''
   if request.method == 'POST':
     exam_name = request.POST.get('exam_name')
     exams = Exam.objects.filter(professor=request.user.professor).filter(name=exam_name)
     if len(exams) == 0:
-      return make_exam(request)
-    else: 
-      message = 'Sorry, there is already an exam named "%s." Please choose another name.' % (request.POST.get('exam_name'))
-  context = {
-    'message': message,
-    'user': request.user,
-    }
-  return render_to_response('make.html', RequestContext(request, context))
+      return make_exam(request) 
+    context = {
+      'message': 'Sorry, there is already an exam named "%s." Please choose another name.' % (request.POST.get('exam_name')),
+      'user': request.user,
+      }
+    return render_to_response('make.html', RequestContext(request, context))
+  return render_to_response('make.html', RequestContext(request))
 
 def make_exam(request):
   '''Creates the Essay given a name and start/end time'''
@@ -100,6 +96,9 @@ def make_exam(request):
   exam = Exam()
   exam.professor = prof
   exam.name = exam_name
+  exam.day = 0
+  exam.start_hour = 0
+  exam.end_hour = 0
   exam.start_time = datetime.datetime.now()
   exam.end_time = datetime.datetime.now()
   exam.resource_id, exam.folder_id = create_exam(prof.folder_id, exam_name)
@@ -107,7 +106,7 @@ def make_exam(request):
   reply = { 'success': True,
 	    'form_valid': True,
 	    'exam': exam,
-	    'new_doc': str(exam.resource_id).split(':')[1]}
+	    'new_doc': str(exam.resource_id).split(':')[1] }
   return render_to_response('make.html',RequestContext(request,reply))
     
     #if len(post.get('start_time')) == 6:
@@ -206,7 +205,11 @@ def take(request, prof_email, exam_name, student_name, student_email):
 def dashboard(request):
   prof = Professor.objects.get(user=request.user)
   folder_id = prof.folder_id
-  exams = get_exams(folder_id)
+  exams = Exam.objects.filter(professor=prof)
+  essay_count = []
+  for exam in exams:
+    essay_count.append(len(Essay.objects.filter(exam=exam)))
+  exams = zip(exams, essay_count)
   # exam_count = dict()
   # for e in exams:
   #   exam_count[e.resource_id.text] = [e.title.text, len(get_files(e.resource_id.text))]
@@ -218,6 +221,7 @@ def dashboard(request):
     'exams': exams, 
     # 'ids': ids,
     'count': len(exams),
+    # 'essay_count':essay_count
     # 'box_id': box_id,
   }
   return render_to_response('dashboard.html', context)
@@ -282,11 +286,10 @@ def signup(request):
     next = request.POST['next']
     if form.is_valid():
       prof = form.save()
+      prof.folder_id = create_prof_folder(request.POST['email'])
+      prof.save()
       user = auth.authenticate(username=request.POST['email'], 
         password=request.POST['password'])
-      id = create_prof_folder(request.POST['email'])
-      logging.warning(id)
-      prof.folder_id = id
       if user is not None:
         auth.login(request, user)
       return HttpResponseRedirect(next)
@@ -294,7 +297,7 @@ def signup(request):
     taken = False
     form = SignUpForm()
     next = request.GET.get('next', '/')
-  context = {'form':form, 'next': next,}
+  context = { 'form':form, 'next': next }
   return render_to_response('signup.html', context, context_instance=RequestContext(request))
 
 def done(request, essay_id):

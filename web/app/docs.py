@@ -12,7 +12,7 @@ def glogin():
   '''Authenticates with Google Docs'''
   client = gdata.docs.client.DocsClient()
   auth_token = client.ClientLogin(APP_EMAIL, APP_PASS, APP_NAME)
-  return client
+  return client 
 
 def create_folder(folder_name, parent_folder=None):
   if parent_folder is None:
@@ -22,12 +22,13 @@ def create_folder(folder_name, parent_folder=None):
 
 def create_prof_folder(prof_email):
   main_folder = create_folder('EssaySafe | %s' % (prof_email))
+  id = main_folder.resource_id.text
   scope = AclScope(value=prof_email, type='user')
   role = AclRole(value='owner')
   acl_entry = gdata.docs.data.Acl(scope=scope, role=role)
   new_acl=client.Post(acl_entry, main_folder.GetAclFeedLink().href)
   create_folder('Prompts', main_folder.resource_id.text)
-  return main_folder.resource_id.text
+  return id
 
 def create_exam(prof_folder_id, exam_name):
   exam_name = 'Prompt | %s' % exam_name

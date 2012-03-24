@@ -25,6 +25,9 @@
   padding-top: 75px;
   padding-bottom: 75px;
 }
+#dashboard_wrapper hr {
+  /* margin: 0px; */
+}
 #dashboard_wrapper a:hover {
   text-decoration: none;
 }
@@ -52,5 +55,9 @@
   color: #000;
 }
 .inline {
+  display: inline;
+}
+.errormessage {
+  color: red;
   display: inline;
 }

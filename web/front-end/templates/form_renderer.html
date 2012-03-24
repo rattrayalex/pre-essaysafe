@@ -11,11 +11,11 @@
 {% for field in form.visible_fields %}
   <div class="clearfix">
     {% if field.errors %}
+      {{ field.label }}&nbsp
       <label class="errormessage" for="id_{{ field.html_name }}">
-        {{ field.label }}&nbsp
-		{% for error in field.errors %}
-			{{ error }}
-		{% endfor %}
+	{% for error in field.errors %}
+	  {{ error }}
+	{% endfor %}
       </label>
     {% else %}
       {{ field.label_tag }}

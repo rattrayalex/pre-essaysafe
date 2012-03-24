@@ -4,13 +4,46 @@
 {% endblock styles %}
 
 {% block scripts %}
+  <script src="/media/js/chosen.jquery.js" type="text/javascript"></script>
+  <script src="/media/js/bootstrap-datepicker.js" type="text/javascript"></script>
+  <script>
+    $(function(){
+      $(".chzn-select").chosen();
+  });
+  </script>
+  <script>
+  $(function(){
+    $.extend($.fn.datepicker.defaults, {
+      parse: function (string) {
+        var matches;
+        if ((matches = string.match(/^(\d{2,2})\/(\d{2,2})\/(\d{4,4})$/))) {
+          return new Date(matches[3], matches[1] - 1, matches[2]);
+        } else {
+          return null;
+        }
+      },
+      format: function (date) {
+        var
+          month = (date.getMonth() + 1).toString(),
+          dom = date.getDate().toString();
+        if (month.length === 1) {
+          month = "0" + month;
+        }
+        if (dom.length === 1) {
+          dom = "0" + dom;
+        }
+        return month + "/" + dom + "/" + date.getFullYear();
+      }
+    });  
+  });
+</script>
 {% endblock scripts %}
 
 {% block topright %}
-  <p>hello, {{user.email}}</p>
+  <p>hello, <strong>{{user.email}}</strong></p>
   <p><a href='/dashboard/'>View your dashboard</a> | <a href='/logout/'>Log Out</a></p>
   {% if new_doc %}
-    <a href="../distribute/{{exam.id}}" class="btn btn-large">I'm Done <i class="icon-chevron-right"></i></a>
+    <a href="../distribute/{{exam.id}}" class="btn btn-large">I'm Done <i class="icon-chevron-right"></i></a> 
   {% endif %}
 {% endblock %}
 

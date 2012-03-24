@@ -11,14 +11,14 @@
 <div id='dashboard_wrapper'>
   {% if count == 0 %}
     <div id='none'>
-	  <p><h1>There doesn't seem to be anything here.</h1></p>
-	  <p><h1>Create a new <a id='dashboard_new' href='../make/'>essay template</a> to begin.</h1></p>
-	  <!-- <p><h1>Your folder_id is {{ box_id }}</h1></p> -->
+      <p><h1>There doesn't seem to be anything here.</h1></p>
+      <p><h1>Create a new <a id='dashboard_new' href='../make/'>essay template</a> to begin.</h1></p>
+      <!-- <p><h1>Your folder_id is {{ box_id }}</h1></p> -->
     </div>
   {% else %}
-    {% for item in exams.items %}
-      <div id="{{ item.0 }}" class='exam'>
-        <p><h1>{{ item.1 }}</h1></p>
+    {% for exam in exams %}
+      <div id="{{ exam.0.resource_id }}" class='exam'>
+        <p><h1>{{ exam.0.name }}</h1><h2 id='submissions'>There are {{ exam.1 }} submissions</h2></p>
       </div>
       <hr>
     {% endfor %}
