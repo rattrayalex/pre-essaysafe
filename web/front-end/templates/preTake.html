@@ -1,0 +1,29 @@
+{% extends "general.html" %}
+
+{% block styles %}
+{% endblock styles %}
+
+{% block scripts %}
+{% endblock scripts %}
+
+{% block topright %}
+<p>exam due at {{exam.end_time}}</p>
+<a href="../../../../../submit/{{essay.id}}/" class="btn btn-large" id="done">I'm Done</a>
+{% endblock topright %}
+
+{% block content %}
+<form class="form-horizontal" action="." method="POST">{% csrf_token %}
+  <fieldset>
+    <legend>Enter </legend>
+    <div class="control-group">
+      <label class="control-label" for="input01">Text input</label>
+      <div class="controls">
+        <input type="text" class="input-xlarge" id="input01">
+        <p class="help-block">Supporting help text</p>
+      </div>
+    </div>
+  </fieldset>
+</form>
+{% endblock content %}
+
+

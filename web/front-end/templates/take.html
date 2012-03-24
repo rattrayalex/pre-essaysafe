@@ -3,6 +3,48 @@
 {% block styles %}
 {% endblock styles %}
 
+{% block scripts %}
+<script type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
+<script type="text/javascript">
+  $(function(){
+    $('body').mouseleave(function(){
+      alert('you have left the document! if this were production, your exam would be submitted');
+      // $('#done').click();
+    });
+  });
+
+
+  var start_time = new Date().getTime();
+  console.log(start_time);
+  var lati; 
+  var longi; 
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(success, failure);
+  } else {
+  alert('not supported');
+  }
+ 
+function success(object) {
+  lati = object.coords.latitude;
+  longi = object.coords.longitude;
+  var accuracy = object.coords.accuracy;
+  var times = object.timestamp;
+  console.log('lati:' + lati + 'logi: ' + longi + 'accuracy: ' + accuracy + 'time: ' + times);
+  var href = $('#done').attr('href')+'?lati='+lati+'&longi='+longi+'&start_time='+start_time;
+  console.log(href);
+  $('#done').attr('href', href);
+}
+
+function failure(object) {
+  //
+} 
+
+$(function(){
+  getMap();
+});
+</script>
+{% endblock scripts %}
+
 {% block topright %}
 <p>exam due at {{exam.end_time}}</p>
 <a href="../../../../../submit/{{essay.id}}/" class="btn btn-large" id="done">I'm Done</a>
@@ -12,58 +54,6 @@
   <iframe src='https://docs.google.com/document/d/{{doc}}/edit' class='iframe' scrolling='no' allowTransparency='true'>
     
   </iframe>{% csrf_token %}
-
-<!-- $(window).load(getMap()); -->
-<body onload = "getMap();">
-
 {% endblock content %}
 
-{% block scripts %}
-<!--
-<script type="text/javascript">
-    var href="../../../../submit/{{essay.id}}/";
-function onBlur() {
-	document.body.className = 'blurred';
-  document.title = 'blurred';
-  window.location = href;
-  //window.close();
-};
-function onFocus(){
-	document.body.className = 'focused';
-  document.title = 'focused';
-};
 
-if (/*@cc_on!@*/false) { // check for Internet Explorer
-	document.onfocusin = onFocus;
-	document.onfocusout = onBlur;
-} else {
-	window.onfocus = onFocus;
-	window.onblur = onBlur;
-}
-</script>
--->
-<script type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
-<script type="text/javascript">
-       if (navigator.geolocation) {
-	      navigator.geolocation.getCurrentPosition(success, failure);
-		  } else {
-		  //alert('not supported');
-		  }
-       
-	   function success(object) {
-        var lati = object.coords.latitude;
-         var longi = object.coords.longitude;
-         var accuracy = object.coords.accuracy;
-         var times = object.timestamp;
-		 //alert('lati:' + lati + 'logi: ' + longi + 'accuracy: ' + accuracy + 'time: ' + times);
-		  }
-		  
-	   function failure(object) {
-	      //
-		  } 
-/*    var href="../../../../submit/{{essay.id}}/";
-  $('#done').click(function() {
-    window.href=href;
-  });*/
-</script>
-{% endblock scripts %}

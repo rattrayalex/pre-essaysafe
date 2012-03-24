@@ -42,12 +42,22 @@ class Essay(models.Model):
   exam = models.ForeignKey(Exam, blank=True, null=True, related_name='exam')
   student_name = models.CharField(max_length=80, blank=True)
   student_email = models.CharField(max_length=80, blank=True)
-  start_date = models.DateTimeField('date finished', blank=True, null=True)
-  end_date = models.DateTimeField('date finished', blank=True, null=True)
+  start_time = models.DateTimeField('date finished', blank=True, null=True)
+  end_time = models.DateTimeField('date finished', blank=True, null=True)
   latitude = models.DecimalField(blank=True, null=True)
   longitude = models.DecimalField(blank=True, null=True)
   resource_id = models.CharField(blank=True, null=True)
-
+  
+  @property
+  def minutes_late(self):
+    exam_end = self.exam.end_time 
+    student_end = self.end_time
+    difference = exam_end - student_end
+    if difference > datetime.timedelta(0): #not sure this is right; might be reverse
+      return '%s early' % difference
+    else: 
+      return '%s late' % difference
+      
 class Doc(models.Model):
   doc_name = models.CharField(max_length=80)
   resource_id = models.CharField(max_length=80)

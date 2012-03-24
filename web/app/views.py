@@ -40,6 +40,16 @@ def submit_file(request, essay_id):
   doc = client.GetDoc(essay.resource_id)
   student_email = essay.student_email
   
+  lati = request.GET.get('lati')
+  longi = request.GET.get('longi')
+  essay.latitude = lati
+  essay.longitude = longi
+  essay.end_time = datetime.datetime.now()
+  essay.start_time = datetime.datetime.fromtimestamp(int(request.GET.get('start_time'))/1000)
+  logging.warning(essay.start_time)
+  essay.save()
+  logging.warning(essay.minutes_late)
+  
   doc_code = doc.resource_id.text
   acl_entry = client.GetAclPermissions(doc_code).entry
   for acl in acl_entry:
@@ -160,6 +170,8 @@ def email_a_file(add_email, filename, stream):
   logging.warning("sent"+str(attachments))
   return 1
 
+def preTake(request):
+  return render_to_response('preTake.html', RequestContext(request, {}))
 
 def take(request, prof_email, exam_name, student_name, student_email):
   client = glogin()
@@ -289,5 +301,5 @@ def done(request, essay_id):
   essay = get_object_or_404(Essay, id=essay_id)
   exam = essay.exam
   doc = str(essay.resource_id).split(':')[1]
-  context = {'doc':doc, 'essay': essay, 'exam':exam, }
+  context = {'doc':doc, 'essay': essay, 'exam':exam, 'minutes_late':essay.minutes_late}
   return render_to_response('done.html', context)
